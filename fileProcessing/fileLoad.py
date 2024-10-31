@@ -1,4 +1,4 @@
-import flet
+import flet as ft
 import cv2
 import os
 from flet import (
@@ -11,66 +11,47 @@ from flet import (
     icons,
 )
 
-class fileLoad:
-    path = Text()
+class mkdir:
+    directory_name = []
 
+    def __init__(self, page):  # pageをコンストラクタに渡す
+        self.page = page
+        self.selected_directory = ""
+
+    def get_directory_path(self, e: FilePickerResultEvent):
+        self.selected_directory = e.path
+        self.page.open(mkdir.mkdir_dlg)
+    
+    def make_directory(self, e):
+        self.selected_directory += mkdir.mkdir_dlg.content.value
+        mkdir.directory_name.append(self.selected_directory)
+        os.mkdir(self.selected_directory)
+        self.page.close(mkdir.mkdir_dlg)
+
+    mkdir_dlg = ft.AlertDialog(
+        title=ft.Text("フォルダ名を入力してください"),
+        modal=True,
+        content=ft.TextField(),
+        actions=[
+            ft.TextButton("作成", on_click=lambda e: None),
+            ft.TextButton("キャンセル", on_click=lambda e: None)
+        ]
+    )
     
 
 def main(page: Page):
-    # ファイル選択ダイアログを閉じたときの処理
-    def pick_files_result(e: FilePickerResultEvent):
-        selected_files.value = (
-            # 三項演算子<trueのときの処理> if <条件> else <falseのときの処理> / 前半はファイルを複数選択したときの処理
-            ", ".join(map(lambda f: f.name, e.files)) if e.files else "Cancelled!"
-        )
-        selected_files.update()
+    make_directory = mkdir(page)
+    get_directory_dialog = FilePicker(on_result=make_directory.get_directory_path)
 
-    pick_files_dialog = FilePicker(on_result=pick_files_result)
-    selected_files = Text()
+    mkdir.mkdir_dlg.actions[0].on_click = make_directory.make_directory
+    mkdir.mkdir_dlg.actions[1].on_click = lambda e: page.close(mkdir.mkdir_dlg)
 
-    # Save file dialog
-    def save_file_result(e: FilePickerResultEvent):
-        save_file_path.value = e.path if e.path else "Cancelled!"
-        save_file_path.update()
+    page.title = "AlertDialog examples"
+    page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
 
-    save_file_dialog = FilePicker(on_result=save_file_result)
-    save_file_path = Text()
-
-    # Open directory dialog
-    def get_directory_result(e: FilePickerResultEvent):
-        directory_path.value = e.path if e.path else "Cancelled!"
-        directory_path.update()
-
-    get_directory_dialog = FilePicker(on_result=get_directory_result)
-    directory_path = Text()
-
-    # レイアウトを崩さないためにオーバーレイに追加
-    page.overlay.extend([pick_files_dialog, save_file_dialog, get_directory_dialog])
+    page.overlay.extend([get_directory_dialog])
 
     page.add(
-        Row(
-            [
-                ElevatedButton(
-                    "Pick files",
-                    icon=icons.UPLOAD_FILE,
-                    on_click=lambda _: pick_files_dialog.pick_files(
-                        allow_multiple=True
-                    ),
-                ),
-                selected_files,
-            ]
-        ),
-        Row(
-            [
-                ElevatedButton(
-                    "Save file",
-                    icon=icons.SAVE,
-                    on_click=lambda _: save_file_dialog.save_file(),
-                    disabled=page.web,
-                ),
-                save_file_path,
-            ]
-        ),
         Row(
             [
                 ElevatedButton(
@@ -79,10 +60,9 @@ def main(page: Page):
                     on_click=lambda _: get_directory_dialog.get_directory_path(dialog_title="フォルダーを選択"),
                     disabled=page.web,
                 ),
-                directory_path,
             ]
         ),
     )
 
 
-flet.app(target=main)
+ft.app(target=main)
