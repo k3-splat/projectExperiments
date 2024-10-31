@@ -1,5 +1,6 @@
 import flet
 import cv2
+import os
 from flet import (
     ElevatedButton,
     FilePicker,
@@ -73,9 +74,9 @@ def main(page: Page):
         Row(
             [
                 ElevatedButton(
-                    "Open directory",
+                    "新規ファイルを作成",
                     icon=icons.FOLDER_OPEN,
-                    on_click=lambda _: get_directory_dialog.get_directory_path(),
+                    on_click=lambda _: get_directory_dialog.get_directory_path(dialog_title="フォルダーを選択"),
                     disabled=page.web,
                 ),
                 directory_path,
