@@ -111,7 +111,6 @@ def main(page: ft.Page):
 
     AppHeader("file", "edit", "tool", "display", page)
 
-    # 描画エリアを生成
     draw_app = DrawApp()
 
     layout = Row(
