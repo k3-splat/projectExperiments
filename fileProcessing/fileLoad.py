@@ -41,8 +41,7 @@ class mkdir:
 class input_material:
     material_paths = []
 
-    def __init__(self, page):
-        self.page = page
+    def __init__(self):
         self.path = Text()
 
     def pick_files_result(self, e: ft.FilePickerResultEvent):
@@ -54,6 +53,11 @@ class input_material:
         input_material.material_paths.append(self.path.value)
         self.path.update()
 
+class upload_movie:
+    def __init__(self, page):
+        self.instance = mkdir(page)
+        self.upload_files = self.instance.directory_paths
+
 def main(page: Page):
     make_directory = mkdir(page)
     get_directory_dialog = FilePicker(on_result=make_directory.get_directory_path)
@@ -61,7 +65,7 @@ def main(page: Page):
     mkdir.mkdir_dlg.actions[0].on_click = make_directory.make_directory
     mkdir.mkdir_dlg.actions[1].on_click = lambda e: page.close(mkdir.mkdir_dlg)
 
-    pick_material = input_material(page)
+    pick_material = input_material()
     pick_material_dialog = FilePicker(on_result=pick_material.pick_files_result)
 
     page.title = "ファイルのやり取り"
