@@ -23,15 +23,18 @@ from flet import(
     CrossAxisAlignment,
 )
 
-
+# make header
 class AppHeader(ft.Column):
     def __init__(self, file, edit, tool, display, page):
         super().__init__()
         self.page = page
 
+        # define some button
         next_button = ElevatedButton(text = "next")
         back_button = ElevatedButton(text = "back")
         undo_button = ElevatedButton(text = "undo")
+
+        # make kebab button
         display_button = ElevatedButton(text = "display")
         self.appbar_items = [
             PopupMenuItem(text = "settings"),
@@ -68,10 +71,13 @@ class AppHeader(ft.Column):
     def build(self):
         return self.page.appbar
 
+# make sidebar
 class Sidebar(UserControl):
     def __init__(self):
         super().__init__()
         self.nav_rail_visible = True
+
+        # make some button
         self.nav_rail_items = [
             NavigationRailDestination(
                 icon_content = Icon(icons.FOLDER_OUTLINED),
@@ -130,6 +136,7 @@ class Sidebar(UserControl):
         )
         return self.view
 
+    
     def toggle_nav_rail(self, e):
         self.nav_rail.visible = not self.nav_rail.visible
         self.toggle_nav_rail_button.selected = not self.toggle_nav_rail_button.selected
