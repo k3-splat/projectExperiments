@@ -135,12 +135,14 @@ class Sidebar:
         self.toggle_nav_rail_button.tooltip = "Open Side Bar" if self.toggle_nav_rail_button.selected else "Collapse Side Bar"
         self.nav_rail.update()
 
+#上までがUIのところ
+
 class DrawApp:
     def __init__(self):
         self.points = []
-        self.start_x = 0
+        self.start_x = 0 
         self.start_y = 0
-        self.is_rectangle_mode = False
+        self.is_rectangle_mode = False #以下、ボタンを押したときのモードのフラグ
         self.is_drawing_mode = False
         self.is_circle_mode = False
         self.is_eraser_mode = False
@@ -163,25 +165,25 @@ class DrawApp:
         # 四角形描画
         rectangle_button = ElevatedButton(
             text="四角形",
-            on_click=self.toggle_rectangle_mode
+            on_click=self.rectangle
         )
 
         # 自由描画
         free_draw_button = ElevatedButton(
             text="自由描画",
-            on_click=self.toggle_drawing_mode
+            on_click=self.free
         )
 
         # 円描画
         circle_button = ElevatedButton(
             text="円",
-            on_click=self.toggle_circle_mode
+            on_click=self.circle
         )
 
         # 消しゴムモード
         eraser_button = ElevatedButton(
             text="消しごむ",
-            on_click=self.toggle_eraser_mode
+            on_click=self.eraser
         )
 
         return Column(
@@ -194,25 +196,26 @@ class DrawApp:
             ]
         )
 
-    def toggle_rectangle_mode(self, e):
+
+    def rectangle(self, e):
         self.is_rectangle_mode = True
         self.is_drawing_mode = False
         self.is_circle_mode = False
         self.is_eraser_mode = False
 
-    def toggle_drawing_mode(self, e):
+    def free(self, e):
         self.is_drawing_mode = True
         self.is_rectangle_mode = False
         self.is_circle_mode = False
         self.is_eraser_mode = False
 
-    def toggle_circle_mode(self, e):
+    def circle(self, e):
         self.is_rectangle_mode = False
         self.is_drawing_mode = False
         self.is_circle_mode = True
         self.is_eraser_mode = False
 
-    def toggle_eraser_mode(self, e):
+    def eraser(self, e):
         self.is_rectangle_mode = False
         self.is_drawing_mode = False
         self.is_circle_mode = False
@@ -223,6 +226,7 @@ class DrawApp:
         self.start_y = e.local_y
         self.points.clear()
 
+    #条件分岐でモードの処理をする
     def on_pan_update(self, e):
         if self.is_rectangle_mode:
             left = min(self.start_x, e.local_x)
