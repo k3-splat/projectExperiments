@@ -1,27 +1,43 @@
 import flet as ft
-from flet import Text, ElevatedButton, PopupMenuItem, Row, Icon, Container, Stack, PopupMenuButton, TextField, Column, margin, colors, icons
+from flet import (
+    Text,
+    ElevatedButton,
+    PopupMenuItem,
+    Row,
+    IconButton,
+    AppBar,
+    Icon,
+    Container,
+    PopupMenuButton,
+    margin,
+    colors,
+    icons,
+    GestureDetector,
+    alignment,
+    Stack,
+    NavigationRail,
+    NavigationRailDestination,
+    NavigationRailLabelType,
+    Column,
+    CrossAxisAlignment,
+)
 
-
-class AppHeader(ft.Column):
-    def __init__(self, file, edit, tool, display, page, on_shape_select, on_text_draw, on_freehand_draw):
-        super().__init__()
+class AppHeader:
+    def __init__(self, page):
         self.page = page
-        self.on_shape_select = on_shape_select
-        self.on_text_draw = on_text_draw
-        self.on_freehand_draw = on_freehand_draw
 
-        file_button = ElevatedButton(text="file")
-        edit_button = ElevatedButton(text="edit")
-        tool_button = ElevatedButton(text="tool")
+        next_button = ElevatedButton(text="next")
+        back_button = ElevatedButton(text="back")
+        undo_button = ElevatedButton(text="undo")
         display_button = ElevatedButton(text="display")
+        
         self.appbar_items = [
-            PopupMenuItem(text="Draw Circle", on_click=lambda e: self.on_shape_select("circle")),
-            PopupMenuItem(text="Draw Square", on_click=lambda e: self.on_shape_select("square")),
-            PopupMenuItem(text="Draw Text", on_click=lambda e: self.on_text_draw()),
-            PopupMenuItem(text="Freehand Draw", on_click=lambda e: self.on_freehand_draw())
+            PopupMenuItem(text="settings"),
+            PopupMenuItem(),
+            PopupMenuItem(text="help"),
         ]
 
-        self.page.appbar = ft.AppBar(
+        self.page.appbar = AppBar(
             leading=Icon(icons.TRIP_ORIGIN_ROUNDED),
             leading_width=60,
             title=Text(value="Project name", size=24, text_align="center"),
@@ -32,10 +48,10 @@ class AppHeader(ft.Column):
                 Container(
                     content=Row(
                         [
-                            file_button,
-                            edit_button,
-                            tool_button,
                             display_button,
+                            undo_button,
+                            back_button,
+                            next_button,
                             PopupMenuButton(
                                 items=self.appbar_items
                             ),
@@ -47,119 +63,214 @@ class AppHeader(ft.Column):
             ],
         )
 
-    def build(self):
-        return self.page.appbar
+class Sidebar:
+    def __init__(self):
+        self.nav_rail_visible = True
 
+        self.nav_rail_items = [
+            NavigationRailDestination(
+                icon_content=Icon(icons.FOLDER_OUTLINED),
+                selected_icon_content=Icon(icons.FOLDER_OUTLINED),
+                label_content=Text("file"),
+            ),
+            NavigationRailDestination(
+                icon_content=Icon(icons.CREATE),
+                selected_icon_content=Icon(icons.CREATE_OUTLINED),
+                label_content=Text("edit"),
+            ),
+            NavigationRailDestination(
+                icon_content=Icon(icons.SETTINGS),
+                selected_icon_content=Icon(icons.SETTINGS_OUTLINED),
+                label_content=Text("Settings"),
+            ),
+        ]
 
-class ShapeDrawer:
-    def __init__(self, page):
-        self.page = page
-        self.shape_container = Stack(expand=True)
-        self.current_shape = None
-        self.drawing_mode = False
-
-    def draw_shape(self, shape):
-        self.current_shape = shape
-
-        if shape == "circle":
-            shape_element = ft.Draggable(
-                content=Container(
-                    width=100,
-                    height=100,
-                    bgcolor=colors.BLUE,
-                    border_radius=50,
-                    alignment=ft.alignment.center,
-                )
-            )
-        elif shape == "square":
-            shape_element = ft.Draggable(
-                content=Container(
-                    width=100,
-                    height=100,
-                    bgcolor=colors.RED,
-                    alignment=ft.alignment.center,
-                )
-            )
-
-        self.shape_container.controls.append(shape_element)
-        self.page.update()
-
-    def draw_text(self, text, x, y):
-        text_element = ft.Draggable(
-            content=Text(text, size=24, color=colors.BLACK),
-            left=x,
-            top=y,
+        self.nav_rail = NavigationRail(
+            height=300,
+            selected_index=None,
+            label_type=NavigationRailLabelType.ALL,
+            min_width=100,
+            min_extended_width=400,
+            group_alignment=-0.9,
+            destinations=self.nav_rail_items,
+            on_change=lambda e: print("Selected destination: ", e.control.selected_index),
         )
-        self.shape_container.controls.append(text_element)
-        self.page.update()
 
-    def start_freehand_draw(self):
-        self.drawing_mode = True
+        self.toggle_nav_rail_button = IconButton(
+            icon=icons.ARROW_CIRCLE_LEFT,
+            icon_color=colors.BLUE_GREY_400,
+            selected=False,
+            selected_icon=icons.ARROW_CIRCLE_RIGHT,
+            on_click=self.toggle_nav_rail,
+            tooltip="Collapse Nav Bar",
+        )
 
-    def stop_freehand_draw(self):
-        self.drawing_mode = False
-
-    def on_mouse_move(self, e):
-        if self.drawing_mode:
-            # Create a small circle at the current mouse position to simulate drawing
-            dot = Container(
-                width=5,
-                height=5,
-                bgcolor=colors.BLACK,
-                left=e.client_x,
-                top=e.client_y,
-                border_radius=2.5
+    def build(self):
+        return Container(
+            content=Row(
+                [
+                    self.nav_rail,
+                    Container(
+                        bgcolor=colors.BLACK26,
+                        border_radius=20,
+                        height=220,
+                        alignment=alignment.center_right,
+                        width=2
+                    ),
+                    self.toggle_nav_rail_button,
+                ],
+                expand=True,
+                vertical_alignment=CrossAxisAlignment.START,
+                visible=self.nav_rail_visible,
             )
-            self.shape_container.controls.append(dot)
-            self.page.update()
+        )
 
+    def toggle_nav_rail(self, e):
+        self.nav_rail.visible = not self.nav_rail.visible
+        self.toggle_nav_rail_button.selected = not self.toggle_nav_rail_button.selected
+        self.toggle_nav_rail_button.tooltip = "Open Side Bar" if self.toggle_nav_rail_button.selected else "Collapse Side Bar"
+        self.nav_rail.update()
+
+class DrawApp:
+    def __init__(self):
+        self.points = []
+        self.start_x = 0
+        self.start_y = 0
+        self.is_rectangle_mode = False
+        self.is_drawing_mode = False
+        self.is_circle_mode = False
+
+    def build(self):
+        self.draw_area = Stack([], width=500, height=400)
+        self.gesture_detector = GestureDetector(
+            mouse_cursor="crosshair",
+            on_pan_update=self.on_pan_update,
+            on_pan_start=self.on_pan_start,
+            on_pan_end=self.on_pan_end,
+            content=Container(
+                content=self.draw_area,
+                bgcolor=colors.WHITE,
+                alignment=alignment.top_left
+            ),
+        )
+        
+        # 四角形描画
+        rectangle_button = ElevatedButton(
+            text="Rectangle",
+            on_click=self.toggle_rectangle_mode
+        )
+
+        # 自由描画
+        free_draw_button = ElevatedButton(
+            text="Free Draw",
+            on_click=self.toggle_drawing_mode
+        )
+
+        # 円描画
+        circle_button = ElevatedButton(
+            text="Circle",
+            on_click=self.toggle_circle_mode
+        )
+
+        return Column(
+            controls=[
+                Row(
+                    controls=[rectangle_button, free_draw_button, circle_button],
+                    alignment="center"
+                ),
+                self.gesture_detector
+            ]
+        )
+
+    def toggle_rectangle_mode(self, e):
+        self.is_rectangle_mode = True
+        self.is_drawing_mode = False
+        self.is_circle_mode = False
+
+    def toggle_drawing_mode(self, e):
+        self.is_drawing_mode = True
+        self.is_rectangle_mode = False
+        self.is_circle_mode = False
+
+    def toggle_circle_mode(self, e):
+        self.is_rectangle_mode = False
+        self.is_drawing_mode = False
+        self.is_circle_mode = True
+
+    def on_pan_start(self, e):
+        
+        self.start_x = e.local_x
+        self.start_y = e.local_y
+        self.points.clear()
+
+    def on_pan_update(self, e):
+        #四角形描画のところ
+        if self.is_rectangle_mode:
+            left = min(self.start_x, e.local_x)
+            top = min(self.start_y, e.local_y)
+            width = abs(e.local_x - self.start_x)
+            height = abs(e.local_y - self.start_y)
+
+            rectangle = Container(
+                left=left,
+                top=top,
+                width=width,
+                height=height,
+                bgcolor=colors.BLACK,
+                border_radius=0,
+            )
+            self.draw_area.controls.append(rectangle)
+
+        elif self.is_drawing_mode:
+            # 自由描画のところ
+            line = Container(
+                left=self.start_x,
+                top=self.start_y,
+                width=2,  
+                height=2, 
+                bgcolor=colors.BLACK,
+                border_radius=1,
+            )
+            self.draw_area.controls.append(line)
+
+            self.start_x = e.local_x
+            self.start_y = e.local_y
+
+        elif self.is_circle_mode:
+            # 円描画のところ
+            current_radius = int(((e.local_x - self.start_x) ** 2 + (e.local_y - self.start_y) ** 2) ** 0.5)
+
+            circle = Container(
+                left=self.start_x - current_radius,
+                top=self.start_y - current_radius,
+                width=current_radius * 2,
+                height=current_radius * 2,
+                bgcolor=colors.BLACK,
+                border_radius=current_radius,
+            )
+            self.draw_area.controls.append(circle)
+
+        self.draw_area.update()
+
+    def on_pan_end(self, e):
+        pass
 
 def main(page: ft.Page):
-    page.title = "Shape Drawer"
+    page.title = "Video Maker"
     page.padding = 10
-    shape_drawer = ShapeDrawer(page)
 
-    def on_shape_select(shape):
-        shape_drawer.draw_shape(shape)
-
-    def on_text_draw():
-        def submit_text(e):
-            text = text_input.value
-            x = int(x_input.value)
-            y = int(y_input.value)
-            shape_drawer.draw_text(text, x, y)
-            page.dialog.open = False
-            page.update()
-
-        text_input = TextField(label="Text", width=200)
-        x_input = TextField(label="X Position", width=100)
-        y_input = TextField(label="Y Position", width=100)
-        submit_button = ElevatedButton("Draw Text", on_click=submit_text)
-
-        popup_content = Column([text_input, x_input, y_input, submit_button], alignment="start")
-        page.dialog = ft.AlertDialog(content=popup_content)
-        page.dialog.open = True
-        page.update()
-
-    def on_freehand_draw():
-        shape_drawer.start_freehand_draw()
-
-    AppHeader("file", "edit", "tool", "display", page, on_shape_select, on_text_draw, on_freehand_draw)
+    AppHeader(page)
+    sidebar = Sidebar()
+    draw_app = DrawApp()
 
     layout = Row(
-        controls=[shape_drawer.shape_container],
+        controls=[sidebar.build(), draw_app.build()],
         tight=False,
         expand=True,
         vertical_alignment="start",
     )
 
     page.add(layout)
-
-    # Set up mouse event handlers
-    page.on_mouse_move = shape_drawer.on_mouse_move
-    page.on_mouse_up = lambda e: shape_drawer.stop_freehand_draw()
-    
     page.update()
-
 
 ft.app(target=main)
