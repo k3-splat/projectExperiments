@@ -1,6 +1,7 @@
-#進捗：四角形、円、自由描画、消しゴムモードの追加
-#次：テキストと変形、　コマの概念の追加
-#描画できる図形の数に限度あり
+#進捗：四角形、円、自由描画、消しゴムモードの追加、next,backのボタンを使えるように
+#次：テキストと変形、
+#描画できる図形の数に限度あり,まだページ数は押しても意味ないです
+
 
 import flet as ft
 from flet import (
@@ -27,14 +28,17 @@ from flet import (
 )
 
 class AppHeader:
-    def __init__(self, page):
+    def __init__(self, page, draw_app):
         self.page = page
+        self.draw_app = draw_app
 
-        next_button = ElevatedButton(text="next")
-        back_button = ElevatedButton(text="back")
+        next_button = ElevatedButton(text="next", on_click=self.next_frame)
+        back_button = ElevatedButton(text="back", on_click=self.prev_frame)
         undo_button = ElevatedButton(text="undo")
         display_button = ElevatedButton(text="display")
-        
+
+        self.page_number_text = Text(f"Page {self.draw_app.current_frame_index + 1}/{len(self.draw_app.frames)}")
+
         self.appbar_items = [
             PopupMenuItem(text="settings"),
             PopupMenuItem(),
@@ -56,6 +60,7 @@ class AppHeader:
                             undo_button,
                             back_button,
                             next_button,
+                             self.page_number_text,  # ページ数
                             PopupMenuButton(
                                 items=self.appbar_items
                             ),
@@ -66,6 +71,12 @@ class AppHeader:
                 )
             ],
         )
+
+    def next_frame(self, e):
+        self.draw_app.next_frame()
+
+    def prev_frame(self, e):
+        self.draw_app.prev_frame()
 
 class Sidebar:
     def __init__(self):
@@ -135,18 +146,20 @@ class Sidebar:
         self.toggle_nav_rail_button.tooltip = "Open Side Bar" if self.toggle_nav_rail_button.selected else "Collapse Side Bar"
         self.nav_rail.update()
 
-#上までがUIのところ
+
+#ここから上がUIの部分
 
 class DrawApp:
     def __init__(self):
+        self.frames = [[]]  # フレームを管理するリスト
+        self.current_frame_index = 0
         self.points = []
         self.start_x = 0 
         self.start_y = 0
-        self.is_rectangle_mode = False #以下、ボタンを押したときのモードのフラグ
+        self.is_rectangle_mode = False #モード選択の時に使用
         self.is_drawing_mode = False
         self.is_circle_mode = False
         self.is_eraser_mode = False
-        self.shapes = []  # 描画した図形を管理するリスト
 
     def build(self):
         self.draw_area = Stack([], width=500, height=400)
@@ -162,25 +175,22 @@ class DrawApp:
             ),
         )
         
-        # 四角形描画
+        #ボタン
         rectangle_button = ElevatedButton(
             text="四角形",
             on_click=self.rectangle
         )
 
-        # 自由描画
         free_draw_button = ElevatedButton(
             text="自由描画",
             on_click=self.free
         )
 
-        # 円描画
         circle_button = ElevatedButton(
             text="円",
             on_click=self.circle
         )
 
-        # 消しゴムモード
         eraser_button = ElevatedButton(
             text="消しごむ",
             on_click=self.eraser
@@ -196,6 +206,27 @@ class DrawApp:
             ]
         )
 
+    def next_frame(self):
+        # 現在のフレームを保存
+        self.frames[self.current_frame_index] = self.draw_area.controls.copy()
+        if self.current_frame_index < len(self.frames) - 1:
+            self.current_frame_index += 1
+        else:
+            # 新しいフレームを追加
+            self.frames.append([])
+            self.current_frame_index += 1
+        self.load_frame()
+
+    def prev_frame(self):
+        if self.current_frame_index > 0:
+            self.current_frame_index -= 1
+        self.load_frame()
+
+    def load_frame(self):
+        # フレームの図形を描画エリアに表示
+        self.draw_area.controls.clear()
+        self.draw_area.controls.extend(self.frames[self.current_frame_index].copy())
+        self.draw_area.update()
 
     def rectangle(self, e):
         self.is_rectangle_mode = True
@@ -226,8 +257,9 @@ class DrawApp:
         self.start_y = e.local_y
         self.points.clear()
 
-    #条件分岐でモードの処理をする
+    #以下、条件分岐を用いてモード選択を行う
     def on_pan_update(self, e):
+        #四角形描画のところ
         if self.is_rectangle_mode:
             left = min(self.start_x, e.local_x)
             top = min(self.start_y, e.local_y)
@@ -243,10 +275,9 @@ class DrawApp:
                 border_radius=0,
             )
             self.draw_area.controls.append(rectangle)
-            #リスト追加
-            self.shapes.append(rectangle) 
 
         elif self.is_drawing_mode:
+            #自由描画のところ
             line = Container(
                 left=self.start_x,
                 top=self.start_y,
@@ -256,13 +287,12 @@ class DrawApp:
                 border_radius=1,
             )
             self.draw_area.controls.append(line)
-            #描画した図形のリスト追加
-            self.shapes.append(line) 
 
             self.start_x = e.local_x
             self.start_y = e.local_y
 
         elif self.is_circle_mode:
+            #円の描画のところ
             current_radius = int(((e.local_x - self.start_x) ** 2 + (e.local_y - self.start_y) ** 2) ** 0.5)
 
             circle = Container(
@@ -274,20 +304,19 @@ class DrawApp:
                 border_radius=current_radius,
             )
             self.draw_area.controls.append(circle)
-            self.shapes.append(circle) 
 
         elif self.is_eraser_mode:
+            #消しゴムのところ
             self.erase_shape(e.local_x, e.local_y)
 
         self.draw_area.update()
 
     def erase_shape(self, x, y):
-        # 消しゴムモード
-        for shape in self.shapes:
+        #消しゴムモード
+        for shape in self.draw_area.controls:
             if (shape.left <= x <= shape.left + shape.width and
                 shape.top <= y <= shape.top + shape.height):
                 self.draw_area.controls.remove(shape)
-                self.shapes.remove(shape)
                 break
 
     def on_pan_end(self, e):
@@ -297,17 +326,16 @@ def main(page: ft.Page):
     page.title = "Video Maker"
     page.padding = 10
 
-    AppHeader(page)
-    sidebar = Sidebar()
     draw_app = DrawApp()
+    AppHeader(page, draw_app)
+    sidebar = Sidebar()
 
     layout = Row(
         controls=[sidebar.build(), draw_app.build()],
-        tight=False,
-        expand=True,
-        vertical_alignment="start"
+        alignment="start"
     )
-
+    
     page.add(layout)
+    page.update()
 
 ft.app(target=main)
