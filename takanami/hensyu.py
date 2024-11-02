@@ -1,3 +1,7 @@
+#進捗：四角形、円、自由描画、消しゴムモードの追加
+#次：テキストと変形、　コマの概念の追加
+#描画できる図形の数に限度あり
+
 import flet as ft
 from flet import (
     Text,
@@ -139,6 +143,8 @@ class DrawApp:
         self.is_rectangle_mode = False
         self.is_drawing_mode = False
         self.is_circle_mode = False
+        self.is_eraser_mode = False
+        self.shapes = []  # 描画した図形を管理するリスト
 
     def build(self):
         self.draw_area = Stack([], width=500, height=400)
@@ -156,26 +162,32 @@ class DrawApp:
         
         # 四角形描画
         rectangle_button = ElevatedButton(
-            text="Rectangle",
+            text="四角形",
             on_click=self.toggle_rectangle_mode
         )
 
         # 自由描画
         free_draw_button = ElevatedButton(
-            text="Free Draw",
+            text="自由描画",
             on_click=self.toggle_drawing_mode
         )
 
         # 円描画
         circle_button = ElevatedButton(
-            text="Circle",
+            text="円",
             on_click=self.toggle_circle_mode
+        )
+
+        # 消しゴムモード
+        eraser_button = ElevatedButton(
+            text="消しごむ",
+            on_click=self.toggle_eraser_mode
         )
 
         return Column(
             controls=[
                 Row(
-                    controls=[rectangle_button, free_draw_button, circle_button],
+                    controls=[rectangle_button, free_draw_button, circle_button, eraser_button],
                     alignment="center"
                 ),
                 self.gesture_detector
@@ -186,25 +198,32 @@ class DrawApp:
         self.is_rectangle_mode = True
         self.is_drawing_mode = False
         self.is_circle_mode = False
+        self.is_eraser_mode = False
 
     def toggle_drawing_mode(self, e):
         self.is_drawing_mode = True
         self.is_rectangle_mode = False
         self.is_circle_mode = False
+        self.is_eraser_mode = False
 
     def toggle_circle_mode(self, e):
         self.is_rectangle_mode = False
         self.is_drawing_mode = False
         self.is_circle_mode = True
+        self.is_eraser_mode = False
+
+    def toggle_eraser_mode(self, e):
+        self.is_rectangle_mode = False
+        self.is_drawing_mode = False
+        self.is_circle_mode = False
+        self.is_eraser_mode = True
 
     def on_pan_start(self, e):
-        
         self.start_x = e.local_x
         self.start_y = e.local_y
         self.points.clear()
 
     def on_pan_update(self, e):
-        #四角形描画のところ
         if self.is_rectangle_mode:
             left = min(self.start_x, e.local_x)
             top = min(self.start_y, e.local_y)
@@ -220,9 +239,10 @@ class DrawApp:
                 border_radius=0,
             )
             self.draw_area.controls.append(rectangle)
+            #リスト追加
+            self.shapes.append(rectangle) 
 
         elif self.is_drawing_mode:
-            # 自由描画のところ
             line = Container(
                 left=self.start_x,
                 top=self.start_y,
@@ -232,12 +252,13 @@ class DrawApp:
                 border_radius=1,
             )
             self.draw_area.controls.append(line)
+            #描画した図形のリスト追加
+            self.shapes.append(line) 
 
             self.start_x = e.local_x
             self.start_y = e.local_y
 
         elif self.is_circle_mode:
-            # 円描画のところ
             current_radius = int(((e.local_x - self.start_x) ** 2 + (e.local_y - self.start_y) ** 2) ** 0.5)
 
             circle = Container(
@@ -249,8 +270,21 @@ class DrawApp:
                 border_radius=current_radius,
             )
             self.draw_area.controls.append(circle)
+            self.shapes.append(circle) 
+
+        elif self.is_eraser_mode:
+            self.erase_shape(e.local_x, e.local_y)
 
         self.draw_area.update()
+
+    def erase_shape(self, x, y):
+        # 消しゴムモード
+        for shape in self.shapes:
+            if (shape.left <= x <= shape.left + shape.width and
+                shape.top <= y <= shape.top + shape.height):
+                self.draw_area.controls.remove(shape)
+                self.shapes.remove(shape)
+                break
 
     def on_pan_end(self, e):
         pass
@@ -267,10 +301,9 @@ def main(page: ft.Page):
         controls=[sidebar.build(), draw_app.build()],
         tight=False,
         expand=True,
-        vertical_alignment="start",
+        vertical_alignment="start"
     )
 
     page.add(layout)
-    page.update()
 
 ft.app(target=main)
