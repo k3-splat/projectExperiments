@@ -4,7 +4,7 @@ import time
 import threading
 
 def main(page: ft.Page):
-    page.title = "Flet example"
+    page.title = "タイトル画面"
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
     page.bgcolor = ft.colors.WHITE
 
@@ -75,7 +75,7 @@ def main(page: ft.Page):
             [
                 img_miru_clickable,
                 ft.Container(
-                    content=ft.Text("ここ絵だね．"),
+                    content=ft.Text("絵"),
                     margin=10,
                     padding=10,
                     alignment=ft.alignment.center,
