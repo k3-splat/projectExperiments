@@ -2,8 +2,8 @@ import cv2
 import numpy as np
 
 # 前フレームと後フレームの読み込み（カラー画像）
-prev_frame = cv2.imread("./output_frames/frame_0000.png")
-next_frame = cv2.imread("./output_frames/frame_0010.png")
+prev_frame = cv2.imread("./output_frames/frame_0005.png")
+next_frame = cv2.imread("./output_frames/frame_0007.png")
 
 # 各チャンネル（B, G, R）に分けて処理
 channels = cv2.split(prev_frame)
