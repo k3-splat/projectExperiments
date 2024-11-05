@@ -56,7 +56,25 @@ class input_material:
 class upload_movie:
     def __init__(self, page):
         self.instance = mkdir(page)
-        self.upload_files = self.instance.directory_paths
+        self.upload_files_lst = self.instance.directory_paths
+
+    def upload_files(self, e: FilePickerResultEvent):
+        if self.upload_files_lst != None:
+            for f in self.upload_files_lst:
+                upload_list.append(
+                    FilePickerUploadFile(
+                        f.name,
+                        upload_url=page.get_upload_url(f.name, 600),
+                    )
+                )
+            file_picker.upload(upload_list)
+
+    choose_dlg = ft.AlertDialog(
+        title=ft.Text("アップロードする動画を選択してください"),
+        modal=True,
+        content=[],
+        actions=[]
+    )
 
 def main(page: Page):
     make_directory = mkdir(page)
