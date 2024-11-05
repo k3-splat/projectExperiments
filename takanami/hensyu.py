@@ -25,6 +25,8 @@ from flet import (
     NavigationRailLabelType,
     Column,
     CrossAxisAlignment,
+    Image,
+    GestureDetector
 )
 
 class AppHeader:
