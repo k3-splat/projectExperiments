@@ -1,5 +1,4 @@
 import flet as ft
-import cv2
 import os
 from flet import (
     ElevatedButton,
@@ -117,5 +116,5 @@ def main(page: Page):
         )
     )
 
-
-ft.app(target=main)
+if __name__ == "__main__":
+    ft.app(target=main)
