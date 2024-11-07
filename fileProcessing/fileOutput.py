@@ -3,13 +3,13 @@ import glob
 from tqdm import tqdm
 import cv2
 
-input_dir   = '../frame_interpolation/output_frames'           # 入力する画像が保存されたフォルダ名
+input_dir   = 'image'           # 入力する画像が保存されたフォルダ名
 output_path = input_dir + '_cv' + '.mp4'    # 作成する 動画ファイル
 print(output_path)
 
 # フォルダ内の画像のファイルリストを取得する
 files  = glob.glob(os.path.join(input_dir, '*.png'))
-files += glob.glob(os.path.join(input_dir, '*.g'))
+files += glob.glob(os.path.join(input_dir, '*.jpg'))
 files.sort()
 frames=len(files)
 assert frames != 0, 'not found image file'    # 画像ファイルが見つからない
