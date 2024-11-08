@@ -7,11 +7,25 @@ from flet import (
     Page,
     Row,
     Text,
+    TextField,
     icons,
+    AlertDialog,
+    TextButton,
+    CrossAxisAlignment
 )
 
 class mkdir:
     directory_paths = []
+
+    mkdir_dlg = AlertDialog(
+        title=Text("フォルダ名を入力してください"),
+        modal=True,
+        content=TextField(),
+        actions=[
+            TextButton("作成", on_click=lambda e: None), #ダミーだから，インスタンスを作ったときに実際の処理を書く
+            TextButton("キャンセル", on_click=lambda e: None)
+        ]
+    )
 
     def __init__(self, page):
         self.page = page
@@ -27,15 +41,6 @@ class mkdir:
         os.mkdir(self.selected_directory)
         self.page.close(mkdir.mkdir_dlg)
 
-    mkdir_dlg = ft.AlertDialog(
-        title=ft.Text("フォルダ名を入力してください"),
-        modal=True,
-        content=ft.TextField(),
-        actions=[
-            ft.TextButton("作成", on_click=lambda e: None), #ダミーだから，インスタンスを作ったときに実際の処理を書く
-            ft.TextButton("キャンセル", on_click=lambda e: None)
-        ]
-    )
 
 class input_material:
     material_paths = []
@@ -43,7 +48,7 @@ class input_material:
     def __init__(self):
         self.path = Text()
 
-    def pick_files_result(self, e: ft.FilePickerResultEvent):
+    def pick_files_result(self, e: FilePickerResultEvent):
         if e.files:
             self.path.value = ", ".join(file.path for file in e.files)
         else:
@@ -68,8 +73,8 @@ class upload_movie:
                 )
             file_picker.upload(upload_list)
 
-    choose_dlg = ft.AlertDialog(
-        title=ft.Text("アップロードする動画を選択してください"),
+    choose_dlg = AlertDialog(
+        title=Text("アップロードする動画を選択してください"),
         modal=True,
         content=[],
         actions=[]
@@ -79,14 +84,14 @@ def main(page: Page):
     make_directory = mkdir(page)
     get_directory_dialog = FilePicker(on_result=make_directory.get_directory_path)
 
-    mkdir.mkdir_dlg.actions[0].on_click = make_directory.make_directory
+    mkdir.mkdir_dlg.actions[0].on_click = make_directory.make_directory #コンストラクタ作成後にダイアログの機能を与える
     mkdir.mkdir_dlg.actions[1].on_click = lambda e: page.close(mkdir.mkdir_dlg)
 
     pick_material = input_material()
     pick_material_dialog = FilePicker(on_result=pick_material.pick_files_result)
 
     page.title = "ファイルのやり取り"
-    page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+    page.horizontal_alignment = CrossAxisAlignment.CENTER
 
     page.overlay.extend([get_directory_dialog, pick_material_dialog])
 
@@ -103,9 +108,9 @@ def main(page: Page):
         ),
         Row(
             [
-                ft.ElevatedButton(
+                ElevatedButton(
                     "Pick files",
-                    icon=ft.icons.UPLOAD_FILE,
+                    icon=icons.UPLOAD_FILE,
                     on_click=lambda _: pick_material_dialog.pick_files(
                         allow_multiple=True,
                         allowed_extensions=["jpg", "png", "wav", "mp3"]
