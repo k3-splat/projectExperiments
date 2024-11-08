@@ -165,6 +165,7 @@ class DrawApp:
         self.is_drawing_mode = False
         self.is_circle_mode = False
         self.is_eraser_mode = False
+        self.zenksi_mode = False
 
     def build(self):
         self.draw_area = Stack([], width=500, height=400)
@@ -199,6 +200,12 @@ class DrawApp:
         eraser_button = ElevatedButton(
             text="消しごむ",
             on_click=self.eraser
+        )
+
+        #全部消す
+        zenkesi_button = ElevatedButton(
+            text="消す",
+            on_click=self.zenkesi
         )
 
         return Column(
@@ -238,24 +245,35 @@ class DrawApp:
         self.is_drawing_mode = False
         self.is_circle_mode = False
         self.is_eraser_mode = False
+        self.zenkesi = False
 
     def free(self, e):
         self.is_drawing_mode = True
         self.is_rectangle_mode = False
         self.is_circle_mode = False
         self.is_eraser_mode = False
+        self.zenkesi = False
 
     def circle(self, e):
         self.is_rectangle_mode = False
         self.is_drawing_mode = False
         self.is_circle_mode = True
         self.is_eraser_mode = False
+        self.zenkesi = False
 
     def eraser(self, e):
         self.is_rectangle_mode = False
         self.is_drawing_mode = False
         self.is_circle_mode = False
         self.is_eraser_mode = True
+        self.zenkesi = False
+    
+    def zenkesi(self, e):
+        self.is_rectangle_mode = False
+        self.is_drawing_mode = False
+        self.is_circle_mode = False
+        self.is_eraser_mode = False
+        self.zenkesi = True
 
     def on_pan_start(self, e):
         self.start_x = e.local_x
@@ -314,6 +332,9 @@ class DrawApp:
             #消しゴムのところ
             self.erase_shape(e.local_x, e.local_y)
 
+        elif zenkesi_mode:
+            self.zenkesi(e.local_x, e.local_y)
+        
         self.draw_area.update()
 
     def erase_shape(self, x, y):
@@ -323,6 +344,10 @@ class DrawApp:
                 shape.top <= y <= shape.top + shape.height):
                 self.draw_area.controls.remove(shape)
                 break
+    
+    def zenkesi(self, x, y):
+        self.draw_area.controls.clear() 
+
 
     def on_pan_end(self, e):
         pass
