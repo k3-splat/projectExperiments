@@ -32,14 +32,17 @@ class mkdir:
         self.selected_directory = ''
 
     def get_directory_path(self, e: FilePickerResultEvent):
+        if e.path is None:
+            return
+
         self.selected_directory = e.path
-        self.page.open(mkdir.mkdir_dlg)
+        self.page.open(self.mkdir_dlg)
     
-    def make_directory(self, e):
+    def make_directory(self, page: Page, e: FilePickerResultEvent):
         self.selected_directory = self.selected_directory + '/' + mkdir.mkdir_dlg.content.value
         mkdir.directory_paths.append(self.selected_directory)
         os.mkdir(self.selected_directory)
-        self.page.close(mkdir.mkdir_dlg)
+        page.close(mkdir.mkdir_dlg)
 
 
 class input_material:

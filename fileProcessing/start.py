@@ -2,9 +2,11 @@ import flet as ft
 from datetime import datetime
 import time
 import threading
+from chooseContiNew import(
+    chooseContiNew
+)
 from fileLoad import (
-    mkdir,
-    input_material
+    mkdir
 )
 
 class startPage:
@@ -21,9 +23,6 @@ class startPage:
 
         mkdir.mkdir_dlg.actions[0].on_click = make_directory.make_directory
         mkdir.mkdir_dlg.actions[1].on_click = lambda e: page.close(mkdir.mkdir_dlg)
-
-        pick_material = input_material()
-        pick_material_dialog = ft.FilePicker(on_result=pick_material.pick_files_result)
 
         time_text = ft.Text(
             value="",
@@ -61,7 +60,8 @@ class startPage:
 
         img_tsukuru_clickable = ft.GestureDetector(
             content=img_tsukuru,
-            on_tap=lambda e: print("まだ作れませ～ん"),
+            on_tap=lambda _: get_directory_dialog.get_directory_path(dialog_title="フォルダーを選択"),
+            disabled=page.web,
             mouse_cursor=ft.MouseCursor.CLICK
         )
 
@@ -73,6 +73,8 @@ class startPage:
                 time.sleep(1)
 
         threading.Thread(target=update_time, daemon=True).start()
+
+        page.overlay.extend([get_directory_dialog])
 
         page.add(
             ft.Row(
@@ -127,3 +129,5 @@ class startPage:
                 alignment=ft.MainAxisAlignment.CENTER,
             ),
         )
+
+app = startPage()
