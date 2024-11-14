@@ -24,6 +24,7 @@ class inputFolderNameDialog:
         inputFolderNameDialog.mkdir_dlg.actions[0].on_click = fun1
         inputFolderNameDialog.mkdir_dlg.actions[1].on_click = fun2
 
+
 class chooseContiNewDialog:
     choose_dialog = ft.CupertinoActionSheet(
         title=ft.Row([ft.Text("動画を作る")], alignment=ft.MainAxisAlignment.CENTER),
@@ -59,6 +60,7 @@ class chooseContiNewDialog:
         chooseContiNewDialog.choose_dialog.cancel.on_click = lambda e: page.close(self.bottom_sheet)
         chooseContiNewDialog.choose_dialog.actions[0].on_click = lambda e: self.get_directory_dialog.get_directory_path(dialog_title="新しく作る")
         chooseContiNewDialog.choose_dialog.actions[1].on_click = lambda e: None
+
 
 class chooseWatchVideo:
     chooseDialog = ft.CupertinoActionSheet(

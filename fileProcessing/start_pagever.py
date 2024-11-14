@@ -118,7 +118,7 @@ class startPage:
                         height=50,
                         border_radius=5,
                         ink=True,
-                        on_click=lambda e: print("説明します．"),
+                        on_click=lambda e: print("説明ページへの遷移を検討"),
                     ),
                 ],
                 alignment=ft.MainAxisAlignment.CENTER,
