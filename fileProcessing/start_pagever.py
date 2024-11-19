@@ -2,9 +2,9 @@ import flet as ft
 from datetime import datetime
 import time
 import threading
-from fileLoad import (
-    mkdir,
-    input_material
+from dialogs import(
+    chooseContiNewDialog,
+    chooseWatchVideo
 )
 
 class startPage:
@@ -16,14 +16,8 @@ class startPage:
         page.vertical_alignment = ft.MainAxisAlignment.CENTER
         page.bgcolor = ft.colors.WHITE
 
-        make_directory = mkdir(page)
-        get_directory_dialog = ft.FilePicker(on_result=make_directory.get_directory_path)
-
-        mkdir.mkdir_dlg.actions[0].on_click = make_directory.make_directory
-        mkdir.mkdir_dlg.actions[1].on_click = lambda e: page.close(mkdir.mkdir_dlg)
-
-        pick_material = input_material()
-        pick_material_dialog = ft.FilePicker(on_result=pick_material.pick_files_result)
+        choosecontinew = chooseContiNewDialog(page)
+        choosewatchvideo = chooseWatchVideo(page)
 
         time_text = ft.Text(
             value="",
@@ -48,7 +42,7 @@ class startPage:
 
         img_miru_clickable = ft.GestureDetector(
             content=img_miru,
-            on_tap=lambda e: print("見たな?"),
+            on_tap=lambda e: page.open(choosewatchvideo.bottom_sheet),
             mouse_cursor=ft.MouseCursor.CLICK
         )
 
@@ -61,7 +55,8 @@ class startPage:
 
         img_tsukuru_clickable = ft.GestureDetector(
             content=img_tsukuru,
-            on_tap=lambda e: print("まだ作れませ～ん"),
+            on_tap=lambda e: page.open(choosecontinew.bottom_sheet),
+            disabled=page.web,
             mouse_cursor=ft.MouseCursor.CLICK
         )
 
@@ -73,6 +68,8 @@ class startPage:
                 time.sleep(1)
 
         threading.Thread(target=update_time, daemon=True).start()
+
+        page.overlay.extend([choosecontinew.get_directory_dialog])
 
         page.add(
             ft.Row(
@@ -121,9 +118,11 @@ class startPage:
                         height=50,
                         border_radius=5,
                         ink=True,
-                        on_click=lambda e: print("説明します．"),
+                        on_click=lambda e: print("説明ページへの遷移を検討"),
                     ),
                 ],
                 alignment=ft.MainAxisAlignment.CENTER,
             ),
         )
+
+app = startPage()
