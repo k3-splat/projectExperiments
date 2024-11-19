@@ -1,31 +1,29 @@
 import flet as ft
 from datetime import datetime
-import time
-import threading
-from dialogs import(
-    chooseContiNewDialog,
-    chooseWatchVideo
-)
+import fileLoad as fl
+import dialogs as dl
+import asyncio
 
 class startView:
     def __init__(self, page: ft.Page):
         self.page = page
 
-    def update_time(self):
-        while True:
-            current_time = datetime.now().strftime("%Y/%m/%d         %H:%M:%S")
-            self.time_text.value = current_time
-            self.page.update()
-            time.sleep(1)
+        self.make_directory = fl.mkdir()
+        selectDirectory = ft.FilePicker(on_result=lambda e: self.make_directory.input_directory_path(e, page, self.inputfoldernamedialog.inputFolderNameDialog))
+        self.inputfoldernamedialog = dl.inputFolderNameDialog(
+            lambda e: startView.mkdir_hole(self),
+            lambda e: page.close(self.inputfoldernamedialog.inputFolderNameDialog)
+        )
+        choosecontinewdialog = dl.chooseContiNewDialog(
+            lambda e: page.close(choosecontinewdialog.bottom_sheet),
+            lambda e: selectDirectory.get_directory_path(dialog_title="パスを選択"),
+            lambda e: None
+        )
 
-    def startView(self):
         self.page.title = "スタート"
         self.page.vertical_alignment = ft.MainAxisAlignment.CENTER
 
-        choosecontinew = chooseContiNewDialog(self.page)
-        choosewatchvideo = chooseWatchVideo(self.page)
-
-        self.page.overlay.extend([choosecontinew.get_directory_dialog])
+        self.page.overlay.extend([selectDirectory])
 
         self.time_text = ft.Text(
             value="",
@@ -33,9 +31,9 @@ class startView:
             weight=ft.FontWeight.BOLD,
             color=ft.colors.ORANGE_800
         )
-        threading.Thread(target=self.update_time, daemon=True).start()
+        asyncio.create_task(self.update_time())
 
-        img_title = ft.Image(
+        self.img_title = ft.Image(
             src=f"/titlekamo.png",
             width=760,
             height=100,
@@ -49,9 +47,9 @@ class startView:
             fit=ft.ImageFit.CONTAIN,
         )
 
-        img_miru_clickable = ft.GestureDetector(
+        self.img_miru_clickable = ft.GestureDetector(
             content=img_miru,
-            on_tap=lambda e: self.page.open(choosewatchvideo.bottom_sheet),
+            on_tap=lambda e: None,
             mouse_cursor=ft.MouseCursor.CLICK
         )
 
@@ -62,16 +60,39 @@ class startView:
             fit=ft.ImageFit.CONTAIN,
         )
 
-        img_tsukuru_clickable = ft.GestureDetector(
+        self.img_tsukuru_clickable = ft.GestureDetector(
             content=img_tsukuru,
-            on_tap=lambda e: self.page.open(choosecontinew.bottom_sheet),
+            on_tap=lambda e: self.page.open(choosecontinewdialog.bottom_sheet),
             disabled=self.page.web,
             mouse_cursor=ft.MouseCursor.CLICK
         )
 
+    def mkdir_hole(self):
+        self.make_directory.make_directory(self.inputfoldernamedialog.inputFolderNameDialog.content.value)
+
+        if self.make_directory.make_directory(self.inputfoldernamedialog.inputFolderNameDialog.content.value) == -1:
+            self.inputfoldernamedialog.inputFolderNameDialog.content.label = "This name is already used!"
+            self.inputfoldernamedialog.inputFolderNameDialog.content.border_color = 'RED'
+
+        self.inputfoldernamedialog.inputFolderNameDialog.content.value = ""
+        self.inputfoldernamedialog.inputFolderNameDialog.content.update()
+
+
+    async def update_time(self):
+        while True:
+            try:
+                current_time = datetime.now().strftime("%Y/%m/%d         %H:%M:%S")
+                self.time_text.value = current_time
+                self.page.update()
+                await asyncio.sleep(1)
+            except Exception as e:
+                print(f"Error updating time: {e}")
+                break
+
+    def startView(self):
         return ft.View("/startView", [
             ft.Row(
-                [img_title],
+                [self.img_title],
                 alignment=ft.MainAxisAlignment.CENTER,
             ),
             ft.Row(
@@ -89,7 +110,7 @@ class startView:
             ),
             ft.Row(
                 [
-                    img_miru_clickable,
+                    self.img_miru_clickable,
                     ft.Container(
                         content=ft.Text("絵"),
                         alignment=ft.alignment.center,
@@ -98,7 +119,7 @@ class startView:
                         height=200,
                         border_radius=5,
                     ),
-                    img_tsukuru_clickable,
+                    self.img_tsukuru_clickable,
                 ],
                 alignment=ft.MainAxisAlignment.CENTER,
             ),

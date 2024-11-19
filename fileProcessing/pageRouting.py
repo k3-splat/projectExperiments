@@ -1,8 +1,8 @@
 import flet as ft
-import start_viewVer
+import start
 
-def main(page: ft.Page):
-    startview = start_viewVer.startView(page)
+async def main(page: ft.Page):
+    startview = start.startView(page)
 
     def route_change(handler):
         troute = ft.TemplateRoute(handler.route)
@@ -19,6 +19,9 @@ def main(page: ft.Page):
     # 初期表示
     page.go("/startView")
 
+    # 非同期タスクを開始
+    await startview.update_time()
 
 if __name__ == "__main__":
+    # 非同期関数をターゲットに指定
     ft.app(target=main)
