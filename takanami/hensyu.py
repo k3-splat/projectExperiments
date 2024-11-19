@@ -2,7 +2,9 @@
 #次：テキストと変形、
 #描画できる図形の数に限度あり,まだページ数は押しても意味ないです
 #テスト更新できるか
-
+#再生ボタン追加play
+#各ページの保存があまりできてません。一度playボタンをおすとなぜか保存されます。
+#拡大縮小はまだエラーが出るので、修正中です。
 
 import flet as ft
 from flet import (
@@ -30,6 +32,10 @@ from flet import (
     GestureDetector
 )
 
+#再生ボタンに必要インポート
+import time
+import threading
+
 class AppHeader:
     def __init__(self, page, draw_app):
         self.page = page
@@ -39,7 +45,8 @@ class AppHeader:
         back_button = ElevatedButton(text="back", on_click=self.prev_frame)
         undo_button = ElevatedButton(text="undo")
         display_button = ElevatedButton(text="display")
-
+        play_button = ElevatedButton(text="play,",  on_click=self.play_animation)
+        
         self.page_number_text = Text(f"Page {self.draw_app.current_frame_index + 1}/{len(self.draw_app.frames)}")
 
         self.appbar_items = [
@@ -63,6 +70,7 @@ class AppHeader:
                             undo_button,
                             back_button,
                             next_button,
+                            play_button,  # 再生ボタン
                              self.page_number_text,  # ページ数
                             PopupMenuButton(
                                 items=self.appbar_items
@@ -80,6 +88,9 @@ class AppHeader:
 
     def prev_frame(self, e):
         self.draw_app.prev_frame()
+
+    def play_animation(self, e):
+        self.draw_app.play_animation()
 
 class Sidebar:
     def __init__(self):
@@ -158,6 +169,8 @@ class DrawApp:
     def __init__(self):
         self.frames = [[]]  # フレームを管理するリスト
         self.current_frame_index = 0
+        self.is_playing = False  # 再生中かどうか
+        self.play_thread = None  
         self.points = []
         self.start_x = 0 
         self.start_y = 0
@@ -166,6 +179,8 @@ class DrawApp:
         self.is_circle_mode = False
         self.is_eraser_mode = False
         self.zenksi_mode = False
+        self.is_rotate_mode = False
+        self.is_scale_mode = False
 
     def build(self):
         self.draw_area = Stack([], width=500, height=400)
@@ -202,6 +217,16 @@ class DrawApp:
             on_click=self.eraser
         )
 
+        rotate_button = ElevatedButton(
+            text="回転",
+            on_click=self.rotate_mode
+        )
+
+        scale_button = ElevatedButton(
+            text="縮小", 
+            on_click=self.scale_mode
+        )
+
         #全部消す
         zenkesi_button = ElevatedButton(
             text="消す",
@@ -211,7 +236,7 @@ class DrawApp:
         return Column(
             controls=[
                 Row(
-                    controls=[rectangle_button, free_draw_button, circle_button, eraser_button],
+                    controls=[rectangle_button, free_draw_button, circle_button, eraser_button, rotate_button, scale_button],
                     alignment="center"
                 ),
                 self.gesture_detector
@@ -240,7 +265,30 @@ class DrawApp:
         self.draw_area.controls.extend(self.frames[self.current_frame_index].copy())
         self.draw_area.update()
 
+    #再生するところ
+    def play_animation(self):
+        if self.is_playing:
+            self.is_playing = False
+            return
+
+        self.is_playing = True
+
+
+        def play():
+            while self.is_playing:
+                self.next_frame()
+                time.sleep(0.5)
+
+                if self.current_frame_index == len(self.frames) - 1:
+                    self.is_playing = False 
+
+        self.play_thread = threading.Thread(target=play)
+        self.play_thread.start()
+
+    
     def rectangle(self, e):
+        self.is_rotate_mode = False
+        self.is_scale_mode = False
         self.is_rectangle_mode = True
         self.is_drawing_mode = False
         self.is_circle_mode = False
@@ -248,6 +296,8 @@ class DrawApp:
         self.zenkesi = False
 
     def free(self, e):
+        self.is_rotate_mode = False
+        self.is_scale_mode = False
         self.is_drawing_mode = True
         self.is_rectangle_mode = False
         self.is_circle_mode = False
@@ -255,6 +305,8 @@ class DrawApp:
         self.zenkesi = False
 
     def circle(self, e):
+        self.is_rotate_mode = False
+        self.is_scale_mode = False
         self.is_rectangle_mode = False
         self.is_drawing_mode = False
         self.is_circle_mode = True
@@ -262,6 +314,8 @@ class DrawApp:
         self.zenkesi = False
 
     def eraser(self, e):
+        self.is_rotate_mode = False
+        self.is_scale_mode = False
         self.is_rectangle_mode = False
         self.is_drawing_mode = False
         self.is_circle_mode = False
@@ -269,11 +323,31 @@ class DrawApp:
         self.zenkesi = False
     
     def zenkesi(self, e):
+        self.is_rotate_mode = False
+        self.is_scale_mode = False
         self.is_rectangle_mode = False
         self.is_drawing_mode = False
         self.is_circle_mode = False
         self.is_eraser_mode = False
         self.zenkesi = True
+
+    def rotate_mode(self, e):
+        self.is_rotate_mode = True
+        self.is_scale_mode = False
+        self.is_rectangle_mode = False
+        self.is_drawing_mode = False
+        self.is_circle_mode = False
+        self.is_eraser_mode = False
+        self.zenkesi = False
+
+    def scale_mode(self, e):
+        self.is_rotate_mode = False
+        self.is_scale_mode = True
+        self.is_rectangle_mode = False
+        self.is_drawing_mode = False
+        self.is_circle_mode = False
+        self.is_eraser_mode = False
+        self.zenkesi = False
 
     def on_pan_start(self, e):
         self.start_x = e.local_x
@@ -334,7 +408,14 @@ class DrawApp:
 
         elif zenkesi_mode:
             self.zenkesi(e.local_x, e.local_y)
-        
+
+        elif self.is_rotate_mode:
+            for shape in self.draw_area.controls:
+                shape.rotate = (shape.rotate + 10) % 360
+        elif self.is_scale_mode:
+            for shape in self.draw_area.controls:
+                shape.width *= 0.9
+                shape.height *= 0.9
         self.draw_area.update()
 
     def erase_shape(self, x, y):
