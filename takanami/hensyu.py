@@ -2,7 +2,7 @@
 #次：テキストと変形、
 #描画できる図形の数に限度あり,まだページ数は押しても意味ないです
 #テスト更新できるか
-
+#再生ボタン追加play
 
 import flet as ft
 from flet import (
@@ -30,6 +30,9 @@ from flet import (
     GestureDetector
 )
 
+import time
+import threading
+
 class AppHeader:
     def __init__(self, page, draw_app):
         self.page = page
@@ -39,7 +42,8 @@ class AppHeader:
         back_button = ElevatedButton(text="back", on_click=self.prev_frame)
         undo_button = ElevatedButton(text="undo")
         display_button = ElevatedButton(text="display")
-
+        play_button = ElevatedButton(text="play,",  on_click=self.play_animation)
+        
         self.page_number_text = Text(f"Page {self.draw_app.current_frame_index + 1}/{len(self.draw_app.frames)}")
 
         self.appbar_items = [
@@ -63,6 +67,7 @@ class AppHeader:
                             undo_button,
                             back_button,
                             next_button,
+                            play_button,  # 再生ボタン
                              self.page_number_text,  # ページ数
                             PopupMenuButton(
                                 items=self.appbar_items
@@ -80,6 +85,9 @@ class AppHeader:
 
     def prev_frame(self, e):
         self.draw_app.prev_frame()
+
+    def play_animation(self, e):
+        self.draw_app.play_animation()
 
 class Sidebar:
     def __init__(self):
@@ -158,6 +166,8 @@ class DrawApp:
     def __init__(self):
         self.frames = [[]]  # フレームを管理するリスト
         self.current_frame_index = 0
+        self.is_playing = False  # 再生中かどうか
+        self.play_thread = None  
         self.points = []
         self.start_x = 0 
         self.start_y = 0
@@ -240,6 +250,27 @@ class DrawApp:
         self.draw_area.controls.extend(self.frames[self.current_frame_index].copy())
         self.draw_area.update()
 
+    #再生するところ
+    def play_animation(self):
+        if self.is_playing:
+            self.is_playing = False
+            return
+
+        self.is_playing = True
+
+
+        def play():
+            while self.is_playing:
+                self.next_frame()
+                time.sleep(0.5)
+
+                if self.current_frame_index == len(self.frames) - 1:
+                    self.is_playing = False 
+
+        self.play_thread = threading.Thread(target=play)
+        self.play_thread.start()
+
+    
     def rectangle(self, e):
         self.is_rectangle_mode = True
         self.is_drawing_mode = False
