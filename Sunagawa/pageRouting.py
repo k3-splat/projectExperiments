@@ -1,5 +1,6 @@
 import flet as ft
 import start
+import mainView
 
 async def main(page: ft.Page):
     startview = start.startView(page)
@@ -9,8 +10,8 @@ async def main(page: ft.Page):
         page.views.clear()
         if troute.match("/startView"):
             page.views.append(startview.startView())
-        elif troute.match("/view2"):
-            page.views.append(startview.create_view2())
+        elif troute.match("/MainPage"):
+            page.views.append(mainView.main(page))
         page.update()
 
     # ルート変更時のロジック設定

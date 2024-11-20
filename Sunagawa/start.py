@@ -12,7 +12,7 @@ class startView:
         selectDirectory = ft.FilePicker(on_result=lambda e: self.make_directory.input_directory_path(e, page, self.inputfoldernamedialog.inputFolderNameDialog))
         self.inputfoldernamedialog = dl.inputFolderNameDialog(
             lambda e: startView.mkdir_hole(self),
-            lambda e: page.close(self.inputfoldernamedialog.inputFolderNameDialog)
+            lambda e: startView.dialogCloseAndResetDialog(self, self.inputfoldernamedialog.inputFolderNameDialog)
         )
         choosecontinewdialog = dl.chooseContiNewDialog(
             lambda e: page.close(choosecontinewdialog.bottom_sheet),
@@ -68,15 +68,26 @@ class startView:
         )
 
     def mkdir_hole(self):
-        self.make_directory.make_directory(self.inputfoldernamedialog.inputFolderNameDialog.content.value)
+        successOrNot = self.make_directory.make_directory(self.inputfoldernamedialog.inputFolderNameDialog.content.value)
 
-        if self.make_directory.make_directory(self.inputfoldernamedialog.inputFolderNameDialog.content.value) == -1:
+        if successOrNot == -1:
             self.inputfoldernamedialog.inputFolderNameDialog.content.label = "This name is already used!"
             self.inputfoldernamedialog.inputFolderNameDialog.content.border_color = 'RED'
+        elif successOrNot == -2:
+            self.inputfoldernamedialog.inputFolderNameDialog.content.label = "Making directory is failure. Please try it again."
+            self.inputfoldernamedialog.inputFolderNameDialog.content.border_color = 'RED'
+        else:
+            self.inputfoldernamedialog.inputFolderNameDialog.content.label = ""
+            self.inputfoldernamedialog.inputFolderNameDialog.content.border_color = ''
+            self.inputfoldernamedialog.inputFolderNameDialog.content.value = ""
+            self.inputfoldernamedialog.inputFolderNameDialog.content.update()
 
+    def dialogCloseAndResetDialog(self, dialog):
+        self.page.close(dialog)
+        self.inputfoldernamedialog.inputFolderNameDialog.content.label = ""
+        self.inputfoldernamedialog.inputFolderNameDialog.content.border_color = ''
         self.inputfoldernamedialog.inputFolderNameDialog.content.value = ""
         self.inputfoldernamedialog.inputFolderNameDialog.content.update()
-
 
     async def update_time(self):
         while True:
@@ -133,7 +144,7 @@ class startView:
                         height=50,
                         border_radius=5,
                         ink=True,
-                        on_click=lambda e: self.page.go("/view2"),
+                        on_click=lambda e: self.page.go("/MainPage"),
                     ),
                 ],
                 alignment=ft.MainAxisAlignment.CENTER,

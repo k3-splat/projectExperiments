@@ -23,26 +23,21 @@ class mkdir:
         page.open(dialog)
 
     def make_directory(self, folder_name: str):
-        # 指定されたフォルダ名でディレクトリを作成
         try:
-            # パスを安全に結合
             new_directory = os.path.join(self.selected_directory, folder_name)
 
-            # ディレクトリが既に存在する場合はスキップまたは例外
             if os.path.exists(new_directory):
-                raise FileExistsError(f"The directory '{new_directory}' already exists.")
+                raise FileExistsError()
 
-            # ディレクトリ作成
             os.mkdir(new_directory)
 
-            # 作成済みディレクトリリストに追加
             self.directory_paths.append(new_directory)
 
-            print(f"Directory created: {new_directory}")
         except FileExistsError:
             return -1
-        except Exception as e:
-            print(f"Error creating directory: {e}")
+        
+        except Exception:
+            return -2
 
 
 class input_material:

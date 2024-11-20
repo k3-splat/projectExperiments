@@ -15,16 +15,17 @@ from flet import(
     NavigationRail,
     NavigationRailDestination,
     NavigationRailLabelType,
+    Page,
     alignment,
     border_radius,
+    FloatingActionButton,
     UserControl,
     CrossAxisAlignment,
 )
 
 # make header
-class AppHeader(ft.Column):
-    def __init__(self, file, edit, tool, display, page):
-        super().__init__()
+class appHeader():
+    def __init__(self, page: Page):
         self.page = page
 
         # define some button
@@ -66,13 +67,9 @@ class AppHeader(ft.Column):
             ],
         )
 
-    def build(self):
-        return self.page.appbar
 
-# make sidebar
-class Sidebar(UserControl):
+class Sidebar():
     def __init__(self):
-        super().__init__()
         self.nav_rail_visible = True
 
         # make some button
@@ -139,24 +136,17 @@ class Sidebar(UserControl):
         self.nav_rail.visible = not self.nav_rail.visible
         self.toggle_nav_rail_button.selected = not self.toggle_nav_rail_button.selected
         self.toggle_nav_rail_button.tooltip = "Open Side Bar" if self.toggle_nav_rail_button.selected else "Collapse Side Bar"
-        self.view.update()
-        self.page.update()
+
 
 def main(page: ft.Page):
     page.title = "Video Maker"
     page.padding = 10
-    my_text = Text("Frame Preview Area")
-    AppHeader("file", "edit", "tool", "display", page)
-    sidebar = Sidebar()
 
-    layout = Row(
-        controls = [sidebar, my_text],
-        tight = False,
-        expand = True,
-        vertical_alignment = "start",
-            )
+    appheader = appHeader(page)
 
-    page.add(layout)
-    page.update()
+    return ft.View("/MainPage", [
+        appheader.page.appbar
+    ])
 
-ft.app(target = main)
+if __name__=="__main__":
+    ft.app(target=main)
