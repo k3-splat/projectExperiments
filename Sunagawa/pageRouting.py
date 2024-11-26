@@ -1,16 +1,17 @@
 import flet as ft
-import start_viewVer
+import start
+import mainView
 
-def main(page: ft.Page):
-    startview = start_viewVer.startView(page)
+async def main(page: ft.Page):
+    startview = start.startView(page)
 
     def route_change(handler):
         troute = ft.TemplateRoute(handler.route)
         page.views.clear()
         if troute.match("/startView"):
             page.views.append(startview.startView())
-        elif troute.match("/view2"):
-            page.views.append(startview.create_view2())
+        elif troute.match("/MainPage"):
+            page.views.append(mainView.main(page))
         page.update()
 
     # ルート変更時のロジック設定
@@ -19,6 +20,9 @@ def main(page: ft.Page):
     # 初期表示
     page.go("/startView")
 
+    # 非同期タスクを開始
+    await startview.update_time()
 
 if __name__ == "__main__":
+    # 非同期関数をターゲットに指定
     ft.app(target=main)
