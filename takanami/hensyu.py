@@ -5,6 +5,7 @@
 #再生ボタン追加play
 #各ページの保存があまりできてません。一度playボタンをおすとなぜか保存されます。
 #拡大縮小はまだエラーが出るので、修正中です。
+#再生速度変更できるようにしました。
 
 import flet as ft
 from flet import (
@@ -29,7 +30,8 @@ from flet import (
     Column,
     CrossAxisAlignment,
     Image,
-    GestureDetector
+    GestureDetector,
+    Slider
 )
 
 #再生ボタンに必要インポート
@@ -182,6 +184,8 @@ class DrawApp:
         self.is_rotate_mode = False
         self.is_scale_mode = False
 
+        self.play_speed = 0.5
+
     def build(self):
         self.draw_area = Stack([], width=500, height=400)
         self.gesture_detector = GestureDetector(
@@ -196,6 +200,18 @@ class DrawApp:
             ),
         )
         
+        self.play_speed_slider = Slider(
+            min=0.1,
+            max=2.0,
+            value=self.play_speed,
+            divisions=19,
+            label=f"Speed: {self.play_speed:.1f} sec/frame",
+            on_change=self.change_play_speed,
+        )
+
+        speed_label = Text(f"Speed: {self.play_speed:.1f} sec/frame")
+
+
         #ボタン
         rectangle_button = ElevatedButton(
             text="四角形",
@@ -239,6 +255,9 @@ class DrawApp:
                     controls=[rectangle_button, free_draw_button, circle_button, eraser_button, rotate_button, scale_button],
                     alignment="center"
                 ),
+                speed_label,
+                self.play_speed_slider,
+
                 self.gesture_detector
             ]
         )
@@ -277,7 +296,7 @@ class DrawApp:
         def play():
             while self.is_playing:
                 self.next_frame()
-                time.sleep(0.5)
+                time.sleep(self.play_speed)
 
                 if self.current_frame_index == len(self.frames) - 1:
                     self.is_playing = False 
@@ -285,6 +304,10 @@ class DrawApp:
         self.play_thread = threading.Thread(target=play)
         self.play_thread.start()
 
+    def change_play_speed(self, e):
+        self.play_speed = e.control.value  # スライダーで選ばれた値をplay_speedに反映
+        self.play_speed_slider.label = f"Speed: {self.play_speed:.1f} sec/frame"  # ラベルを更新
+        self.play_speed_slider.update()
     
     def rectangle(self, e):
         self.is_rotate_mode = False
@@ -428,6 +451,7 @@ class DrawApp:
     
     def zenkesi(self, x, y):
         self.draw_area.controls.clear() 
+        self.draw_area.update()
 
 
     def on_pan_end(self, e):
