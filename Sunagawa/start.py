@@ -2,6 +2,7 @@ import flet as ft
 from datetime import datetime
 import fileLoad as fl
 import dialogs as dl
+import pathDatabase as pd
 import asyncio
 
 class startView:
@@ -19,6 +20,11 @@ class startView:
             lambda e: selectDirectory.get_directory_path(dialog_title="パスを選択"),
             lambda e: None
         )
+        choosewatchvideo = dl.chooseWatchVideo(
+            lambda e: page.close(choosewatchvideo.bottom_sheet),
+            lambda e: page.go("/videoPlay"),
+            lambda e: print("投稿ページへ遷移")
+        )
 
         self.page.title = "スタート"
         self.page.vertical_alignment = ft.MainAxisAlignment.CENTER
@@ -34,14 +40,14 @@ class startView:
         asyncio.create_task(self.update_time())
 
         self.img_title = ft.Image(
-            src=f"/titlekamo.png",
+            src="/titlekamo.png",
             width=760,
             height=100,
             fit=ft.ImageFit.CONTAIN,
         )
 
         img_miru = ft.Image(
-            src=f"/mirubotan.png",
+            src="/mirubotan.png",
             width=250,
             height=200,
             fit=ft.ImageFit.CONTAIN,
@@ -49,12 +55,12 @@ class startView:
 
         self.img_miru_clickable = ft.GestureDetector(
             content=img_miru,
-            on_tap=lambda e: None,
+            on_tap=lambda e: page.open(choosewatchvideo.bottom_sheet),
             mouse_cursor=ft.MouseCursor.CLICK
         )
 
         img_tsukuru = ft.Image(
-            src=f"/tsukurubotan.png",
+            src="/tsukurubotan.png",
             width=250,
             height=200,
             fit=ft.ImageFit.CONTAIN,
@@ -68,12 +74,12 @@ class startView:
         )
 
     def mkdir_hole(self):
-        successOrNot = self.make_directory.make_directory(self.inputfoldernamedialog.inputFolderNameDialog.content.value)
+        filePath = self.make_directory.make_directory(self.inputfoldernamedialog.inputFolderNameDialog.content.value)
 
-        if successOrNot == -1:
+        if filePath == -1:
             self.inputfoldernamedialog.inputFolderNameDialog.content.label = "This name is already used!"
             self.inputfoldernamedialog.inputFolderNameDialog.content.border_color = 'RED'
-        elif successOrNot == -2:
+        elif filePath == -2:
             self.inputfoldernamedialog.inputFolderNameDialog.content.label = "Making directory is failure. Please try it again."
             self.inputfoldernamedialog.inputFolderNameDialog.content.border_color = 'RED'
         else:
@@ -81,6 +87,9 @@ class startView:
             self.inputfoldernamedialog.inputFolderNameDialog.content.border_color = ''
             self.inputfoldernamedialog.inputFolderNameDialog.content.value = ""
             self.inputfoldernamedialog.inputFolderNameDialog.content.update()
+
+            _ = pd.pathDatabase(filePath)
+            self.page.go("/MainPage")
 
     def dialogCloseAndResetDialog(self, dialog):
         self.page.close(dialog)
@@ -144,7 +153,7 @@ class startView:
                         height=50,
                         border_radius=5,
                         ink=True,
-                        on_click=lambda e: self.page.go("/MainPage"),
+                        on_click=lambda e: None,
                     ),
                 ],
                 alignment=ft.MainAxisAlignment.CENTER,

@@ -24,6 +24,7 @@ class chooseContiNewDialog:
         actions=[
             ft.CupertinoActionSheetAction(content=ft.Text("新しく作る")),
             ft.CupertinoActionSheetAction(content=ft.Text("続きを作る")),
+            ft.CupertinoActionSheetAction(content=ft.Text("プロジェクトを削除する", color=ft.colors.RED))
         ],
     )
     bottom_sheet = ft.CupertinoBottomSheet(chooseContiNewDialog)
@@ -32,6 +33,7 @@ class chooseContiNewDialog:
         chooseContiNewDialog.chooseContiNewDialog.cancel.on_click = fun1
         chooseContiNewDialog.chooseContiNewDialog.actions[0].on_click = fun2
         chooseContiNewDialog.chooseContiNewDialog.actions[1].on_click = fun3
+        chooseContiNewDialog.chooseContiNewDialog.actions[2].on_click = lambda e: None
 
 
 class chooseWatchVideo:
@@ -49,7 +51,7 @@ class chooseWatchVideo:
     def __init__(self, fun1, fun2, fun3):
         chooseWatchVideo.chooseDialog.cancel.on_click = fun1
         chooseWatchVideo.chooseDialog.actions[0].on_click = fun2
-        chooseWatchVideo.chooseDialog.actions[0].on_click = fun3
+        chooseWatchVideo.chooseDialog.actions[1].on_click = fun3
 
 
 class emptyUploadList:
