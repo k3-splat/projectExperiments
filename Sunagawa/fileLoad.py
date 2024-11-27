@@ -11,8 +11,6 @@ class mkdir:
     def __init__(self):
         # 選択されたディレクトリのパス
         self.selected_directory = ""
-        # 作成されたディレクトリのリスト
-        self.directory_paths = []
 
     def input_directory_path(self, e: FilePickerResultEvent, page: ft.Page, dialog):
         # FilePickerからの選択結果を受け取り、パスを保存
@@ -31,7 +29,7 @@ class mkdir:
 
             os.mkdir(new_directory)
 
-            self.directory_paths.append(new_directory)
+            return new_directory
 
         except FileExistsError:
             return -1

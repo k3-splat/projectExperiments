@@ -1,9 +1,11 @@
 import flet as ft
 import start
 import mainView
+import videoPlayView
 
 async def main(page: ft.Page):
     startview = start.startView(page)
+    videoview = videoPlayView.videoPlay()
 
     def route_change(handler):
         troute = ft.TemplateRoute(handler.route)
@@ -12,6 +14,8 @@ async def main(page: ft.Page):
             page.views.append(startview.startView())
         elif troute.match("/MainPage"):
             page.views.append(mainView.main(page))
+        elif troute.match("/videoPlay"):
+            page.views.append(videoview.makeView())
         page.update()
 
     # ルート変更時のロジック設定
@@ -25,4 +29,4 @@ async def main(page: ft.Page):
 
 if __name__ == "__main__":
     # 非同期関数をターゲットに指定
-    ft.app(target=main)
+    ft.app(target=main, assets_dir="assets")
