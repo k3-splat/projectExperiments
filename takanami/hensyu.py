@@ -8,7 +8,8 @@
 #11/27 進捗
 #再生速度変更できるようにしました。
 #拡大縮小、回転はエラーが出ないようになりましたが、思ってたのとは違う動きになります。
-#色変更を追加しようとしましたが、うまくいきませんでした。
+#色変更ができるようになりました。細かい色変更も実装したいです。
+
 
 import flet as ft
 from flet import (
@@ -34,7 +35,9 @@ from flet import (
     CrossAxisAlignment,
     Image,
     GestureDetector,
-    Slider
+    Slider,
+    Dropdown,
+    dropdown
 )
 
 #再生ボタンに必要インポート
@@ -169,7 +172,6 @@ class Sidebar:
 #ここから上がUIの部分
 
 
-
 class DrawApp:
     def __init__(self):
         self.frames = [[]]  # フレームを管理するリスト
@@ -186,6 +188,8 @@ class DrawApp:
         self.zenksi_mode = False
         self.is_rotate_mode = False
         self.is_scale_mode = False
+
+        self.selected_color = colors.BLACK
 
         self.rotate = 0
         self.play_speed = 0.5
@@ -215,6 +219,19 @@ class DrawApp:
 
         speed_label = Text(f"Speed: {self.play_speed:.1f} sec/frame")
 
+        #色を変える
+        color_picker = Dropdown(
+            label="色を選択",
+            options=[
+                dropdown.Option(colors.RED, "赤"),
+                dropdown.Option(colors.GREEN, "緑"),
+                dropdown.Option(colors.BLUE, "青"),
+                dropdown.Option(colors.YELLOW, "黄"),
+                dropdown.Option(colors.BLACK, "黒"),
+            ],
+            value=self.selected_color,
+            on_change=self.change_color,
+        )
 
         #ボタン
         rectangle_button = ElevatedButton(
@@ -256,7 +273,7 @@ class DrawApp:
         return Column(
             controls=[
                 Row(
-                    controls=[rectangle_button, free_draw_button, circle_button, eraser_button, rotate_button, scale_button],
+                    controls=[rectangle_button, free_draw_button, circle_button, eraser_button, rotate_button, scale_button, zenkesi_button, color_picker],
                     alignment="center"
                 ),
                 speed_label,
@@ -265,6 +282,9 @@ class DrawApp:
                 self.gesture_detector
             ]
         )
+
+    def change_color(self, e):
+        self.selected_color = e.control.value
 
     def next_frame(self):
         # 現在のフレームを保存
@@ -308,9 +328,10 @@ class DrawApp:
         self.play_thread = threading.Thread(target=play)
         self.play_thread.start()
 
+    #スピードを変える
     def change_play_speed(self, e):
-        self.play_speed = e.control.value  # スライダーで選ばれた値をplay_speedに反映
-        self.play_speed_slider.label = f"Speed: {self.play_speed:.1f} sec/frame"  # ラベルを更新
+        self.play_speed = e.control.value 
+        self.play_speed_slider.label = f"Speed: {self.play_speed:.1f} sec/frame" 
         self.play_speed_slider.update()
     
     def rectangle(self, e):
@@ -395,7 +416,7 @@ class DrawApp:
                 top=top,
                 width=width,
                 height=height,
-                bgcolor=colors.BLACK,
+                bgcolor=self.selected_color,
                 border_radius=0,
             )
             self.draw_area.controls.append(rectangle)
@@ -407,7 +428,7 @@ class DrawApp:
                 top=self.start_y,
                 width=2,  
                 height=2, 
-                bgcolor=colors.BLACK,
+                bgcolor=self.selected_color,
                 border_radius=1,
             )
             self.draw_area.controls.append(line)
@@ -424,7 +445,7 @@ class DrawApp:
                 top=self.start_y - current_radius,
                 width=current_radius * 2,
                 height=current_radius * 2,
-                bgcolor=colors.BLACK,
+                bgcolor=self.selected_color,
                 border_radius=current_radius,
             )
             self.draw_area.controls.append(circle)
