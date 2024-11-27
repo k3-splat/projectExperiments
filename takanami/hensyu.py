@@ -5,7 +5,10 @@
 #再生ボタン追加play
 #各ページの保存があまりできてません。一度playボタンをおすとなぜか保存されます。
 #拡大縮小はまだエラーが出るので、修正中です。
+#11/27 進捗
 #再生速度変更できるようにしました。
+#拡大縮小、回転はエラーが出ないようになりましたが、思ってたのとは違う動きになります。
+#色変更を追加しようとしましたが、うまくいきませんでした。
 
 import flet as ft
 from flet import (
@@ -184,6 +187,7 @@ class DrawApp:
         self.is_rotate_mode = False
         self.is_scale_mode = False
 
+        self.rotate = 0
         self.play_speed = 0.5
 
     def build(self):
@@ -429,17 +433,24 @@ class DrawApp:
             #消しゴムのところ
             self.erase_shape(e.local_x, e.local_y)
 
-        elif zenkesi_mode:
-            self.zenkesi(e.local_x, e.local_y)
+        elif self.zenkesi:
+            self.clear_all()
 
         elif self.is_rotate_mode:
             for shape in self.draw_area.controls:
-                shape.rotate = (shape.rotate + 10) % 360
+                shape.rotate = (shape.rotate or 0 + 10) % 360
+                shape.update()
         elif self.is_scale_mode:
             for shape in self.draw_area.controls:
                 shape.width *= 0.9
                 shape.height *= 0.9
         self.draw_area.update()
+
+    def clear_all(self):
+    #全ての図形を消去
+        self.draw_area.controls.clear()
+        self.draw_area.update()
+
 
     def erase_shape(self, x, y):
         #消しゴムモード
