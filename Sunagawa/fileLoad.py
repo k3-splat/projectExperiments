@@ -36,6 +36,14 @@ class mkdir:
         
         except Exception:
             return -2
+        
+
+class loadFolder:
+    def __init__(self):
+        pass
+
+    def loadFolder(self, tag):
+        return tag
 
 
 class input_material:

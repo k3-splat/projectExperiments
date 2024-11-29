@@ -1,36 +1,37 @@
 import csv
 import os
+import shutil
 from datetime import datetime
 
 class pathDatabase:
-    def __init__(self, file_path):
-        tag = os.path.basename(file_path)
-        title = tag + "_Animation"
-        pathDatabase.add_folder(self, "folderPaths.csv", file_path, title, tag)
+    def __init__(self):
+        self.csvFilePath = "folderPaths.csv"
 
-    def initialize_csv(self, file_name):
-        if not os.path.exists(file_name):  # ファイルが存在しない場合のみ作成
-            with open(file_name, mode='w', newline='', encoding='utf-8') as file:
+    def initialize_csv(self):
+        if not os.path.exists(self.csvFilePath):  # ファイルが存在しない場合のみ作成
+            with open(self.csvFilePath, mode='w', newline='', encoding='utf-8') as file:
                 writer = csv.writer(file)
                 writer.writerow(["ID", "FilePath", "Title", "Tag", "CreatedAt"])
-            print(f"{file_name} initialized.")
+            print(f"{self.csvFilePath} initialized.")
 
-    def add_folder(self, file_name, file_path, title, tag):
-        with open(file_name, mode='a', newline='', encoding='utf-8') as file:
+    def add_folder(self, file_path):
+        with open(self.csvFilePath, mode='a', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
-            id = sum(1 for _ in open(file_name, encoding='utf-8'))  # ヘッダーを含む行数
+            id = sum(1 for _ in open(self.csvFilePath, encoding='utf-8'))  # ヘッダーを含む行数
+            tag = os.path.basename(file_path)
+            title = tag + "_Animation"
             created_at = datetime.now().strftime('%Y-%m-%d')
             writer.writerow([id, file_path, title, tag, created_at])
         print(f"Folder added: {file_path}")
 
-    def remove_folder(self, file_name, tag):
-        if not os.path.exists(file_name):
-            print(f"{file_name} does not exist.")
+    def remove_folder(self, tag):
+        if not os.path.exists(self.csvFilePath):
+            print(f"{self.csvFilePath} does not exist.")
             return
 
-        temp_file = file_name + ".tmp"
-        with open(file_name, mode='r', newline='', encoding='utf-8') as infile, \
-             open(temp_file, mode='w', newline='', encoding='utf-8') as outfile:
+        temp_file = self.csvFilePath + ".tmp"
+        with open(self.csvFilePath, mode='r', newline='', encoding='utf-8') as infile, \
+            open(temp_file, mode='w', newline='', encoding='utf-8') as outfile:
             reader = csv.DictReader(infile)
             fieldnames = reader.fieldnames
             writer = csv.DictWriter(outfile, fieldnames=fieldnames)
@@ -40,21 +41,32 @@ class pathDatabase:
             for row in reader:
                 if row["Tag"] == tag:
                     deleted = True
-                    print(f"Deleted folder: {row['FilePath']} with tag {tag}")
+                    folder_path = row["FilePath"]
+                    # フォルダ削除の処理
+                    if os.path.exists(folder_path):
+                        try:
+                            shutil.rmtree(folder_path)  # フォルダを削除
+                            print(f"Deleted folder on disk: {folder_path}")
+                        except Exception as e:
+                            print(f"Failed to delete folder {folder_path}: {e}")
+                    else:
+                        print(f"Folder does not exist: {folder_path}")
+
+                    print(f"Deleted entry from CSV with tag {tag}")
                 else:
                     writer.writerow(row)
 
-        os.replace(temp_file, file_name)
+        os.replace(temp_file, self.csvFilePath)
         if not deleted:
             print(f"No entry found with tag {tag}")
 
-    def get_nth_entry(self, file_name, n):
+    def get_nth_entry(self, n):
         """n番目に登録されたファイルのパス、タグ、日時を返す関数。"""
-        if not os.path.exists(file_name):
-            print(f"{file_name} does not exist.")
+        if not os.path.exists(self.csvFilePath):
+            print(f"{self.csvFilePath} does not exist.")
             return -1
 
-        with open(file_name, mode='r', newline='', encoding='utf-8') as file:
+        with open(self.csvFilePath, mode='r', newline='', encoding='utf-8') as file:
             reader = csv.DictReader(file)
             entries = list(reader)
             if 0 < n <= len(entries):  # nが有効な範囲内であることを確認
@@ -68,17 +80,17 @@ class pathDatabase:
                 print(f"Invalid entry number: {n}")
                 return -2
 
-    def read_videos(self, file_name):
+    def read_videos(self):
         videos = []
-        with open(file_name, mode='r', newline='', encoding='utf-8') as file:
+        with open(self.csvFilePath, mode='r', newline='', encoding='utf-8') as file:
             reader = csv.DictReader(file)
             for row in reader:
                 videos.append(row)
         return videos
 
-    def search_videos(self, file_name, tag):
+    def search_videos(self, tag):
         results = []
-        with open(file_name, mode='r', newline='', encoding='utf-8') as file:
+        with open(self.csvFilePath, mode='r', newline='', encoding='utf-8') as file:
             reader = csv.DictReader(file)
             for row in reader:
                 if row["Tag"] == tag:
@@ -95,10 +107,10 @@ class pathDatabase:
                     mp4_files.append(full_path)
         return mp4_files
 
-    def search_registered_videos(self, file_name, tag):
+    def search_registered_videos(self, tag):
         """登録されたパスの配下にある動画を検索する関数。"""
         results = []
-        videos = pathDatabase.search_videos(self, file_name, tag)
+        videos = pathDatabase.search_videos(self, tag)
         for video in videos:
             folder_path = video["FilePath"]
             if os.path.exists(folder_path):  # フォルダが存在する場合のみ探索
@@ -107,7 +119,7 @@ class pathDatabase:
         return results
 
 if __name__ == "__main__":
-    db = pathDatabase("C:/Users/gunda/projectExperiments/Sunagawa/test")
-    entry = db.get_nth_entry("C:/Users/gunda/projectExperiments/Sunagawa/folderPaths.csv", 1)
+    db = pathDatabase()
+    entry = db.get_nth_entry(3)
     if entry:  # エントリが存在する場合のみ出力
         print(f"FilePath: {entry['FilePath']}, Tag: {entry['Tag']}, CreatedAt: {entry['CreatedAt']}")

@@ -10,20 +10,25 @@ class startView:
         self.page = page
 
         self.make_directory = fl.mkdir()
-        selectDirectory = ft.FilePicker(on_result=lambda e: self.make_directory.input_directory_path(e, page, self.inputfoldernamedialog.inputFolderNameDialog))
+        selectDirectory = ft.FilePicker(on_result=lambda e: self.make_directory.input_directory_path(e, self.page, self.inputfoldernamedialog.inputFolderNameDialog))
         self.inputfoldernamedialog = dl.inputFolderNameDialog(
-            lambda e: startView.mkdir_hole(self),
-            lambda e: startView.dialogCloseAndResetDialog(self, self.inputfoldernamedialog.inputFolderNameDialog)
+            lambda e: self.mkdir_hole(),
+            lambda e: self.dialogCloseAndResetDialog(self.inputfoldernamedialog.inputFolderNameDialog)
         )
         choosecontinewdialog = dl.chooseContiNewDialog(
-            lambda e: page.close(choosecontinewdialog.bottom_sheet),
+            lambda e: self.page.close(choosecontinewdialog.bottom_sheet),
             lambda e: selectDirectory.get_directory_path(dialog_title="パスを選択"),
-            lambda e: None
+            lambda e: self.page.go("/projectOpenView")
         )
         choosewatchvideo = dl.chooseWatchVideo(
-            lambda e: page.close(choosewatchvideo.bottom_sheet),
-            lambda e: page.go("/videoPlay"),
+            lambda e: self.page.close(choosewatchvideo.bottom_sheet),
+            lambda e: self.page.go("/videoPlayView"),
             lambda e: print("投稿ページへ遷移")
+        )
+        self.choosemanagedialog = dl.manageFolders(
+            lambda e: self.page.close(self.choosemanagedialog.bottom_sheet),
+            lambda e: self.page.go("/removeView"),
+            lambda e: print("")
         )
 
         self.page.title = "スタート"
@@ -88,15 +93,9 @@ class startView:
             self.inputfoldernamedialog.inputFolderNameDialog.content.value = ""
             self.inputfoldernamedialog.inputFolderNameDialog.content.update()
 
-            _ = pd.pathDatabase(filePath)
-            self.page.go("/MainPage")
-
-    def dialogCloseAndResetDialog(self, dialog):
-        self.page.close(dialog)
-        self.inputfoldernamedialog.inputFolderNameDialog.content.label = ""
-        self.inputfoldernamedialog.inputFolderNameDialog.content.border_color = ''
-        self.inputfoldernamedialog.inputFolderNameDialog.content.value = ""
-        self.inputfoldernamedialog.inputFolderNameDialog.content.update()
+            db = pd.pathDatabase()
+            db.add_folder(filePath)
+            self.page.go("/mainView")
 
     async def update_time(self):
         while True:
@@ -110,6 +109,7 @@ class startView:
                 break
 
     def startView(self):
+        self.page.title = "スタート"
         return ft.View("/startView", [
             ft.Row(
                 [self.img_title],
@@ -138,6 +138,8 @@ class startView:
                         width=200,
                         height=200,
                         border_radius=5,
+                        ink=True,
+                        on_click=lambda e: self.page.open(self.choosemanagedialog.bottom_sheet)
                     ),
                     self.img_tsukuru_clickable,
                 ],
@@ -153,36 +155,9 @@ class startView:
                         height=50,
                         border_radius=5,
                         ink=True,
-                        on_click=lambda e: None,
+                        on_click=lambda e: self.page.go("/mainView"),
                     ),
                 ],
                 alignment=ft.MainAxisAlignment.CENTER,
             ),
-        ], bgcolor="WHITE")
-
-    
-    def create_view2(self):
-        self.page.title = "view2"
-
-        return ft.View("/view2", [
-            ft.AppBar(title=ft.Text("view2"),
-                      bgcolor=ft.colors.RED),
-            ft.TextField(value="view2"),
-            ft.ElevatedButton(
-                "Go to view1", on_click=lambda _: self.page.go("/startView")),
-            ft.Row(
-                [
-                    ft.Container(
-                        content=ft.Text("絵"),
-                        margin=10,
-                        padding=10,
-                        alignment=ft.alignment.center,
-                        bgcolor=ft.colors.BLACK,
-                        width=200,
-                        height=200,
-                        border_radius=5,
-                    ),
-                ],
-                alignment=ft.MainAxisAlignment.CENTER,
-            ),
-        ])
+        ], bgcolor="WHITE", vertical_alignment=ft.MainAxisAlignment.CENTER)
