@@ -22,6 +22,7 @@ from flet import(
     UserControl,
     CrossAxisAlignment,
 )
+from chooseProjectView import projectList
 
 # make header
 class appHeader:
@@ -44,7 +45,6 @@ class appHeader:
         self.appbar = AppBar(
             leading = IconButton(icon=ft.icons.ARROW_BACK, on_click=lambda e: self.page.go("/startView"), tooltip="スタートへ戻る"),
             leading_width = 60,
-            title = Text(value = "Project name", size = 24, text_align = "center"),
             center_title = False,
             toolbar_height = 50,
             bgcolor = colors.SURFACE_VARIANT,
@@ -148,6 +148,9 @@ class mainView:
     def makeView(self):
         self.page.title = "Video Maker"
         self.page.padding = 10
+
+        self.constract_projectList = projectList(self.page)
+        self.appheader.appbar.title = Text(value = self.constract_projectList.returnName(), size = 24, text_align = "center")
 
         return ft.View("/mainView", [
             self.appheader.appbar,

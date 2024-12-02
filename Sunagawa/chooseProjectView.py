@@ -1,12 +1,61 @@
 import flet as ft
 from pathDatabase import pathDatabase
-from projectRemoveView import removeList
 from os import path
 
 class projectList:
+    projectName = "hogehoge"
+
     def __init__(self, page: ft.Page):
         self.page = page
-        self.constractRemove = removeList(self.page)
+        self.refresh_data()
+
+    def refresh_data(self):
+        db = pathDatabase()
+        n = 1
+        self.filerow = []
+        self.checkboxes = []
+        while True:
+            pathInfo = db.get_nth_entry(n)
+            if pathInfo == -1:
+                print("ファイル読み込みエラーです")
+                break
+            elif pathInfo == -2:
+                break
+            else:
+                if path.exists(pathInfo['FilePath']):
+                    checkbox = ft.Checkbox(label=f"{pathInfo['Tag']}", on_change=self.checkbox_changed)
+                    self.checkboxes.append(checkbox)
+                    self.filerow.append(ft.DataRow(
+                        cells=[
+                            ft.DataCell(checkbox),
+                            ft.DataCell(ft.Text(f"{pathInfo['FilePath']}")), 
+                            ft.DataCell(ft.Text(f"{pathInfo['CreatedAt']}"))
+                        ]
+                    ))
+                else:
+                    db.remove_folder(pathInfo['Tag'])
+
+                n += 1
+
+    def checkbox_changed(self, e):
+        for checkbox in self.checkboxes:
+            if checkbox != e.control:
+                checkbox.value = False
+
+        self.page.update()
+
+    def returnName(self):
+        return projectList.projectName
+    
+    def openProject(self):
+        for checkbox in self.checkboxes:
+            if checkbox.value:
+                projectList.projectName = f"{checkbox.label}"
+                print(projectList.projectName)
+                break
+
+        self.page.update()
+        self.page.go("/mainView")
 
     def makeView(self):
         self.page.title = "プロジェクトを開く"
@@ -22,7 +71,7 @@ class projectList:
                 ft.ElevatedButton(
                     icon=ft.icons.FILE_OPEN, 
                     text="開く",
-                    on_click=lambda e: self.page.go("/mainView")
+                    on_click=lambda e: self.openProject()
                 )
             ]
         )
@@ -32,7 +81,7 @@ class projectList:
             ft.DataColumn(ft.Text("作成日時"))
         ]
 
-        if not self.constractRemove.filerow:
+        if not self.filerow:
             return ft.View("/projectOpenView", [
                 appbar,
                 ft.DataTable(
@@ -45,6 +94,6 @@ class projectList:
                 appbar,
                 ft.DataTable(
                     columns=datalabel,
-                    rows=self.constractRemove.filerow
+                    rows=self.filerow
                 )
             ], horizontal_alignment=ft.CrossAxisAlignment.CENTER)
