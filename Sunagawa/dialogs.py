@@ -60,7 +60,7 @@ class manageFolders:
             cancel=ft.CupertinoActionSheetAction(content=ft.Text("キャンセル")),
             actions=[
                 ft.CupertinoActionSheetAction(content=ft.Text("プロジェクトを削除する")),
-                ft.CupertinoActionSheetAction(content=ft.Text("作った動画を削除する")),
+                ft.CupertinoActionSheetAction(content=ft.Text("作った動画を管理する")),
             ],
         )
         self.bottom_sheet = ft.CupertinoBottomSheet(chooseDialog)

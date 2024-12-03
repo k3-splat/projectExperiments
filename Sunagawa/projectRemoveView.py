@@ -9,31 +9,20 @@ class removeList:
 
     def refresh_data(self):
         db = pathDatabase()
-        n = 1
+        self.folders = db.read_data()
         self.filerow = []
-        self.checkList = []
-        while True:
-            pathInfo = db.get_nth_entry(n)
-            if pathInfo == -1:
-                print("ファイル読み込みエラーです")
-                break
-            elif pathInfo == -2:
-                break
-            else:
-                if path.exists(pathInfo['FilePath']):
-                    checkbox = ft.Checkbox(label=f"{pathInfo['Tag']}")
-                    self.checkList.append(checkbox)
-                    self.filerow.append(ft.DataRow(
-                        cells=[
-                            ft.DataCell(checkbox),
-                            ft.DataCell(ft.Text(f"{pathInfo['FilePath']}")), 
-                            ft.DataCell(ft.Text(f"{pathInfo['CreatedAt']}"))
-                        ]
-                    ))
-                else:
-                    db.remove_folder(pathInfo['Tag'])
+        self.checkboxes = []
 
-                n += 1
+        for folder in self.folders:
+            checkbox = ft.Checkbox(label=f"{folder['Tag']}")
+            self.checkboxes.append(checkbox)
+            self.filerow.append(ft.DataRow(
+                cells=[
+                    ft.DataCell(checkbox),
+                    ft.DataCell(ft.Text(f"{folder['FilePath']}")), 
+                    ft.DataCell(ft.Text(f"{folder['CreatedAt']}"))
+                ]
+            ))
 
     def makeView(self):
         self.page.title = "プロジェクトを削除する"
@@ -78,7 +67,7 @@ class removeList:
 
     def removeAndRefresh(self, e=None):
         db = pathDatabase()
-        for checkbox in self.checkList:
+        for checkbox in self.checkboxes:
             if checkbox.value:
                 db.remove_folder(checkbox.label)
 

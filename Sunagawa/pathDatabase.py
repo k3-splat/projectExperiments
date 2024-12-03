@@ -60,66 +60,27 @@ class pathDatabase:
         if not deleted:
             print(f"No entry found with tag {tag}")
 
-    def get_nth_entry(self, n):
-        """n番目に登録されたファイルのパス、タグ、日時を返す関数。"""
-        if not os.path.exists(self.csvFilePath):
-            print(f"{self.csvFilePath} does not exist.")
-            return -1
-
+    def read_data(self):
+        folders = []
         with open(self.csvFilePath, mode='r', newline='', encoding='utf-8') as file:
             reader = csv.DictReader(file)
-            entries = list(reader)
-            if 0 < n <= len(entries):  # nが有効な範囲内であることを確認
-                entry = entries[n - 1]  # インデックスは0から始まるためn-1
-                return {
-                    "FilePath": entry["FilePath"],
-                    "Tag": entry["Tag"],
-                    "CreatedAt": entry["CreatedAt"]
-                }
-            else:
-                print(f"Invalid entry number: {n}")
-                return -2
-
-    def read_videos(self):
+            for row in reader:
+                if os.path.exists(row["FilePath"]):
+                    folders.append(row)
+                else:
+                    self.remove_folder(row["Tag"])
+        return folders
+    
+    def get_video(self):
         videos = []
         with open(self.csvFilePath, mode='r', newline='', encoding='utf-8') as file:
             reader = csv.DictReader(file)
             for row in reader:
-                videos.append(row)
+                videoPath = os.path.join(row["FilePath"], row['Title'] + ".mp4")
+                if os.path.exists(videoPath):
+                    videos.append(row)
         return videos
 
-    def search_videos(self, tag):
-        results = []
-        with open(self.csvFilePath, mode='r', newline='', encoding='utf-8') as file:
-            reader = csv.DictReader(file)
-            for row in reader:
-                if row["Tag"] == tag:
-                    results.append(row)
-        return results
-
-    def get_mp4_files(self, directory):
-        """指定したディレクトリ配下にあるすべての.mp4ファイルを取得する関数。"""
-        mp4_files = []
-        for root, _, files in os.walk(directory):  # ディレクトリを再帰的に探索
-            for file in files:
-                if file.endswith(".mp4"):  # 拡張子が.mp4のファイルのみ
-                    full_path = os.path.join(root, file)
-                    mp4_files.append(full_path)
-        return mp4_files
-
-    def search_registered_videos(self, tag):
-        """登録されたパスの配下にある動画を検索する関数。"""
-        results = []
-        videos = pathDatabase.search_videos(self, tag)
-        for video in videos:
-            folder_path = video["FilePath"]
-            if os.path.exists(folder_path):  # フォルダが存在する場合のみ探索
-                mp4_files = pathDatabase.get_mp4_files(folder_path)
-                results.extend(mp4_files)
-        return results
 
 if __name__ == "__main__":
-    db = pathDatabase()
-    entry = db.get_nth_entry(3)
-    if entry:  # エントリが存在する場合のみ出力
-        print(f"FilePath: {entry['FilePath']}, Tag: {entry['Tag']}, CreatedAt: {entry['CreatedAt']}")
+    pass

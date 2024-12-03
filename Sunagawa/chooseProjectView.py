@@ -3,7 +3,7 @@ from pathDatabase import pathDatabase
 from os import path
 
 class projectList:
-    projectName = "hogehoge"
+    projectName = "hoge"
 
     def __init__(self, page: ft.Page):
         self.page = page
@@ -11,31 +11,21 @@ class projectList:
 
     def refresh_data(self):
         db = pathDatabase()
-        n = 1
+        self.folders = db.read_data()
         self.filerow = []
         self.checkboxes = []
-        while True:
-            pathInfo = db.get_nth_entry(n)
-            if pathInfo == -1:
-                print("ファイル読み込みエラーです")
-                break
-            elif pathInfo == -2:
-                break
-            else:
-                if path.exists(pathInfo['FilePath']):
-                    checkbox = ft.Checkbox(label=f"{pathInfo['Tag']}", on_change=self.checkbox_changed)
-                    self.checkboxes.append(checkbox)
-                    self.filerow.append(ft.DataRow(
-                        cells=[
-                            ft.DataCell(checkbox),
-                            ft.DataCell(ft.Text(f"{pathInfo['FilePath']}")), 
-                            ft.DataCell(ft.Text(f"{pathInfo['CreatedAt']}"))
-                        ]
-                    ))
-                else:
-                    db.remove_folder(pathInfo['Tag'])
 
-                n += 1
+        for folder in self.folders:
+            checkbox = ft.Checkbox(label=f"{folder['Tag']}", on_change=self.checkbox_changed)
+            self.checkboxes.append(checkbox)
+            self.filerow.append(ft.DataRow(
+                cells=[
+                    ft.DataCell(checkbox),
+                    ft.DataCell(ft.Text(f"{folder['FilePath']}")), 
+                    ft.DataCell(ft.Text(f"{folder['CreatedAt']}"))
+                ]
+            ))
+
 
     def checkbox_changed(self, e):
         for checkbox in self.checkboxes:
