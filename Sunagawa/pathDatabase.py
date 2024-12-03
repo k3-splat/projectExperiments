@@ -19,7 +19,7 @@ class pathDatabase:
             writer = csv.writer(file)
             id = sum(1 for _ in open(self.csvFilePath, encoding='utf-8'))  # ヘッダーを含む行数
             tag = os.path.basename(file_path)
-            title = tag + "_Animation"
+            title = tag + "_Animation.mp4"
             created_at = datetime.now().strftime('%Y-%m-%d')
             writer.writerow([id, file_path, title, tag, created_at])
         print(f"Folder added: {file_path}")
@@ -76,7 +76,7 @@ class pathDatabase:
         with open(self.csvFilePath, mode='r', newline='', encoding='utf-8') as file:
             reader = csv.DictReader(file)
             for row in reader:
-                videoPath = os.path.join(row["FilePath"], row['Title'] + ".mp4")
+                videoPath = os.path.join(row["FilePath"], row['Title'])
                 if os.path.exists(videoPath):
                     videos.append(row)
         return videos

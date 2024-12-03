@@ -4,12 +4,12 @@ import mainView
 import videoPlayView
 import projectRemoveView
 import chooseProjectView
+import selectWatchVideoView
 
 async def main(page: ft.Page):
     startview = start.startView(page)
     videoview = videoPlayView.videoPlay(page)
     mainview = mainView.mainView(page)
-
     def route_change(handler):
         troute = ft.TemplateRoute(handler.route)
         page.views.clear()
@@ -25,6 +25,9 @@ async def main(page: ft.Page):
         elif troute.match("/projectOpenView"):
             projectlist = chooseProjectView.projectList(page)
             page.views.append(projectlist.makeView())
+        elif troute.match("/selectWatchVideoView"):
+            videolist = selectWatchVideoView.selectWatchVideo(page)
+            page.views.append(videolist.makeView())
         page.update()
 
     # ルート変更時のロジック設定
@@ -37,5 +40,4 @@ async def main(page: ft.Page):
     await startview.update_time()
 
 if __name__ == "__main__":
-    # 非同期関数をターゲットに指定
     ft.app(target=main, assets_dir="assets")

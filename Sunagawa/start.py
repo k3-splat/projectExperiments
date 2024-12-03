@@ -3,7 +3,9 @@ from datetime import datetime
 import fileLoad as fl
 import dialogs as dl
 import pathDatabase as pd
+from chooseProjectView import projectList
 import asyncio
+from os import path
 
 class startView:
     def __init__(self, page: ft.Page):
@@ -13,7 +15,7 @@ class startView:
         selectDirectory = ft.FilePicker(on_result=lambda e: self.make_directory.input_directory_path(e, self.page, self.inputfoldernamedialog.inputFolderNameDialog))
         self.inputfoldernamedialog = dl.inputFolderNameDialog(
             lambda e: self.mkdir_hole(),
-            lambda e: self.dialogCloseAndResetDialog(self.inputfoldernamedialog.inputFolderNameDialog)
+            lambda e: self.page.close(self.inputfoldernamedialog.inputFolderNameDialog)
         )
         choosecontinewdialog = dl.chooseContiNewDialog(
             lambda e: self.page.close(choosecontinewdialog.bottom_sheet),
@@ -22,7 +24,7 @@ class startView:
         )
         choosewatchvideo = dl.chooseWatchVideo(
             lambda e: self.page.close(choosewatchvideo.bottom_sheet),
-            lambda e: self.page.go("/videoPlayView"),
+            lambda e: self.page.go("/selectWatchVideoView"),
             lambda e: print("投稿ページへ遷移")
         )
         self.choosemanagedialog = dl.manageFolders(
@@ -88,7 +90,8 @@ class startView:
             self.inputfoldernamedialog.inputFolderNameDialog.content.label = "Making directory is failure. Please try it again."
             self.inputfoldernamedialog.inputFolderNameDialog.content.border_color = 'RED'
         else:
-            
+            projectList.projectName = path.basename(filePath)
+
             self.inputfoldernamedialog.inputFolderNameDialog.content.label = ""
             self.inputfoldernamedialog.inputFolderNameDialog.content.border_color = ''
             self.inputfoldernamedialog.inputFolderNameDialog.content.value = ""
@@ -156,7 +159,7 @@ class startView:
                         height=50,
                         border_radius=5,
                         ink=True,
-                        on_click=lambda e: self.page.go("/mainView"),
+                        on_click=lambda e: self.page.go("/selectWatchVideoView"),
                     ),
                 ],
                 alignment=ft.MainAxisAlignment.CENTER,
