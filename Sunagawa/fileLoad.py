@@ -16,8 +16,8 @@ class mkdir:
         # FilePickerからの選択結果を受け取り、パスを保存
         if e.path is None:
             return
+
         self.selected_directory = e.path
-        print(f"{e.path}")
         page.open(dialog)
 
     def make_directory(self, folder_name: str):
@@ -36,6 +36,7 @@ class mkdir:
         
         except Exception:
             return -2
+        
 
 
 class input_material:

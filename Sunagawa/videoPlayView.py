@@ -1,8 +1,13 @@
 import flet as ft
 
 class videoPlay:
-    def __init__(self):
-        self.video = ft.View("/videoPlay", [
+    def __init__(self, page: ft.Page):
+        self.page = page
+        self.video = ft.View("/videoPlayView", [
+            ft.AppBar(
+                leading=ft.IconButton(icon=ft.icons.ARROW_BACK, on_click=lambda e: self.page.go("/startView"), tooltip="スタートに戻る"),
+                title=ft.Text("動画タイトる")
+            ),
             ft.Video(
                 expand=True,
                 playlist = [ft.VideoMedia("C:/Users/gunda/projectExperiments/Sunagawa/assets/Flopping.mp4")],
@@ -14,7 +19,8 @@ class videoPlay:
                 filter_quality=ft.FilterQuality.HIGH,
                 muted=False
             ),
-        ])
+        ], horizontal_alignment=ft.CrossAxisAlignment.CENTER)
         
     def makeView(self):
+        self.page.title = "動画を見る"
         return self.video

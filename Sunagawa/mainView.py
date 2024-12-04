@@ -22,9 +22,10 @@ from flet import(
     UserControl,
     CrossAxisAlignment,
 )
+from chooseProjectView import projectList
 
 # make header
-class appHeader():
+class appHeader:
     def __init__(self, page: Page):
         self.page = page
 
@@ -41,10 +42,9 @@ class appHeader():
             PopupMenuItem(text = "help"),
         ]
 
-        self.page.appbar = AppBar(
-            leading = Icon(icons.TRIP_ORIGIN_ROUNDED),
+        self.appbar = AppBar(
+            leading = IconButton(icon=ft.icons.ARROW_BACK, on_click=lambda e: self.page.go("/startView"), tooltip="スタートへ戻る"),
             leading_width = 60,
-            title = Text(value = "Project name", size = 24, text_align = "center"),
             center_title = False,
             toolbar_height = 50,
             bgcolor = colors.SURFACE_VARIANT,
@@ -68,7 +68,7 @@ class appHeader():
         )
 
 
-class Sidebar():
+class Sidebar:
     def __init__(self):
         self.nav_rail_visible = True
 
@@ -137,16 +137,25 @@ class Sidebar():
         self.toggle_nav_rail_button.selected = not self.toggle_nav_rail_button.selected
         self.toggle_nav_rail_button.tooltip = "Open Side Bar" if self.toggle_nav_rail_button.selected else "Collapse Side Bar"
 
+class mainView:
+    def __init__(self, page: ft.Page):
+        self.page = page
 
-def main(page: ft.Page):
-    page.title = "Video Maker"
-    page.padding = 10
+        self.appheader = appHeader(self.page)
+        sidebarInstance = Sidebar()
+        self.sidebar = sidebarInstance.build()
 
-    appheader = appHeader(page)
+    def makeView(self):
+        self.page.title = "Video Maker"
+        self.page.padding = 10
 
-    return ft.View("/MainPage", [
-        appheader.page.appbar
-    ])
+        self.instance_projectList = projectList(self.page)
+        self.appheader.appbar.title = Text(value = self.instance_projectList.returnName(), size = 24, text_align = "center")
+
+        return ft.View("/mainView", [
+            self.appheader.appbar,
+            ft.Row(controls=[self.sidebar]),
+        ])
 
 if __name__=="__main__":
-    ft.app(target=main)
+    None

@@ -2,20 +2,32 @@ import flet as ft
 import start
 import mainView
 import videoPlayView
+import projectRemoveView
+import chooseProjectView
+import selectWatchVideoView
 
 async def main(page: ft.Page):
     startview = start.startView(page)
-    videoview = videoPlayView.videoPlay()
-
+    videoview = videoPlayView.videoPlay(page)
+    mainview = mainView.mainView(page)
     def route_change(handler):
         troute = ft.TemplateRoute(handler.route)
         page.views.clear()
         if troute.match("/startView"):
             page.views.append(startview.startView())
-        elif troute.match("/MainPage"):
-            page.views.append(mainView.main(page))
-        elif troute.match("/videoPlay"):
+        elif troute.match("/mainView"):
+            page.views.append(mainview.makeView())
+        elif troute.match("/videoPlayView"):
             page.views.append(videoview.makeView())
+        elif troute.match("/removeView"):
+            removelist = projectRemoveView.removeList(page)
+            page.views.append(removelist.makeView())
+        elif troute.match("/projectOpenView"):
+            projectlist = chooseProjectView.projectList(page)
+            page.views.append(projectlist.makeView())
+        elif troute.match("/selectWatchVideoView"):
+            videolist = selectWatchVideoView.selectWatchVideo(page)
+            page.views.append(videolist.makeView())
         page.update()
 
     # ルート変更時のロジック設定
@@ -28,5 +40,4 @@ async def main(page: ft.Page):
     await startview.update_time()
 
 if __name__ == "__main__":
-    # 非同期関数をターゲットに指定
     ft.app(target=main, assets_dir="assets")

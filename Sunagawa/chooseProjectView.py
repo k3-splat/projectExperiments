@@ -2,7 +2,9 @@ import flet as ft
 from pathDatabase import pathDatabase
 from os import path
 
-class removeList:
+class projectList:
+    projectName = "hoge"
+
     def __init__(self, page: ft.Page):
         self.page = page
         self.refresh_data()
@@ -14,7 +16,7 @@ class removeList:
         self.checkboxes = []
 
         for folder in self.folders:
-            checkbox = ft.Checkbox(label=f"{folder['Tag']}")
+            checkbox = ft.Checkbox(label=f"{folder['Tag']}", on_change=self.checkbox_changed)
             self.checkboxes.append(checkbox)
             self.filerow.append(ft.DataRow(
                 cells=[
@@ -24,8 +26,29 @@ class removeList:
                 ]
             ))
 
+
+    def checkbox_changed(self, e):
+        for checkbox in self.checkboxes:
+            if checkbox != e.control:
+                checkbox.value = False
+
+        self.page.update()
+
+    def returnName(self):
+        return projectList.projectName
+    
+    def openProject(self):
+        for checkbox in self.checkboxes:
+            if checkbox.value:
+                projectList.projectName = f"{checkbox.label}"
+                print(projectList.projectName)
+                break
+
+        self.page.update()
+        self.page.go("/mainView")
+
     def makeView(self):
-        self.page.title = "プロジェクトを削除する"
+        self.page.title = "プロジェクトを開く"
         backbutton = ft.IconButton(
             icon=ft.icons.ARROW_BACK, 
             on_click=lambda e: self.page.go("/startView"),
@@ -33,12 +56,12 @@ class removeList:
         )
         appbar = ft.AppBar(
             leading=backbutton,
-            title=ft.Text("削除するプロジェクトを選択"),
+            title=ft.Text("続きを作るプロジェクトを選択してください"),
             actions=[
                 ft.ElevatedButton(
-                    icon=ft.icons.DELETE, 
-                    text="削除する", 
-                    on_click=self.removeAndRefresh
+                    icon=ft.icons.FILE_OPEN, 
+                    text="開く",
+                    on_click=lambda e: self.openProject()
                 )
             ]
         )
@@ -49,7 +72,7 @@ class removeList:
         ]
 
         if not self.filerow:
-            return ft.View("/removeView", [
+            return ft.View("/projectOpenView", [
                 appbar,
                 ft.DataTable(
                     columns=datalabel
@@ -57,21 +80,10 @@ class removeList:
                 ft.Text("作成されたプロジェクトがありません", theme_style=ft.TextThemeStyle.LABEL_LARGE)
             ], horizontal_alignment=ft.CrossAxisAlignment.CENTER)
         else:
-            return ft.View("/removeView", [
+            return ft.View("/projectOpenView", [
                 appbar,
                 ft.DataTable(
                     columns=datalabel,
                     rows=self.filerow
                 )
             ], horizontal_alignment=ft.CrossAxisAlignment.CENTER)
-
-    def removeAndRefresh(self, e=None):
-        db = pathDatabase()
-        for checkbox in self.checkboxes:
-            if checkbox.value:
-                db.remove_folder(checkbox.label)
-
-        self.refresh_data()
-        self.page.views.clear()
-        self.page.views.append(self.makeView())
-        self.page.update()
