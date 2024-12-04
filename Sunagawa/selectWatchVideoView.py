@@ -1,32 +1,61 @@
 import flet as ft
 import cv2
 from os import path
-import pathlib
+from os import stat
+from datetime import datetime
 from pathDatabase import pathDatabase
 
 class selectWatchVideo:
+    video = ""
+
     def __init__(self, page: ft.Page):
         self.page = page
         self.output_thumnails = "C:/Users/gunda/projectExperiments/Sunagawa/thumnails"
         self.refresh_video()
 
-        self.thumnails = ft.GridView(
-            expand=1,
-            runs_count=5,
-            max_extent=150,
-            child_aspect_ratio=1.0,
-            spacing=5,
-            run_spacing=5,
-        )
-
     def refresh_video(self):
         db = pathDatabase()
         videos = db.get_video()
+        self.filerow = []
+        videoPaths = []
+        videoTitles = []
+        thumnailPaths = []
 
         for video in videos:
-            input_path = path.join(video['FilePath'], video['Title'])
-            output_path = path.join(self.output_thumnails, path.basename(video['FilePath']) + "_thumnail.png")
-            self.get_video_thumbnail(input_path, output_path)
+            videoPath = path.join(video['FilePath'], video['Title'])
+            videoPaths.append(videoPath)
+
+            videoTitle = video['Title']
+            videoTitles.append(videoTitle)
+
+            thumnailPath = path.join(self.output_thumnails, path.basename(video['FilePath']) + "_thumnail.png")
+            thumnailPaths.append(thumnailPath)
+            self.get_video_thumbnail(videoPath, thumnailPath)
+
+        for pt, thumnail, title in zip(videoPaths, thumnailPaths, videoTitles):
+            self.filerow.append(
+                ft.DataRow(
+                    cells=[
+                        ft.DataCell(ft.Image(
+                            src=thumnail,
+                            width=120,
+                            height=120,
+                            fit=ft.ImageFit.COVER
+                        )),
+                        ft.DataCell(ft.Text(f"{title}")),
+                        ft.DataCell(ft.Text(pt)), 
+                        ft.DataCell(ft.Text(datetime.fromtimestamp(stat(pt).st_mtime))),
+                        ft.DataCell(
+                            ft.ElevatedButton(
+                                icon=ft.icons.PLAY_CIRCLE, 
+                                text="再生",
+                                on_click=lambda e: self.openVideoView(pt)
+                            )
+                        )
+                    ], selected=False
+                )
+            )
+            print(pt)
 
     def get_video_thumbnail(self, video_path, output_path):
         cap = cv2.VideoCapture(video_path)
@@ -47,6 +76,11 @@ class selectWatchVideo:
         # リソースを解放
         cap.release()
 
+    def openVideoView(self, video):
+        selectWatchVideo.video = video
+        print(selectWatchVideo.video)
+        self.page.go("/videoPlayView")
+
     def makeView(self):
         self.refresh_video()
         self.page.title = "動画を見る"
@@ -59,45 +93,23 @@ class selectWatchVideo:
             leading=backbutton,
             title=ft.Text("見たい動画を選択してください")
         )
-
-        input_list = list(pathlib.Path(self.output_thumnails).glob('*.png'))
-        for thumnail in input_list:
-            self.thumnails.controls.append(
-                ft.CupertinoContextMenu(
-                    enable_haptic_feedback=True,
-                    content=ft.Image(
-                        src=thumnail,
-                        fit=ft.ImageFit.NONE,
-                        repeat=ft.ImageRepeat.NO_REPEAT,
-                        border_radius=ft.border_radius.all(10)
-                    ),
-                    actions=[
-                        ft.CupertinoContextMenuAction(
-                            text="Action 1",
-                            is_default_action=True,
-                            trailing_icon=ft.icons.CHECK,
-                            on_click=lambda e: print("Action 1"),
-                        ),
-                        ft.CupertinoContextMenuAction(
-                            text="Action 2",
-                            trailing_icon=ft.icons.MORE,
-                            on_click=lambda e: print("Action 2"),
-                        ),
-                        ft.CupertinoContextMenuAction(
-                            text="Action 3",
-                            is_destructive_action=True,
-                            trailing_icon=ft.icons.CANCEL,
-                            on_click=lambda e: print("Action 3"),
-                        )
-                    ]
-                )
-            )
+        datalabel = [
+            ft.DataColumn(ft.Text("サムネイル画像")),
+            ft.DataColumn(ft.Text("動画タイトル")),
+            ft.DataColumn(ft.Text("動画パス")),
+            ft.DataColumn(ft.Text("作成日時")),
+            ft.DataColumn(ft.Text(""))
+        ]
 
         return ft.View("/selectWatchVideoView", [
             appbar,
-            self.thumnails
+            ft.DataTable(
+                height=500,
+                columns=datalabel,
+                rows=self.filerow
+            ),
         ], horizontal_alignment=ft.CrossAxisAlignment.CENTER)
 
 
 if __name__=="__main__":
-    video = selectWatchVideo()        
+    video = selectWatchVideo()

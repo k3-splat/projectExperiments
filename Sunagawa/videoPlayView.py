@@ -1,26 +1,27 @@
 import flet as ft
+from os import path
+from selectWatchVideoView import selectWatchVideo
 
 class videoPlay:
     def __init__(self, page: ft.Page):
         self.page = page
-        self.video = ft.View("/videoPlayView", [
+        
+    def makeView(self):
+        self.page.title = "動画を見る"
+        return ft.View("/videoPlayView", [
             ft.AppBar(
-                leading=ft.IconButton(icon=ft.icons.ARROW_BACK, on_click=lambda e: self.page.go("/startView"), tooltip="スタートに戻る"),
-                title=ft.Text("動画タイトる")
+                leading=ft.IconButton(icon=ft.icons.ARROW_BACK, on_click=lambda e: self.page.go("/selectWatchVideoView"), tooltip="動画選択画面に戻る"),
+                title=ft.Text(path.basename(selectWatchVideo.video))
             ),
             ft.Video(
                 expand=True,
-                playlist = [ft.VideoMedia("C:/Users/gunda/projectExperiments/Sunagawa/assets/Flopping.mp4")],
+                playlist = [ft.VideoMedia(selectWatchVideo.video)],
                 playlist_mode=ft.PlaylistMode.LOOP,
                 fill_color=ft.colors.BLUE_400,
                 aspect_ratio=16/9,
                 volume=100,
-                autoplay=False,
+                autoplay=True,
                 filter_quality=ft.FilterQuality.HIGH,
                 muted=False
-            ),
+            )
         ], horizontal_alignment=ft.CrossAxisAlignment.CENTER)
-        
-    def makeView(self):
-        self.page.title = "動画を見る"
-        return self.video
