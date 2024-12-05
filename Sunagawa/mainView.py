@@ -149,8 +149,7 @@ class mainView:
         self.page.title = "Video Maker"
         self.page.padding = 10
 
-        self.instance_projectList = projectList(self.page)
-        self.appheader.appbar.title = Text(value = self.instance_projectList.returnName(), size = 24, text_align = "center")
+        self.appheader.appbar.title = Text(value = projectList.getprojectName(), size = 24, text_align = "center")
 
         return ft.View("/mainView", [
             self.appheader.appbar,

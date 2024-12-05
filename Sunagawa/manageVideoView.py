@@ -1,24 +1,31 @@
 import flet as ft
 import cv2
+import os
 from os import path
 from os import stat
 from datetime import datetime
 from pathDatabase import pathDatabase
+from dialogs import AttentionRemove
 
-class selectWatchVideo:
-    video = ""
-
-    @classmethod
-    def setVideo(cls, value):
-        cls.video = value
+class manageVideo:
+    removeVideo = ""
 
     @classmethod
-    def getVideo(cls):
-        return cls.video
+    def setremoveVideo(cls, value):
+        cls.removeVideo = value
+
+    @classmethod
+    def getremoveVideo(cls):
+        return cls.removeVideo
 
     def __init__(self, page: ft.Page):
         self.page = page
         self.output_thumnails = "C:/Users/gunda/projectExperiments/Sunagawa/thumnails"
+        self.instance_AR = AttentionRemove(
+            lambda e: self.removeAndrefresh(),
+            lambda e: self.page.close(self.instance_AR.attentionDialog)
+        )
+
         self.refresh_video()
 
     def refresh_video(self):
@@ -45,10 +52,17 @@ class selectWatchVideo:
                         ft.DataCell(ft.Text(videoPath)), 
                         ft.DataCell(ft.Text(datetime.fromtimestamp(stat(videoPath).st_mtime))),
                         ft.DataCell(
-                            ft.ElevatedButton(
-                                icon=ft.icons.PLAY_CIRCLE, 
-                                text="再生",
-                                on_click=lambda e, vp=videoPath: self.openVideoView(vp)
+                            ft.PopupMenuButton(
+                                content=ft.Icon(name=ft.icons.VIDEO_SETTINGS),
+                                items=[
+                                    ft.PopupMenuItem(icon=ft.icons.FILE_UPLOAD, text="投稿する", on_click=lambda e: None),
+                                    ft.PopupMenuItem(
+                                        icon=ft.icons.DELETE,
+                                        text="削除する",
+                                        on_click=lambda e, vp=videoPath: self.setremovevideoAndopen(vp)
+                                    ),
+                                ],
+                                tooltip="管理する"
                             )
                         )
                     ], selected=False
@@ -74,13 +88,22 @@ class selectWatchVideo:
         # リソースを解放
         cap.release()
 
-    def openVideoView(self, video):
-        selectWatchVideo.setVideo(video)
-        self.page.go("/videoPlayView")
+    def setremovevideoAndopen(self, videopath):
+        manageVideo.setremoveVideo(videopath)
+        self.page.open(self.instance_AR.attentionDialog)
+
+    def removeAndrefresh(self):
+        if path.exists(manageVideo.removeVideo):
+            os.remove(manageVideo.removeVideo)
+        
+        self.refresh_video()
+        self.page.close(self.instance_AR.attentionDialog)
+        self.page.update()
+
 
     def makeView(self):
         self.refresh_video()
-        self.page.title = "動画を見る"
+        self.page.title = "動画を管理する"
         backbutton = ft.IconButton(
             icon=ft.icons.ARROW_BACK, 
             on_click=lambda e: self.page.go("/startView"),
@@ -88,17 +111,17 @@ class selectWatchVideo:
         )
         appbar = ft.AppBar(
             leading=backbutton,
-            title=ft.Text("見たい動画を選択してください")
+            title=ft.Text("管理する動画を選択してください")
         )
         datalabel = [
             ft.DataColumn(ft.Text("サムネイル画像")),
             ft.DataColumn(ft.Text("動画タイトル")),
             ft.DataColumn(ft.Text("動画パス")),
             ft.DataColumn(ft.Text("作成日時")),
-            ft.DataColumn(ft.Text(""))
+            ft.DataColumn(ft.Text("操作"))
         ]
 
-        return ft.View("/selectWatchVideoView", [
+        return ft.View("/manageVideoView", [
             appbar,
             ft.DataTable(
                 height=500,
@@ -109,4 +132,4 @@ class selectWatchVideo:
 
 
 if __name__=="__main__":
-    selectWatchVideo.setVideo("hoge")
+    pass

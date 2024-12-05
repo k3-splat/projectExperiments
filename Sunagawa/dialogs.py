@@ -95,3 +95,18 @@ class chooseUploadVideo:
                 ft.TextButton("キャンセル", on_click=lambda e: page.close(self.chooseDialog))
             ]
         )
+
+class AttentionRemove:
+    def __init__(self, fun1, fun2):
+        self.attentionDialog = ft.AlertDialog(
+            title=ft.Text("Attention!"),
+            modal=False,
+            content=ft.Text("本当に削除してもよろしいですか？"),
+            actions=[
+                ft.TextButton("はい"),
+                ft.TextButton("いいえ")
+            ]
+        )
+
+        self.attentionDialog.actions[0].on_click = fun1
+        self.attentionDialog.actions[1].on_click = fun2        

@@ -5,6 +5,14 @@ from os import path
 class projectList:
     projectName = "hoge"
 
+    @classmethod
+    def setprojectName(cls, value):
+        cls.projectName = value
+
+    @classmethod
+    def getprojectName(cls):
+        return cls.projectName
+
     def __init__(self, page: ft.Page):
         self.page = page
         self.refresh_data()
@@ -33,18 +41,13 @@ class projectList:
                 checkbox.value = False
 
         self.page.update()
-
-    def returnName(self):
-        return projectList.projectName
     
     def openProject(self):
         for checkbox in self.checkboxes:
             if checkbox.value:
-                projectList.projectName = f"{checkbox.label}"
-                print(projectList.projectName)
+                projectList.setprojectName(checkbox.label)
                 break
 
-        self.page.update()
         self.page.go("/mainView")
 
     def makeView(self):

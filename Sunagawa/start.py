@@ -30,7 +30,7 @@ class startView:
         self.choosemanagedialog = dl.manageFolders(
             lambda e: self.page.close(self.choosemanagedialog.bottom_sheet),
             lambda e: self.page.go("/removeView"),
-            lambda e: print("")
+            lambda e: self.page.go("/manageVideoView")
         )
 
         self.page.title = "スタート"
@@ -159,7 +159,7 @@ class startView:
                         height=50,
                         border_radius=5,
                         ink=True,
-                        on_click=lambda e: self.page.go("/selectWatchVideoView"),
+                        on_click=lambda e: self.page.go("/manageVideoView"),
                     ),
                 ],
                 alignment=ft.MainAxisAlignment.CENTER,
