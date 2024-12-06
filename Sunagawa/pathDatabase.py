@@ -79,6 +79,18 @@ class pathDatabase:
                 if os.path.exists(videoPath):
                     videos.append(row)
         return videos
+    
+    def has_tag(self, tag):
+        if not os.path.exists(self.csvFilePath):
+            print(f"{self.csvFilePath} does not exist.")
+            return False
+
+        with open(self.csvFilePath, mode='r', newline='', encoding='utf-8') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                if row["Tag"] == tag:
+                    return True
+        return False
 
 
 if __name__ == "__main__":
