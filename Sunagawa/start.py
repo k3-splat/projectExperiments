@@ -159,7 +159,7 @@ class startView:
                         height=50,
                         border_radius=5,
                         ink=True,
-                        on_click=lambda e: self.page.go("/manageVideoView"),
+                        on_click=lambda e: self.page.go("/mainView"),
                     ),
                 ],
                 alignment=ft.MainAxisAlignment.CENTER,

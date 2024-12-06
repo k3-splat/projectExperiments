@@ -23,6 +23,7 @@ from flet import(
     CrossAxisAlignment,
 )
 from chooseProjectView import projectList
+from test_editView import canVas
 
 # make header
 class appHeader:
@@ -124,7 +125,6 @@ class Sidebar:
                     ),
                     self.toggle_nav_rail_button,
                 ],
-                expand = True,
                 vertical_alignment = CrossAxisAlignment.START,
                 visible = self.nav_rail_visible,
             )
@@ -151,10 +151,15 @@ class mainView:
 
         self.appheader.appbar.title = Text(value = projectList.getprojectName(), size = 24, text_align = "center")
 
-        return ft.View("/mainView", [
-            self.appheader.appbar,
-            ft.Row(controls=[self.sidebar]),
-        ])
+        canvasInstance = canVas()
+        caNVas = canvasInstance.makeCanvas()
+
+        return ft.View("/mainView", 
+            appbar=self.appheader.appbar,
+            controls=[
+                ft.Row(controls=[self.sidebar, caNVas], expand=True)
+            ]
+        )
 
 if __name__=="__main__":
     None
