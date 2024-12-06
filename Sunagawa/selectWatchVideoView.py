@@ -95,17 +95,26 @@ class selectWatchVideo:
             ft.DataColumn(ft.Text("動画タイトル")),
             ft.DataColumn(ft.Text("動画パス")),
             ft.DataColumn(ft.Text("作成日時")),
-            ft.DataColumn(ft.Text(""))
+            ft.DataColumn(ft.Text("操作"))
         ]
 
-        return ft.View("/selectWatchVideoView", [
-            appbar,
-            ft.DataTable(
-                height=500,
-                columns=datalabel,
-                rows=self.filerow
-            ),
-        ], horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+        if not self.filerow:
+            return ft.View("/selectWatchVideoView", [
+                appbar,
+                ft.DataTable(
+                    columns=datalabel
+                ),
+                ft.Text("作成された動画がありません", theme_style=ft.TextThemeStyle.LABEL_LARGE)
+            ], horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+        else:
+            return ft.View("/selectWatchVideoView", [
+                appbar,
+                ft.DataTable(
+                    height=500,
+                    columns=datalabel,
+                    rows=self.filerow
+                ),
+            ], horizontal_alignment=ft.CrossAxisAlignment.CENTER)
 
 
 if __name__=="__main__":

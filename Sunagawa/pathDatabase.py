@@ -22,7 +22,6 @@ class pathDatabase:
             title = tag + "_Animation.mp4"
             created_at = datetime.now().strftime('%Y-%m-%d')
             writer.writerow([id, file_path, title, tag, created_at])
-        print(f"Folder added: {file_path}")
 
     def remove_folder(self, tag):
         if not os.path.exists(self.csvFilePath):

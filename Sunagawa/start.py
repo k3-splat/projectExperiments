@@ -136,7 +136,7 @@ class startView:
                 [
                     self.img_miru_clickable,
                     ft.Container(
-                        content=ft.Text("絵"),
+                        content=ft.Text("管理する"),
                         alignment=ft.alignment.center,
                         bgcolor=ft.colors.BLACK,
                         width=200,

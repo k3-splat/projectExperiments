@@ -32,6 +32,7 @@ class manageVideo:
         db = pathDatabase()
         videos = db.get_video()
         self.filerow = []
+        self.refreshThumnails()
 
         for video in videos:
             videoPath = path.join(video['FilePath'], video['Title'])
@@ -98,8 +99,15 @@ class manageVideo:
         
         self.refresh_video()
         self.page.close(self.instance_AR.attentionDialog)
+        self.page.views.clear()
+        self.page.views.append(self.makeView())
         self.page.update()
 
+    def refreshThumnails(self):
+        for _, _, thumnails in os.walk(self.output_thumnails):
+            for thumnail in thumnails:
+                tp = path.join(self.output_thumnails, thumnail)
+                os.remove(tp)
 
     def makeView(self):
         self.refresh_video()
@@ -121,14 +129,23 @@ class manageVideo:
             ft.DataColumn(ft.Text("操作"))
         ]
 
-        return ft.View("/manageVideoView", [
-            appbar,
-            ft.DataTable(
-                height=500,
-                columns=datalabel,
-                rows=self.filerow
-            ),
-        ], horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+        if not self.filerow:
+            return ft.View("/manageVideoView", [
+                appbar,
+                ft.DataTable(
+                    columns=datalabel
+                ),
+                ft.Text("作成された動画がありません", theme_style=ft.TextThemeStyle.LABEL_LARGE)
+            ], horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+        else:
+            return ft.View("/manageVideoView", [
+                appbar,
+                ft.DataTable(
+                    height=500,
+                    columns=datalabel,
+                    rows=self.filerow
+                ),
+            ], horizontal_alignment=ft.CrossAxisAlignment.CENTER)
 
 
 if __name__=="__main__":
