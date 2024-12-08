@@ -1,62 +1,54 @@
 import flet as ft
-import flet.canvas as cv
+import time
+import pygetwindow as gw
+from PIL import ImageGrab
 
-class State:
-    x: float
-    y: float
+# mssにする
 
-state = State()
+def capture_window_screenshot(window_title, output_path):
+    # 指定したタイトルを持つウィンドウを取得
+    windows = [w for w in gw.getAllTitles() if window_title in w]
+    if not windows:
+        raise Exception(f"Window with title containing '{window_title}' not found.")
+    
+    window = gw.getWindowsWithTitle(windows[0])[0]
+    
+    # ウィンドウの位置とサイズを取得
+    bbox = (window.left, window.top, window.right, window.bottom)
+    
+    # スクリーンショットを撮る
+    screenshot = ImageGrab.grab(bbox=bbox)
+    screenshot.save(output_path)
+    print(f"Screenshot saved to {output_path}")
+
 
 def main(page: ft.Page):
-    page.title = "Flet Brush"
-
-    def pan_start(e: ft.DragStartEvent):
-        state.x = e.local_x
-        state.y = e.local_y
-
-    def pan_update(e: ft.DragUpdateEvent):
-        cp.shapes.append(
-            cv.Line(
-                state.x, state.y, e.local_x, e.local_y, paint=ft.Paint(stroke_width=3)
+    outputpath = "C:/Users/gunda/projectExperiments/Sunagawa/image/test.png"
+    page.title = "Card Example"
+    page.add(
+        ft.Card(
+            content=ft.Container(
+                content=ft.Column(
+                    [
+                        ft.ListTile(
+                            leading=ft.Icon(ft.icons.ALBUM),
+                            title=ft.Text("The Enchanted Nightingale"),
+                            subtitle=ft.Text(
+                                "Music by Julie Gable. Lyrics by Sidney Stein."
+                            ),
+                        ),
+                        ft.Row(
+                            [ft.TextButton("Buy tickets"), ft.TextButton("Listen")],
+                            alignment=ft.MainAxisAlignment.END,
+                        ),
+                    ]
+                ),
+                width=400,
+                padding=10,
             )
         )
-        cp.update()
-        state.x = e.local_x
-        state.y = e.local_y
-
-    cp = cv.Canvas(
-        content=ft.GestureDetector(
-            on_pan_start=pan_start,
-            on_pan_update=pan_update,
-            drag_interval=10,
-        ),
-        expand=False,
     )
-
-    st = ft.Stack(
-        [
-            ft.Image(
-                src=f"https://picsum.photos/300/300",
-                width=300,
-                height=300,
-                fit=ft.ImageFit.CONTAIN,
-            ),
-            ft.Row(
-                [
-                    ft.Container(
-                        cp,
-                        border_radius=5,
-                        width=float("inf"),
-                        expand=True,
-                    )
-                ],
-                alignment=ft.MainAxisAlignment.CENTER,
-            ),
-        ],
-        width=300,
-        height=300,
-    )
-
-    page.add(st)
+    time.sleep(3)
+    capture_window_screenshot("Card Example", outputpath)
 
 ft.app(main)
