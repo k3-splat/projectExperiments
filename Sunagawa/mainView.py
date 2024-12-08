@@ -237,7 +237,8 @@ class mainView:
         self.menubar.controls.extend(
             [
                 ft.TextButton(text="新しいキャンバス", on_click=lambda e: self.makeNextCanvas()),
-                ft.TextButton(text="戻る", on_click=lambda e:self.backCanvas()),
+                ft.TextButton(text="新しい背景ありキャンバス", on_click=lambda e: self.makeImageCanvas()),
+                ft.TextButton(text="戻る", on_click=lambda e: self.backCanvas()),
                 ft.TextButton(text="進む", on_click=lambda e: self.goNextCanvas())
             ]
         )
@@ -259,6 +260,39 @@ class mainView:
                         ft.Column([
                             self.menubar,
                             nextCanvas
+                        ], expand=False)
+                    ],
+                    expand=True
+                )
+            ]
+        )
+
+        self.page.views.clear()
+        self.page.views.append(newView)
+        self.page.update()
+
+    def makeImageCanvas(self):
+        newCanvasInstance = canVas()
+        self.currentIndex += 1
+        nextCanvas = newCanvasInstance.makeCanvas()
+        imageStack = ft.Stack([
+            ft.Image(
+                src="C:/Users/gunda/projectExperiments/Sunagawa/assets/titlekamo.png",
+                width=800,
+                height=450
+            ),
+            nextCanvas
+        ])
+        self.canvases.insert(self.currentIndex, imageStack)
+        newView = ft.View("/mainView",
+            appbar=self.appheader.appbar,
+            controls=[
+                ft.Row(
+                    controls=[
+                        self.sidebar,
+                        ft.Column([
+                            self.menubar,
+                            imageStack
                         ], expand=False)
                     ],
                     expand=True
