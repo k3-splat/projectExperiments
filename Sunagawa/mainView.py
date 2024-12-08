@@ -23,7 +23,7 @@ from flet import(
     CrossAxisAlignment,
 )
 from chooseProjectView import projectList
-from test_editView import canVas
+from canvasView import canVas
 
 # make header
 class appHeader:
@@ -113,7 +113,7 @@ class Sidebar:
 
     def build(self):
         self.view = Container(
-                content = Row(
+            content = Row(
                 [
                     self.nav_rail,
                     Container(
@@ -125,7 +125,9 @@ class Sidebar:
                     ),
                     self.toggle_nav_rail_button,
                 ],
+                expand=False,
                 vertical_alignment = CrossAxisAlignment.START,
+                alignment=ft.MainAxisAlignment.START,
                 visible = self.nav_rail_visible,
             )
         )
@@ -135,15 +137,184 @@ class Sidebar:
     def toggle_nav_rail(self, e):
         self.nav_rail.visible = not self.nav_rail.visible
         self.toggle_nav_rail_button.selected = not self.toggle_nav_rail_button.selected
-        self.toggle_nav_rail_button.tooltip = "Open Side Bar" if self.toggle_nav_rail_button.selected else "Collapse Side Bar"
+        self.toggle_nav_rail_button.tooltip = "O Side Bar" if self.toggle_nav_rail_button.selected else "Collapse Side Bar"
+
+
+class menubar:
+    def __init__(self):
+        self.menubar = ft.MenuBar(
+            expand=False,
+            controls=[
+                ft.SubmenuButton(
+                    content=ft.Text("ペンの色"),
+                    controls=[
+                        ft.MenuItemButton(
+                            content=ft.Text("黄"),
+                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.YELLOW),
+                            on_click=lambda e: canVas.setColor(ft.colors.YELLOW)
+                        ),
+                        ft.MenuItemButton(
+                            content=ft.Text("黄緑"),
+                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.LIGHT_GREEN),
+                            on_click=lambda e: canVas.setColor(ft.colors.LIGHT_GREEN)
+                        ),
+                        ft.MenuItemButton(
+                            content=ft.Text("緑"),
+                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.GREEN),
+                            on_click=lambda e: canVas.setColor(ft.colors.GREEN)
+                        ),
+                        ft.MenuItemButton(
+                            content=ft.Text("水"),
+                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.LIGHT_BLUE),
+                            on_click=lambda e: canVas.setColor(ft.colors.LIGHT_BLUE)
+                        ),
+                        ft.MenuItemButton(
+                            content=ft.Text("青"),
+                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.BLUE),
+                            on_click=lambda e: canVas.setColor(ft.colors.BLUE)
+                        ),
+                        ft.MenuItemButton(
+                            content=ft.Text("紫"),
+                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.PURPLE),
+                            on_click=lambda e: canVas.setColor(ft.colors.PURPLE)
+                        ),
+                        ft.MenuItemButton(
+                            content=ft.Text("桃"),
+                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.PINK),
+                            on_click=lambda e: canVas.setColor(ft.colors.PINK)
+                        ),
+                        ft.MenuItemButton(
+                            content=ft.Text("赤"),
+                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.RED),
+                            on_click=lambda e: canVas.setColor(ft.colors.RED)
+                        ),
+                        ft.MenuItemButton(
+                            content=ft.Text("橙"),
+                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.ORANGE),
+                            on_click=lambda e: canVas.setColor(ft.colors.ORANGE)
+                        ),
+                        ft.MenuItemButton(
+                            content=ft.Text("薄橙"),
+                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.AMBER),
+                            on_click=lambda e: canVas.setColor(ft.colors.AMBER)
+                        ),
+                        ft.MenuItemButton(
+                            content=ft.Text("茶"),
+                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.BROWN),
+                            on_click=lambda e: canVas.setColor(ft.colors.BROWN)
+                        ),
+                        ft.MenuItemButton(
+                            content=ft.Text("黒"),
+                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.BLACK),
+                            on_click=lambda e: canVas.setColor(ft.colors.BLACK)
+                        )
+                    ]
+                ),
+                ft.SubmenuButton(
+                    content=ft.Text("線の太さ"),
+                    controls=[
+                        ft.Slider(
+                            min=1,
+                            max=8,
+                            divisions=7,
+                            label="{value}",
+                            on_change=lambda e: canVas.setWidth(e.control.value)
+                        )
+                    ]
+                )
+            ]
+        )
+
 
 class mainView:
     def __init__(self, page: ft.Page):
         self.page = page
-
         self.appheader = appHeader(self.page)
         sidebarInstance = Sidebar()
         self.sidebar = sidebarInstance.build()
+        menubarInstance = menubar()
+        self.menubar = menubarInstance.menubar
+        self.menubar.controls.extend(
+            [
+                ft.TextButton(text="新しいキャンバス", on_click=lambda e: self.makeNextCanvas()),
+                ft.TextButton(text="戻る", on_click=lambda e:self.backCanvas()),
+                ft.TextButton(text="進む", on_click=lambda e: self.goNextCanvas())
+            ]
+        )
+        self.canvases = []
+        self.currentIndex = 0
+
+    def makeNextCanvas(self):
+        newCanvasInstance = canVas()
+        self.currentIndex += 1
+        newCanvasInstance.cp.shapes.insert(self.currentIndex, ft.canvas.Fill(ft.Paint(ft.colors.WHITE)))
+        nextCanvas = newCanvasInstance.makeCanvas()
+        self.canvases.insert(self.currentIndex, nextCanvas)
+        newView = ft.View("/mainView",
+            appbar=self.appheader.appbar,
+            controls=[
+                ft.Row(
+                    controls=[
+                        self.sidebar,
+                        ft.Column([
+                            self.menubar,
+                            nextCanvas
+                        ], expand=False)
+                    ],
+                    expand=True
+                )
+            ]
+        )
+
+        self.page.views.clear()
+        self.page.views.append(newView)
+        self.page.update()
+
+    def backCanvas(self):
+        if self.currentIndex > 0:
+            self.currentIndex -= 1
+            newView = ft.View("/mainView", 
+                appbar=self.appheader.appbar,
+                controls=[
+                    ft.Row(
+                        controls=[
+                            self.sidebar,
+                            ft.Column([
+                                self.menubar,
+                                self.canvases[self.currentIndex]
+                            ], expand=False)
+                        ],
+                        expand=True
+                    )
+                ]
+            )
+
+            self.page.views.clear()
+            self.page.views.append(newView)
+            self.page.update()
+
+    def goNextCanvas(self):
+        if self.currentIndex < len(self.canvases):
+            self.currentIndex += 1
+            newView = ft.View("/mainView", 
+                appbar=self.appheader.appbar,
+                controls=[
+                    ft.Row(
+                        controls=[
+                            self.sidebar,
+                            ft.Column([
+                                self.menubar,
+                                self.canvases[self.currentIndex]
+                            ], expand=False)
+                        ],
+                        expand=True
+                    )
+                ]
+            )
+
+            self.page.views.clear()
+            self.page.views.append(newView)
+            self.page.update()
 
     def makeView(self):
         self.page.title = "Video Maker"
@@ -151,13 +322,24 @@ class mainView:
 
         self.appheader.appbar.title = Text(value = projectList.getprojectName(), size = 24, text_align = "center")
 
-        canvasInstance = canVas()
-        caNVas = canvasInstance.makeCanvas()
+        canvasInstancePrimary = canVas()
+        canvasInstancePrimary.cp.shapes.insert(0, ft.canvas.Fill(ft.Paint(ft.colors.WHITE)))
+        primarycanvas = canvasInstancePrimary.makeCanvas()
+        self.canvases.append(primarycanvas)
 
-        return ft.View("/mainView", 
+        return ft.View("/mainView",
             appbar=self.appheader.appbar,
             controls=[
-                ft.Row(controls=[self.sidebar, caNVas], expand=True)
+                ft.Row(
+                    controls=[
+                        self.sidebar,
+                        ft.Column([
+                            self.menubar,
+                            primarycanvas
+                        ], expand=False)
+                    ],
+                    expand=True
+                )
             ]
         )
 

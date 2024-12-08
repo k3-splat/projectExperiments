@@ -1,6 +1,6 @@
 import flet as ft
 from pathDatabase import pathDatabase
-from os import path
+from dialogs import NotFolderSelected
 
 class projectList:
     projectName = "hoge"
@@ -46,9 +46,13 @@ class projectList:
         for checkbox in self.checkboxes:
             if checkbox.value:
                 projectList.setprojectName(checkbox.label)
-                break
-
-        self.page.go("/mainView")
+                self.page.go("/mainView")
+                return
+            
+        banner_instance = NotFolderSelected(
+            lambda e: self.page.close(banner_instance.banner)
+        )
+        self.page.open(banner_instance.banner)
 
     def makeView(self):
         self.page.title = "プロジェクトを開く"
@@ -66,7 +70,7 @@ class projectList:
                     text="開く",
                     on_click=lambda e: self.openProject()
                 )
-            ]
+            ],
         )
         datalabel = [
             ft.DataColumn(ft.Text("フォルダ名"), heading_row_alignment=ft.MainAxisAlignment.END),

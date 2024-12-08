@@ -47,7 +47,7 @@ class input_material:
     material_paths = []
 
     def __init__(self):
-        self.path = Text()
+        self.path = ""
 
     def pick_files_result(self, e: FilePickerResultEvent):
         if e.files:
