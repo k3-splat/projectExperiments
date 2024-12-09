@@ -333,6 +333,7 @@ class mainView:
         self.canvases = []
         self.currentIndex = 0
         self.canvasInstanceList = []
+        self.backgrounds = []
         self.menubar.controls.extend(
             [
                 ft.TextButton(text="新しいキャンバス", on_click=lambda e: self.makeNextCanvas()),
