@@ -5,11 +5,10 @@ import videoPlayView
 import projectRemoveView
 import chooseProjectView
 import selectWatchVideoView
-<<<<<<< HEAD
+
 import cv2
-=======
+
 import manageVideoView
->>>>>>> 607248ab4dd266b09f2568ee0863fbce54da3a36
 
 async def main(page: ft.Page):
     startview = start.startView(page)
