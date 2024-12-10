@@ -1,5 +1,4 @@
 import flet as ft
-<<<<<<< HEAD
 import time
 import pygetwindow as gw
 from PIL import ImageGrab
@@ -51,7 +50,6 @@ def main(page: ft.Page):
     )
     time.sleep(3)
     capture_window_screenshot("Card Example", outputpath)
-=======
 
 import flet as ft
 import flet.canvas as cv
@@ -130,6 +128,5 @@ def main(page: ft.Page):
             width=float("inf"),
             expand=True,
         ), c, gd1], width=1000, height=500))
->>>>>>> 607248ab4dd266b09f2568ee0863fbce54da3a36
 
 ft.app(main)
