@@ -112,6 +112,24 @@ class AttentionRemove:
         self.attentionDialog.actions[1].on_click = fun2
 
 
+class askSave:
+    def __init__(self, fun1, fun2, fun3):
+        self.askSaveDialog = ft.AlertDialog(
+            title=ft.Text("comfirm"),
+            modal=False,
+            content=ft.Text("保存して終了しますか？"),
+            actions=[
+                ft.TextButton("はい"),
+                ft.TextButton("保存せず終了する"),
+                ft.Text("キャンセル")
+            ]
+        )
+
+        self.askSaveDialog.actions[0].on_click = fun1
+        self.askSaveDialog.actions[1].on_click = fun2
+        self.askSaveDialog.actions[2].on_click = fun3
+
+
 class NotFolderSelected:
     def __init__(self, fun):
         self.banner = ft.Banner(

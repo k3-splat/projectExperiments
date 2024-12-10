@@ -23,7 +23,13 @@ from flet import(
     CrossAxisAlignment,
 )
 from chooseProjectView import projectList
-from canvasView import canVas
+import flet.canvas as cv
+from dialogs import askSave
+from fileLoad import saveAndloadFile
+import time
+import pygetwindow as gw
+from PIL import ImageGrab
+from os import path
 
 # make header
 class appHeader:
@@ -44,7 +50,6 @@ class appHeader:
         ]
 
         self.appbar = AppBar(
-            leading = IconButton(icon=ft.icons.ARROW_BACK, on_click=lambda e: self.page.go("/startView"), tooltip="スタートへ戻る"),
             leading_width = 60,
             center_title = False,
             toolbar_height = 50,
@@ -149,6 +154,11 @@ class menubar:
                     content=ft.Text("ペンの色"),
                     controls=[
                         ft.MenuItemButton(
+                            content=ft.Text("白"),
+                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.WHITE),
+                            on_click=lambda e: canVas.setColor(ft.colors.WHITE)
+                        ),
+                        ft.MenuItemButton(
                             content=ft.Text("黄"),
                             leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.YELLOW),
                             on_click=lambda e: canVas.setColor(ft.colors.YELLOW)
@@ -226,6 +236,91 @@ class menubar:
         )
 
 
+class State:
+    x: float
+    y: float
+
+class canVas:
+    color = ft.colors.BLACK
+    stroke_width = 3
+    canvasWidth = 800
+    canvasHeight = 450
+
+    @classmethod
+    def setColor(cls, color: ft.colors):
+        cls.color = color
+
+    @classmethod
+    def setStrokeWidth(cls, width: int):
+        cls.stroke_width = width
+
+    @classmethod
+    def getCanvasSize(cls):
+        return cls.canvasWidth, cls.canvasHeight
+
+    def __init__(self):
+        self.state = State()
+        self.cp = cv.Canvas(
+            content=ft.GestureDetector(
+                on_pan_start=self.pan_start,
+                on_pan_update=self.pan_update,
+                drag_interval=10,
+            )
+        )
+
+    def pan_start(self, e: ft.DragStartEvent):
+        self.state.x = e.local_x
+        self.state.y = e.local_y
+
+    def pan_update(self, e: ft.DragUpdateEvent):
+        self.cp.shapes.append(
+            cv.Line(
+                self.state.x, self.state.y, e.local_x, e.local_y, paint=ft.Paint(color=canVas.color, stroke_width=canVas.stroke_width)
+            )
+        )
+        self.cp.update()
+        self.state.x = e.local_x
+        self.state.y = e.local_y
+
+    def draw_rectangle(self, x, y, width, height):
+        """Draws a rectangle on the canvas."""
+        self.cp.shapes.append(
+            cv.Rect(
+                x=x, y=y, width=width, height=height,
+                paint=ft.Paint(color=canVas.color, stroke_width=canVas.stroke_width, style="stroke")
+            )
+        )
+        self.cp.update()
+
+    def draw_circle(self, x, y, radius):
+        """Draws a circle on the canvas."""
+        self.cp.shapes.append(
+            cv.Circle(
+                x=x, y=y, radius=radius,
+                paint=ft.Paint(color=canVas.color, stroke_width=canVas.stroke_width, style="stroke")
+            )
+        )
+        self.cp.update()
+
+    def draw_oval(self, x, y, width, height):
+        """Draws an oval on the canvas."""
+        self.cp.shapes.append(
+            cv.Oval(
+                x=x, y=y, width=width, height=height,
+                paint=ft.Paint(color=canVas.color, stroke_width=canVas.stroke_width, style="stroke")
+            )
+        )
+        self.cp.update()
+
+    def makeCanvas(self):
+        return ft.Container(
+            self.cp,
+            border_radius=0,
+            width=800, # アスペクト比に準拠
+            height=450
+        )
+
+
 class mainView:
     def __init__(self, page: ft.Page):
         self.page = page
@@ -243,17 +338,43 @@ class mainView:
             [
                 ft.TextButton(text="新しいキャンバス", on_click=lambda e: self.makeNextCanvas()),
                 ft.TextButton(text="新しい背景ありキャンバス", on_click=lambda e: self.makeImageCanvas()),
-                ft.TextButton(text="戻る", on_click=lambda e: self.backCanvas()),
-                ft.TextButton(text="進む", on_click=lambda e: self.goNextCanvas())
+                ft.TextButton(text="戻る", on_click=lambda e: self.moveCanvas(self.currentIndex - 1)),
+                ft.TextButton(text="進む", on_click=lambda e: self.moveCanvas(self.currentIndex + 1)),
+                ft.TextButton(text="ビデオ生成", on_click=lambda e: self.makeVideo())
             ]
         )
-        self.canvases = []
-        self.currentIndex = 0
+        self.appheader.appbar.title = Text(value = projectList.getprojectName(), size = 24, text_align = "center")
+        self.appheader.appbar.leading = ft.IconButton(icon=ft.icons.HOME, on_click=lambda e: self.page.go("/startView"))
+
+    def savefile(self, e):
+        saving = saveAndloadFile()
+        saving.savefile(projectList.getprojectName(), self.canvases)
+
+    def takeCanvasImage(self, i):
+        window_title = self.page.title
+        output_canvasshot = "C:/Users/gunda/projectExperiments/Sunagawa/image"
+        output_path = path.join(output_canvasshot, f"{projectList.getprojectName()}_{i}.png")
+        windows = [w for w in gw.getAllTitles() if window_title in w]
+        if not windows:
+            raise Exception(f"Window with title containing '{window_title}' not found.")
+        
+        window = gw.getWindowsWithTitle(windows[0])[0]
+        bbox = (window.left + 200, window.top + 170, 1600, 800)
+
+        screenshot = ImageGrab.grab(bbox=bbox)
+        screenshot.save(output_path)
+
+    def makeVideo(self):
+        for i in range(len(self.canvases)):
+            self.moveCanvas(i)
+            time.sleep(0.5)
+            self.takeCanvasImage(i)
 
     def makeNextCanvas(self):
         newCanvasInstance = canVas()
+        self.canvasInstanceList.append(newCanvasInstance.cp.shapes)
         self.currentIndex += 1
-        newCanvasInstance.cp.shapes.insert(self.currentIndex, ft.canvas.Fill(ft.Paint(ft.colors.WHITE)))
+        newCanvasInstance.cp.shapes.insert(0, self.whiteboard)
         nextCanvas = newCanvasInstance.makeCanvas()
         self.canvases.insert(self.currentIndex, nextCanvas)
         newView = ft.View("/mainView",
@@ -309,64 +430,12 @@ class mainView:
         self.page.views.append(newView)
         self.page.update()
 
-    def backCanvas(self):
-        if self.currentIndex > 0:
-            self.currentIndex -= 1
-            newView = ft.View("/mainView", 
-                appbar=self.appheader.appbar,
-                controls=[
-                    ft.Row(
-                        controls=[
-                            self.sidebar,
-                            ft.Column([
-                                self.menubar,
-                                self.canvases[self.currentIndex]
-                            ], expand=False)
-                        ],
-                        expand=True
-                    )
-                ]
-            )
-
-            self.page.views.clear()
-            self.page.views.append(newView)
-            self.page.update()
-
-    def goNextCanvas(self):
-        if self.currentIndex < len(self.canvases):
-            self.currentIndex += 1
-            newView = ft.View("/mainView", 
-                appbar=self.appheader.appbar,
-                controls=[
-                    ft.Row(
-                        controls=[
-                            self.sidebar,
-                            ft.Column([
-                                self.menubar,
-                                self.canvases[self.currentIndex]
-                            ], expand=False)
-                        ],
-                        expand=True
-                    )
-                ]
-            )
-
-            self.page.views.clear()
-            self.page.views.append(newView)
-            self.page.update()
-
-    def makeView(self):
-        self.page.title = "Video Maker"
-        self.page.padding = 10
-
-        self.appheader.appbar.title = Text(value = projectList.getprojectName(), size = 24, text_align = "center")
-
-        canvasInstancePrimary = canVas()
-        canvasInstancePrimary.cp.shapes.insert(0, ft.canvas.Fill(ft.Paint(ft.colors.WHITE)))
-        primarycanvas = canvasInstancePrimary.makeCanvas()
-        self.canvases.append(primarycanvas)
-
-        return ft.View("/mainView",
+    def moveCanvas(self, pagenum):
+        if not 0 <= pagenum <= len(self.canvases):
+            raise IndexError("a")
+        
+        self.currentIndex = pagenum
+        newView = ft.View("/mainView", 
             appbar=self.appheader.appbar,
             controls=[
                 ft.Row(
@@ -374,7 +443,7 @@ class mainView:
                         self.sidebar,
                         ft.Column([
                             self.menubar,
-                            primarycanvas
+                            self.canvases[self.currentIndex]
                         ], expand=False)
                     ],
                     expand=True
@@ -382,5 +451,54 @@ class mainView:
             ]
         )
 
+        self.page.views.clear()
+        self.page.views.append(newView)
+        self.page.update()
+
+    def makeView(self):
+        self.page.title = "Video Maker"
+        self.page.padding = 10
+
+        if projectList.getprojectObj() is None:
+            canvasInstancePrimary = canVas()
+            canvasInstancePrimary.cp.shapes.insert(0, self.whiteboard)
+            primarycanvas = canvasInstancePrimary.makeCanvas()
+            self.canvases.append(primarycanvas)
+
+            return ft.View("/mainView",
+                appbar=self.appheader.appbar,
+                controls=[
+                    ft.Row(
+                        controls=[
+                            self.sidebar,
+                            ft.Column([
+                                self.menubar,
+                                primarycanvas
+                            ], expand=False)
+                        ],
+                        expand=True
+                    )
+                ]
+            )
+
+        else:
+            self.canvases.extend(projectList.getprojectObj())
+            return ft.View("/mainView",
+                appbar=self.appheader.appbar,
+                controls=[
+                    ft.Row(
+                        controls=[
+                            self.sidebar,
+                            ft.Column([
+                                self.menubar,
+                                self.canvases[self.currentIndex]
+                            ], expand=False)
+                        ],
+                        expand=True
+                    )
+                ]
+            )
+        
+
 if __name__=="__main__":
-    None
+    pass
