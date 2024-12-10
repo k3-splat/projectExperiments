@@ -397,15 +397,21 @@ class mainView:
         self.page.views.append(newView)
         self.page.update()
 
-    def makeImageCanvas(self):
+    def makeImageCanvas(self, image=None):
         newCanvasInstance = canVas()
+        self.canvasInstanceList.append(newCanvasInstance.cp.shapes)
         self.currentIndex += 1
         nextCanvas = newCanvasInstance.makeCanvas()
+        background = image
+        self.backgrounds.append(background)
         imageStack = ft.Stack([
-            ft.Image(
-                src="C:/Users/gunda/projectExperiments/Sunagawa/assets/titlekamo.png",
+            ft.Container(
+                padding=0,
+                margin=0,
+                bgcolor=ft.colors.WHITE,
                 width=800,
-                height=450
+                height=450,
+                border_radius=0
             ),
             nextCanvas
         ])
@@ -431,29 +437,33 @@ class mainView:
         self.page.update()
 
     def moveCanvas(self, pagenum):
-        if not 0 <= pagenum <= len(self.canvases):
-            raise IndexError("a")
-        
-        self.currentIndex = pagenum
-        newView = ft.View("/mainView", 
-            appbar=self.appheader.appbar,
-            controls=[
-                ft.Row(
+        try:
+            if 0 <= pagenum <= len(self.canvases) - 1:
+                self.currentIndex = pagenum
+                newView = ft.View("/mainView", 
+                    appbar=self.appheader.appbar,
                     controls=[
-                        self.sidebar,
-                        ft.Column([
-                            self.menubar,
-                            self.canvases[self.currentIndex]
-                        ], expand=False)
-                    ],
-                    expand=True
+                        ft.Row(
+                            controls=[
+                                self.sidebar,
+                                ft.Column([
+                                    self.menubar,
+                                    self.canvases[self.currentIndex]
+                                ], expand=False)
+                            ],
+                            expand=True
+                        )
+                    ]
                 )
-            ]
-        )
 
-        self.page.views.clear()
-        self.page.views.append(newView)
-        self.page.update()
+                self.page.views.clear()
+                self.page.views.append(newView)
+                self.page.update()
+            else:
+                raise IndexError
+
+        except IndexError:
+            pass
 
     def makeView(self):
         self.page.title = "Video Maker"
