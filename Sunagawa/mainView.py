@@ -18,8 +18,6 @@ from flet import(
     Page,
     alignment,
     border_radius,
-    FloatingActionButton,
-    UserControl,
     CrossAxisAlignment,
 )
 from chooseProjectView import projectList
@@ -28,6 +26,7 @@ from dialogs import askSave
 from fileLoad import saveAndloadFile
 import time
 import pygetwindow as gw
+import subprocess
 from PIL import ImageGrab
 from os import path
 
@@ -464,6 +463,13 @@ class mainView:
 
         except IndexError:
             pass
+
+    def getIntermediateFrame(self):
+        self.takeCanvasImage(self.currentIndex)
+        self.takeCanvasImage(self.currentIndex + 1)
+
+        cmd = "./rife-ncnn-vulkan -0 " + "-1 1.jpg -o 01.jpg"
+        subprocess.call(cmd.split())
 
     def makeView(self):
         self.page.title = "Video Maker"
