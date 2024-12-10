@@ -194,8 +194,8 @@ class Sidebar:
 
 
 #ここから上がUIの部分
-import tkinter as tk
-from tkinter import ttk
+#import tkinter as tk
+#from tkinter import ttk
 
 class DrawApp:
     def __init__(self):
@@ -354,7 +354,7 @@ class DrawApp:
             on_result=self.on_image_selected
         )
         self.page.dialog.pick_files(allowed_extensions=["png", "jpg", "jpeg"])
-
+    
     def on_image_selected(self, e):
         if e.files:
             # 選択した画像を描画エリアに追加
@@ -398,6 +398,8 @@ class DrawApp:
 
         self.play_thread = threading.Thread(target=play)
         self.play_thread.start()
+
+#asyncio
 
     #スピードを変える
     def change_play_speed(self, e):

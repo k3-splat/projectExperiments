@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>動画投稿サイト</title>
+    <style>
+        /* 全体のスタイル設定 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+        }
+        /* ヘッダーのスタイル */
+        .header {
+            display: flex;
+            justify-content: center; /* 中央揃え */
+            align-items: center;
+            background-color: #ffffff;
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        .logo {
+            width: 150px; /* 横長に設定 */
+            height: auto;
+        }
+        /* メインコンテンツのスタイル */
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            max-width: 900px; /* 2列になるように最大幅を設定 */
+            margin: 20px auto;
+            gap: 20px;
+        }
+        /* 動画カードのスタイル */
+        .video-card {
+            width: calc(50% - 20px); /* カードの幅を調整して2列に */
+            background-color: #ffffff;
+            border-radius: 4px;
+            overflow: hidden;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .thumbnail {
+            width: 100%;
+            height: 180px;
+            background-color: #cccccc;
+        }
+        .video-info {
+            display: flex;
+            padding: 10px;
+        }
+        .channel-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-right: 10px;
+        }
+        .channel-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .channel-name {
+            font-size: 14px;
+            color: #606060;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ヘッダー -->
+    <div class="header">
+        <img src="rogo.png" alt="ロゴ" class="logo">
+    </div>
+
+    <!-- メインコンテンツ -->
+    <div class="main-content">
+        <!-- 動画カード1 -->
+        <div class="video-card">
+            <div class="thumbnail">
+                <img src="samune.png" alt="サムネイル" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div class="video-info">
+                <div class="channel-icon">
+                    <img src="aikon.png" alt="チャンネルアイコン">
+                </div>
+                <div class="video-details">
+                    <div class="channel-name">チャンネル名1</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 動画カード2 -->
+        <div class="video-card">
+            <div class="thumbnail">
+                <img src="samune.png" alt="サムネイル" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div class="video-info">
+                <div class="channel-icon">
+                    <img src="aikon.png" alt="チャンネルアイコン">
+                </div>
+                <div class="video-details">
+                    <div class="channel-name">チャンネル名2</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 動画カード3 -->
+        <div class="video-card">
+            <div class="thumbnail">
+                <img src="samune.png" alt="サムネイル" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div class="video-info">
+                <div class="channel-icon">
+                    <img src="aikon.png" alt="チャンネルアイコン">
+                </div>
+                <div class="video-details">
+                    <div class="channel-name">チャンネル名3</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 動画カード4 -->
+        <div class="video-card">
+            <div class="thumbnail">
+                <img src="samune.png" alt="サムネイル" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div class="video-info">
+                <div class="channel-icon">
+                    <img src="aikon.png" alt="チャンネルアイコン">
+                </div>
+                <div class="video-details">
+                    <div class="channel-name">チャンネル名4</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
+

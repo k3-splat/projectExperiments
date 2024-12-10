@@ -5,6 +5,7 @@ import videoPlayView
 import projectRemoveView
 import chooseProjectView
 import selectWatchVideoView
+import cv2
 
 async def main(page: ft.Page):
     startview = start.startView(page)
