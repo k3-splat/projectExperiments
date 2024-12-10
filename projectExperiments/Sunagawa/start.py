@@ -7,6 +7,7 @@ from chooseProjectView import projectList
 import asyncio
 from os import path
 
+#
 class startView:
     def __init__(self, page: ft.Page):
         self.page = page
