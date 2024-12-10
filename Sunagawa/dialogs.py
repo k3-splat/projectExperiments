@@ -95,3 +95,53 @@ class chooseUploadVideo:
                 ft.TextButton("キャンセル", on_click=lambda e: page.close(self.chooseDialog))
             ]
         )
+
+class AttentionRemove:
+    def __init__(self, fun1, fun2):
+        self.attentionDialog = ft.AlertDialog(
+            title=ft.Text("Attention!"),
+            modal=False,
+            content=ft.Text("本当に削除してもよろしいですか？"),
+            actions=[
+                ft.TextButton("はい"),
+                ft.TextButton("いいえ")
+            ]
+        )
+
+        self.attentionDialog.actions[0].on_click = fun1
+        self.attentionDialog.actions[1].on_click = fun2
+
+
+class askSave:
+    def __init__(self, fun1, fun2, fun3):
+        self.askSaveDialog = ft.AlertDialog(
+            title=ft.Text("comfirm"),
+            modal=False,
+            content=ft.Text("保存して終了しますか？"),
+            actions=[
+                ft.TextButton("はい"),
+                ft.TextButton("保存せず終了する"),
+                ft.Text("キャンセル")
+            ]
+        )
+
+        self.askSaveDialog.actions[0].on_click = fun1
+        self.askSaveDialog.actions[1].on_click = fun2
+        self.askSaveDialog.actions[2].on_click = fun3
+
+
+class NotFolderSelected:
+    def __init__(self, fun):
+        self.banner = ft.Banner(
+            bgcolor=ft.colors.AMBER_100,
+            leading=ft.Icon(ft.icons.WARNING_AMBER_ROUNDED, color=ft.colors.AMBER, size=40),
+            content=ft.Text(
+                value="選択されたフォルダがありません:",
+                color=ft.colors.BLACK,
+            ),
+            actions=[
+                ft.TextButton(text="了解しました", style=ft.ButtonStyle(color=ft.colors.BLUE_600))
+            ]
+        )
+        
+        self.banner.actions[0].on_click = fun

@@ -30,7 +30,7 @@ class startView:
         self.choosemanagedialog = dl.manageFolders(
             lambda e: self.page.close(self.choosemanagedialog.bottom_sheet),
             lambda e: self.page.go("/removeView"),
-            lambda e: print("")
+            lambda e: self.page.go("/manageVideoView")
         )
 
         self.page.title = "スタート"
@@ -136,7 +136,7 @@ class startView:
                 [
                     self.img_miru_clickable,
                     ft.Container(
-                        content=ft.Text("絵"),
+                        content=ft.Text("管理する"),
                         alignment=ft.alignment.center,
                         bgcolor=ft.colors.BLACK,
                         width=200,
@@ -159,7 +159,7 @@ class startView:
                         height=50,
                         border_radius=5,
                         ink=True,
-                        on_click=lambda e: self.page.go("/selectWatchVideoView"),
+                        on_click=lambda e: self.page.go("/mainView"),
                     ),
                 ],
                 alignment=ft.MainAxisAlignment.CENTER,
