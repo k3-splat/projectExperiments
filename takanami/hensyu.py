@@ -18,6 +18,15 @@
 #↑リソースの問題？？
 #回転ができるようになりました。しかし、まだ改良の余地あり...
 
+#12/11
+#mainView.pyやcanvasView.pyを参考にしています。
+#このプログラムにCanvasをうまく入れることができず
+#現在難航しております。
+#とりあえず滑らかな自由描画はできるようにしたいです。
+#canvas cvはなんとか
+#cpが、うまくいかないです。
+#仮にうまくいった場合、すべてcpに差し替えます。
+
 #やりたいことリスト
 #×音声をつける
 #▲変形（回転、拡大縮小）
@@ -499,7 +508,7 @@ class DrawApp:
             line = Container(
                 left=self.start_x,
                 top=self.start_y,
-                width=5,  
+                width=5,  # 現在のxと前回のxの差を幅に
                 height=5, 
                 bgcolor=self.selected_color,
                 border_radius=1,
