@@ -14,14 +14,14 @@
         /* ヘッダーのスタイル */
         .header {
             display: flex;
-            justify-content: center; /* ロゴを中央に配置 */
+            justify-content: flex-start; /* ロゴを左端に配置 */
             align-items: center;
             background-color: #ffffff;
-            padding: 10px 0;
+            padding: 10px 20px; /* 左右の余白を調整 */
             border-bottom: 1px solid #ddd;
         }
         .logo {
-            width: 150px;
+            width: 100px; /* サイズを縮小 */
             height: auto;
         }
         /* ユーザープロフィールのスタイル */
@@ -49,6 +49,11 @@
             font-size: 24px;
             font-weight: bold;
             margin-bottom: 10px;
+            color: #007BFF; /* ユーザー名を青色に */
+            cursor: pointer; /* クリック可能であることを示すポインタ */
+        }
+        .user-name:hover {
+            text-decoration: underline; /* ホバー時に下線を表示 */
         }
         /* 動画一覧のスタイル */
         .video-list {
@@ -91,7 +96,9 @@
 
     <!-- ヘッダー -->
     <div class="header">
-        <img src="rogo.png" alt="ロゴ" class="logo">
+        <a href="home.html">
+            <img src="ekaku.png" alt="ロゴ" class="logo">
+        </a>
     </div>
 
     <!-- ユーザープロフィール -->
@@ -128,12 +135,7 @@
         <!-- 必要に応じて動画カードを追加 -->
     </div>
 
-    <!-- フッター -->
-    <div class="footer">
-        &copy; 2024 動画投稿サイト
-    </div>
-
 </body>
 </html>
-</html>
+
 

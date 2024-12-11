@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>ログイン・ログアウトページ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            position: relative;
+            background-color: #ffffff;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 20px; /* ロゴの下に余白を確保 */
+        }
+        .logo {
+            display: block;
+            width: 100px; /* ロゴの幅を調整 */
+            height: auto;
+            margin-left: 20px; /* 左側に余白を確保 */
+            margin-top: 10px; /* ロゴの上に空白を追加 */
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: normal;
+            margin: 0;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 中央(画像上)に配置 */
+            white-space: nowrap;
+        }
+        main {
+            max-width: 400px;
+            margin: 50px auto;
+            background-color: #ffffff;
+            border-radius: 5px;
+            padding: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h2 {
+            font-weight: normal;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 30px;
+        }
+        label {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        input[type="submit"],
+        button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover,
+        button:hover {
+            background-color: #45a049;
+        }
+        .logout-area {
+            text-align: center;
+        }
+        .logout-area button {
+            background-color: #f44336;
+        }
+        .logout-area button:hover {
+            background-color: #e53935;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #ddd;
+            margin: 40px 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="home.html">
+            <img src="ekaku.png" alt="ロゴ" class="logo">
+        </a>
+        <h1>ログイン・ログアウト</h1>
+    </header>
+
+    <main>
+        <!-- ログインフォーム -->
+        <h2>ログイン</h2>
+        <form action="#" method="post">
+            <label for="login-username">ユーザー名</label>
+            <input type="text" id="login-username" name="username" placeholder="ユーザー名を入力" required>
+
+            <label for="login-email">メールアドレス</label>
+            <input type="email" id="login-email" name="email" placeholder="メールアドレスを入力" required>
+
+            <label for="login-password">パスワード</label>
+            <input type="password" id="login-password" name="password" placeholder="パスワード" required>
+
+            <input type="submit" value="ログイン">
+        </form>
+
+        <hr>
+
+        <!-- ログアウトボタン -->
+        <div class="logout-area">
+            <h2>ログアウト</h2>
+            <p>現在ログイン中のユーザーがいる場合、以下のボタンからログアウトできます。</p>
+            <button type="button">ログアウト</button>
+        </div>
+    </main>
+</body>
+</html>
+
+
+
+
