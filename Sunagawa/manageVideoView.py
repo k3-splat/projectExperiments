@@ -7,7 +7,6 @@ from datetime import datetime
 from pathDatabase import pathDatabase
 from dialogs import AttentionRemove
 
-#
 class manageVideo:
     removeVideo = ""
 
