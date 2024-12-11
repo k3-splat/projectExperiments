@@ -1,10 +1,12 @@
 import flet as ft
 import os
+import pickle
 from flet import (
     Page,
     FilePickerResultEvent,
     Text
 )
+from pathDatabase import pathDatabase
 
 
 class mkdir:
@@ -23,12 +25,15 @@ class mkdir:
     def make_directory(self, folder_name: str):
         try:
             new_directory = os.path.join(self.selected_directory, folder_name)
+            pd = pathDatabase()
 
             if os.path.exists(new_directory):
                 raise FileExistsError()
+            
+            if pd.has_tag(folder_name):
+                raise FileExistsError()
 
             os.mkdir(new_directory)
-
             return new_directory
 
         except FileExistsError:
@@ -38,12 +43,26 @@ class mkdir:
             return -2
         
 
+class saveAndloadFile:
+    def __init__(self):
+        self.saveAndloadPath = "C:/Users/gunda/projectExperiments/Sunagawa/pickles"
+
+    def savefile(self, tag, obj):
+        file = os.path.join(self.saveAndloadPath, tag + ".pickle")
+        with open(file, 'wb') as f:
+            pickle.dump(obj, f)
+
+    def loadfile(self, tag):
+        file = os.path.join(self.saveAndloadPath, tag + ".pickle")
+        with open(file, "rb") as f:
+            return pickle.loads(f)
+
 
 class input_material:
     material_paths = []
 
     def __init__(self):
-        self.path = Text()
+        self.path = ""
 
     def pick_files_result(self, e: FilePickerResultEvent):
         if e.files:

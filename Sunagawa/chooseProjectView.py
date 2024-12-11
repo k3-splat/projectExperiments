@@ -1,9 +1,27 @@
 import flet as ft
 from pathDatabase import pathDatabase
-from os import path
+from dialogs import NotFolderSelected
+from fileLoad import saveAndloadFile
 
 class projectList:
     projectName = "hoge"
+    projectObj = None
+
+    @classmethod
+    def setprojectName(cls, value):
+        cls.projectName = value
+
+    @classmethod
+    def setprojectObj(cls, value):
+        cls.projectObj = value
+
+    @classmethod
+    def getprojectName(cls):
+        return cls.projectName
+    
+    @classmethod
+    def getprojectObj(cls):
+        return cls.projectObj
 
     def __init__(self, page: ft.Page):
         self.page = page
@@ -33,19 +51,23 @@ class projectList:
                 checkbox.value = False
 
         self.page.update()
-
-    def returnName(self):
-        return projectList.projectName
     
     def openProject(self):
         for checkbox in self.checkboxes:
             if checkbox.value:
-                projectList.projectName = f"{checkbox.label}"
-                print(projectList.projectName)
-                break
+                tag = checkbox.label
+                loading = saveAndloadFile()
 
-        self.page.update()
-        self.page.go("/mainView")
+                projectList.setprojectName(tag)
+                projectList.setprojectObj(loading.loadfile(tag))
+                self.page.go("/mainView")
+
+                return
+            
+        banner_instance = NotFolderSelected(
+            lambda e: self.page.close(banner_instance.banner)
+        )
+        self.page.open(banner_instance.banner)
 
     def makeView(self):
         self.page.title = "プロジェクトを開く"
@@ -63,7 +85,7 @@ class projectList:
                     text="開く",
                     on_click=lambda e: self.openProject()
                 )
-            ]
+            ],
         )
         datalabel = [
             ft.DataColumn(ft.Text("フォルダ名"), heading_row_alignment=ft.MainAxisAlignment.END),

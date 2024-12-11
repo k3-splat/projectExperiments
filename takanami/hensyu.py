@@ -5,10 +5,18 @@
 #再生ボタン追加play
 #各ページの保存があまりできてません。一度playボタンをおすとなぜか保存されます。
 #拡大縮小はまだエラーが出るので、修正中です。
-#11/27 進捗
+
+#11/27 
 #再生速度変更できるようにしました。
 #拡大縮小、回転はエラーが出ないようになりましたが、思ってたのとは違う動きになります。
 #色変更ができるようになりました。細かい色変更も実装したいです。
+#画像を挿入できるようにしたい
+
+#12/4
+#画像挿入をしようとしましたが、エラーになってしまいます。
+#致命的なバグあり、ある程度描画すると描画できなくなります。
+#↑リソースの問題？？
+#回転ができるようになりました。しかし、まだ改良の余地あり...
 
 #やりたいことリスト
 #×音声をつける
@@ -22,6 +30,8 @@
 #〇再生、停止
 #〇色変更
 #×テキストの表示
+#自由描画の太さを変える
+
 
 import flet as ft
 from flet import (
@@ -49,12 +59,14 @@ from flet import (
     GestureDetector,
     Slider,
     Dropdown,
-    dropdown
+    dropdown,
+    Page
 )
 
 #再生ボタンに必要インポート
 import time
 import threading
+
 
 class AppHeader:
     def __init__(self, page, draw_app):
@@ -182,7 +194,8 @@ class Sidebar:
 
 
 #ここから上がUIの部分
-
+#import tkinter as tk
+#from tkinter import ttk
 
 class DrawApp:
     def __init__(self):
@@ -199,9 +212,12 @@ class DrawApp:
         self.is_eraser_mode = False
         self.zenksi_mode = False
         self.is_rotate_mode = False
-        self.is_scale_mode = False
+        self.is_scale_mode = False 
+        self.image_mode = False #ガゾウモード
+        #self.page = page  
 
         self.selected_color = colors.BLACK
+        self.pen_thickness = 5
 
         self.rotate = 0
         self.play_speed = 0.5
@@ -245,47 +261,59 @@ class DrawApp:
             on_change=self.change_color,
         )
 
+        #self.file_picker = FilePicker(on_result=self.insert_image)
+
+        #image_button = ElevatedButton(
+        #    text="画像挿入", 
+        #    on_click=self.image
+        #)
+
         #ボタン
         rectangle_button = ElevatedButton(
-            text="四角形",
+            text="Rectangle",
             on_click=self.rectangle
         )
 
         free_draw_button = ElevatedButton(
-            text="自由描画",
+            text="freeDraw",
             on_click=self.free
         )
 
         circle_button = ElevatedButton(
-            text="円",
+            text="circle",
             on_click=self.circle
         )
 
         eraser_button = ElevatedButton(
-            text="消しごむ",
+            text="eraser",
             on_click=self.eraser
         )
 
         rotate_button = ElevatedButton(
-            text="回転",
+            text="rotate",
             on_click=self.rotate_mode
         )
 
         scale_button = ElevatedButton(
-            text="縮小", 
+            text="small", 
             on_click=self.scale_mode
         )
 
         #全部消す
         zenkesi_button = ElevatedButton(
-            text="消す",
+            text="delite",
             on_click=self.zenkesi
+        )
+
+        image_button = ElevatedButton(
+            text="Image",
+            on_click=self.insert_image
         )
 
         return Column(
             controls=[
                 Row(
-                    controls=[rectangle_button, free_draw_button, circle_button, eraser_button, rotate_button, scale_button, zenkesi_button, color_picker],
+                    controls=[rectangle_button, free_draw_button, circle_button, eraser_button, rotate_button, scale_button, zenkesi_button, color_picker, image_button],
                     alignment="center"
                 ),
                 speed_label,
@@ -320,6 +348,33 @@ class DrawApp:
         self.draw_area.controls.extend(self.frames[self.current_frame_index].copy())
         self.draw_area.update()
 
+    def insert_image(self, e):
+        # ファイル選択ダイアログを開く
+        self.page.dialog = ft.FilePicker(
+            on_result=self.on_image_selected
+        )
+        self.page.dialog.pick_files(allowed_extensions=["png", "jpg", "jpeg"])
+    
+    def on_image_selected(self, e):
+        if e.files:
+            # 選択した画像を描画エリアに追加
+            selected_image = e.files[0].path
+            image_container = Container(
+                content=Image(
+                    src=selected_image,
+                    fit="contain",  # 画像のフィットモード
+                    width=200,  # 表示サイズ（調整可能）
+                    height=200,
+                ),
+                left=100,  # 画像の初期位置
+                top=100
+            )
+            self.draw_area.controls.append(image_container)
+            self.draw_area.update()
+            # 現在のフレームに画像を保存
+            self.frames[self.current_frame_index].append(image_container)
+
+    
     #再生するところ
     def play_animation(self):
         if self.is_playing:
@@ -336,9 +391,15 @@ class DrawApp:
 
                 if self.current_frame_index == len(self.frames) - 1:
                     self.is_playing = False 
+                
+                if self.current_frame_index == len(self.frames):
+                    self.current_frame_index = 0
+                    self.load_frame()
 
         self.play_thread = threading.Thread(target=play)
         self.play_thread.start()
+
+#asyncio
 
     #スピードを変える
     def change_play_speed(self, e):
@@ -438,8 +499,8 @@ class DrawApp:
             line = Container(
                 left=self.start_x,
                 top=self.start_y,
-                width=2,  
-                height=2, 
+                width=5,  
+                height=5, 
                 bgcolor=self.selected_color,
                 border_radius=1,
             )
@@ -468,10 +529,13 @@ class DrawApp:
 
         elif self.zenkesi:
             self.clear_all()
+            self.draw_area.controls.clear()
+            self.draw_area.update()
 
         elif self.is_rotate_mode:
             for shape in self.draw_area.controls:
-                shape.rotate = (shape.rotate or 0 + 10) % 360
+                current_rotation = shape.rotate if shape.rotate is not None else 0
+                shape.rotate = (current_rotation + 0.01) % 360
                 shape.update()
         elif self.is_scale_mode:
             for shape in self.draw_area.controls:
@@ -500,6 +564,250 @@ class DrawApp:
 
     def on_pan_end(self, e):
         pass
+
+from chooseProjectView import projectList
+from canvasView import canVas
+
+class menubar:
+    def __init__(self):
+        self.menubar = ft.MenuBar(
+            expand=False,
+            controls=[
+                ft.SubmenuButton(
+                    content=ft.Text("ペンの色"),
+                    controls=[
+                        ft.MenuItemButton(
+                            content=ft.Text("黄"),
+                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.YELLOW),
+                            on_click=lambda e: canVas.setColor(ft.colors.YELLOW)
+                        ),
+                        ft.MenuItemButton(
+                            content=ft.Text("黄緑"),
+                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.LIGHT_GREEN),
+                            on_click=lambda e: canVas.setColor(ft.colors.LIGHT_GREEN)
+                        ),
+                        ft.MenuItemButton(
+                            content=ft.Text("緑"),
+                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.GREEN),
+                            on_click=lambda e: canVas.setColor(ft.colors.GREEN)
+                        ),
+                        ft.MenuItemButton(
+                            content=ft.Text("水"),
+                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.LIGHT_BLUE),
+                            on_click=lambda e: canVas.setColor(ft.colors.LIGHT_BLUE)
+                        ),
+                        ft.MenuItemButton(
+                            content=ft.Text("青"),
+                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.BLUE),
+                            on_click=lambda e: canVas.setColor(ft.colors.BLUE)
+                        ),
+                        ft.MenuItemButton(
+                            content=ft.Text("紫"),
+                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.PURPLE),
+                            on_click=lambda e: canVas.setColor(ft.colors.PURPLE)
+                        ),
+                        ft.MenuItemButton(
+                            content=ft.Text("桃"),
+                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.PINK),
+                            on_click=lambda e: canVas.setColor(ft.colors.PINK)
+                        ),
+                        ft.MenuItemButton(
+                            content=ft.Text("赤"),
+                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.RED),
+                            on_click=lambda e: canVas.setColor(ft.colors.RED)
+                        ),
+                        ft.MenuItemButton(
+                            content=ft.Text("橙"),
+                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.ORANGE),
+                            on_click=lambda e: canVas.setColor(ft.colors.ORANGE)
+                        ),
+                        ft.MenuItemButton(
+                            content=ft.Text("薄橙"),
+                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.AMBER),
+                            on_click=lambda e: canVas.setColor(ft.colors.AMBER)
+                        ),
+                        ft.MenuItemButton(
+                            content=ft.Text("茶"),
+                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.BROWN),
+                            on_click=lambda e: canVas.setColor(ft.colors.BROWN)
+                        ),
+                        ft.MenuItemButton(
+                            content=ft.Text("黒"),
+                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.BLACK),
+                            on_click=lambda e: canVas.setColor(ft.colors.BLACK)
+                        )
+                    ]
+                ),
+                ft.SubmenuButton(
+                    content=ft.Text("線の太さ"),
+                    controls=[
+                        ft.Slider(
+                            min=1,
+                            max=8,
+                            divisions=7,
+                            label="{value}",
+                            on_change=lambda e: canVas.setWidth(e.control.value)
+                        )
+                    ]
+                )
+            ]
+        )
+
+class mainView:
+    def __init__(self, page: ft.Page):
+        self.page = page
+        self.appheader = appHeader(self.page)
+        sidebarInstance = Sidebar()
+        self.sidebar = sidebarInstance.build()
+        menubarInstance = menubar()
+        self.menubar = menubarInstance.menubar
+        self.menubar.controls.extend(
+            [
+                ft.TextButton(text="新しいキャンバス", on_click=lambda e: self.makeNextCanvas()),
+                ft.TextButton(text="新しい背景ありキャンバス", on_click=lambda e: self.makeImageCanvas()),
+                ft.TextButton(text="戻る", on_click=lambda e: self.backCanvas()),
+                ft.TextButton(text="進む", on_click=lambda e: self.goNextCanvas())
+            ]
+        )
+        self.canvases = []
+        self.currentIndex = 0
+
+    def makeNextCanvas(self):
+        newCanvasInstance = canVas()
+        self.currentIndex += 1
+        newCanvasInstance.cp.shapes.insert(self.currentIndex, ft.canvas.Fill(ft.Paint(ft.colors.WHITE)))
+        nextCanvas = newCanvasInstance.makeCanvas()
+        self.canvases.insert(self.currentIndex, nextCanvas)
+        newView = ft.View("/mainView",
+            appbar=self.appheader.appbar,
+            controls=[
+                ft.Row(
+                    controls=[
+                        self.sidebar,
+                        ft.Column([
+                            self.menubar,
+                            nextCanvas
+                        ], expand=False)
+                    ],
+                    expand=True
+                )
+            ]
+        )
+
+        self.page.views.clear()
+        self.page.views.append(newView)
+        self.page.update()
+
+    def makeImageCanvas(self):
+        newCanvasInstance = canVas()
+        self.currentIndex += 1
+        nextCanvas = newCanvasInstance.makeCanvas()
+        imageStack = ft.Stack([
+            ft.Image(
+                src="C:/Users/gunda/projectExperiments/Sunagawa/assets/titlekamo.png",
+                width=800,
+                height=450
+            ),
+            nextCanvas
+        ])
+        self.canvases.insert(self.currentIndex, imageStack)
+        newView = ft.View("/mainView",
+            appbar=self.appheader.appbar,
+            controls=[
+                ft.Row(
+                    controls=[
+                        self.sidebar,
+                        ft.Column([
+                            self.menubar,
+                            imageStack
+                        ], expand=False)
+                    ],
+                    expand=True
+                )
+            ]
+        )
+
+        self.page.views.clear()
+        self.page.views.append(newView)
+        self.page.update()
+
+    def backCanvas(self):
+        if self.currentIndex > 0:
+            self.currentIndex -= 1
+            newView = ft.View("/mainView", 
+                appbar=self.appheader.appbar,
+                controls=[
+                    ft.Row(
+                        controls=[
+                            self.sidebar,
+                            ft.Column([
+                                self.menubar,
+                                self.canvases[self.currentIndex]
+                            ], expand=False)
+                        ],
+                        expand=True
+                    )
+                ]
+            )
+
+            self.page.views.clear()
+            self.page.views.append(newView)
+            self.page.update()
+
+    def goNextCanvas(self):
+        if self.currentIndex < len(self.canvases):
+            self.currentIndex += 1
+            newView = ft.View("/mainView", 
+                appbar=self.appheader.appbar,
+                controls=[
+                    ft.Row(
+                        controls=[
+                            self.sidebar,
+                            ft.Column([
+                                self.menubar,
+                                self.canvases[self.currentIndex]
+                            ], expand=False)
+                        ],
+                        expand=True
+                    )
+                ]
+            )
+
+            self.page.views.clear()
+            self.page.views.append(newView)
+            self.page.update()
+
+    def makeView(self):
+        self.page.title = "Video Maker"
+        self.page.padding = 10
+
+        self.appheader.appbar.title = Text(value = projectList.getprojectName(), size = 24, text_align = "center")
+
+        canvasInstancePrimary = canVas()
+        canvasInstancePrimary.cp.shapes.insert(0, ft.canvas.Fill(ft.Paint(ft.colors.WHITE)))
+        primarycanvas = canvasInstancePrimary.makeCanvas()
+        self.canvases.append(primarycanvas)
+
+        draw_app = DrawApp()
+        AppHeader(page, draw_app)
+        sidebar = Sidebar()
+
+        return ft.View("/mainView",
+            appbar=self.appheader.appbar,
+            controls=[
+                ft.Row(
+                    controls=[
+                        self.sidebar,
+                        ft.Column([
+                            self.menubar,
+                            primarycanvas
+                        ], expand=False)
+                    ],
+                    expand=True
+                )
+            ]
+        )
+    
 
 def main(page: ft.Page):
     page.title = "Video Maker"

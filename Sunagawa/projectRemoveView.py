@@ -1,11 +1,16 @@
 import flet as ft
 from pathDatabase import pathDatabase
-from os import path
+from dialogs import AttentionRemove
+from dialogs import NotFolderSelected
 
 class removeList:
     def __init__(self, page: ft.Page):
         self.page = page
         self.refresh_data()
+        self.instance_AR = AttentionRemove(
+            lambda e: self.removeAndRefresh(),
+            lambda e: self.page.close(self.instance_AR.attentionDialog)
+        )
 
     def refresh_data(self):
         db = pathDatabase()
@@ -38,7 +43,7 @@ class removeList:
                 ft.ElevatedButton(
                     icon=ft.icons.DELETE, 
                     text="削除する", 
-                    on_click=self.removeAndRefresh
+                    on_click=lambda e: self.emptyChekbox()
                 )
             ]
         )
@@ -64,8 +69,19 @@ class removeList:
                     rows=self.filerow
                 )
             ], horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+        
+    def emptyChekbox(self):
+        for checkbox in self.checkboxes:
+            if checkbox.value:
+                self.page.open(self.instance_AR.attentionDialog)
+                return
 
-    def removeAndRefresh(self, e=None):
+        bannerInstance = NotFolderSelected(
+            lambda e: self.page.close(bannerInstance.banner)
+        )
+        self.page.open(bannerInstance.banner)
+
+    def removeAndRefresh(self):
         db = pathDatabase()
         for checkbox in self.checkboxes:
             if checkbox.value:
@@ -75,3 +91,5 @@ class removeList:
         self.page.views.clear()
         self.page.views.append(self.makeView())
         self.page.update()
+
+        self.page.close(self.instance_AR.attentionDialog)
