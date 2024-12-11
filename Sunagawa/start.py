@@ -92,7 +92,7 @@ class startView:
             self.inputfoldernamedialog.inputFolderNameDialog.content.label = "Making directory is failure. Please try it again."
             self.inputfoldernamedialog.inputFolderNameDialog.content.border_color = 'RED'
         else:
-            projectList.projectName = path.basename(filePath)
+            projectList.setprojectName(path.basename(filePath))
 
             self.inputfoldernamedialog.inputFolderNameDialog.content.label = ""
             self.inputfoldernamedialog.inputFolderNameDialog.content.border_color = ''
