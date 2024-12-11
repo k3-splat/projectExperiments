@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>ユーザー登録ページ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            display: flex;
+            align-items: center;
+            background-color: #ffffff;
+            padding: 10px 20px; /* 左右の余白を調整 */
+            border-bottom: 1px solid #ddd;
+        }
+        .logo {
+            width: 100px; /* ロゴの幅を縮小 */
+            height: auto;
+        }
+        h1 {
+            font-size: 24px;
+            margin: 0 auto; /* ロゴの横でタイトルを中央に配置 */
+            font-weight: normal;
+        }
+        main {
+            max-width: 400px;
+            margin: 50px auto;
+            background-color: #ffffff;
+            border-radius: 5px;
+            padding: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h2 {
+            font-weight: normal;
+            margin-bottom: 30px;
+            font-size: 20px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        input[type="submit"] {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        .info {
+            text-align: center;
+            font-size: 14px;
+            margin-top: 20px;
+            color: #606060;
+        }
+        .info a {
+            color: #007BFF; /* 青色 */
+            text-decoration: underline; /* 下線を追加 */
+            cursor: pointer;
+        }
+        .info a:hover {
+            color: #0056b3; /* ホバー時の色変更 */
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="home.html">
+            <img src="ekaku.png" alt="ロゴ" class="logo">
+        </a>
+        <h1>ユーザー登録</h1>
+    </header>
+    
+    <main>
+        <h2>新しいアカウントを作成</h2>
+        <form action="#" method="post">
+            <label for="username">ユーザー名</label>
+            <input type="text" id="username" name="username" placeholder="ユーザー名を入力" required>
+
+            <label for="email">メールアドレス</label>
+            <input type="email" id="email" name="email" placeholder="メールアドレスを入力" required>
+
+            <label for="password">パスワード</label>
+            <input type="password" id="password" name="password" placeholder="パスワードを入力" required>
+
+            <input type="submit" value="登録">
+        </form>
+
+        <div class="info">
+            <p>既にアカウントをお持ちですか？ <a href="/login">ログインページ</a> へ進む。</p>
+        </div>
+    </main>
+
+</body>
+</html>
+
+
