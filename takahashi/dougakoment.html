@@ -16,15 +16,18 @@
         }
         /* ヘッダーのスタイル */
         .header {
+            display: flex;
+            justify-content: flex-start; /* ロゴを左端に配置 */
+            align-items: center;
             width: 100%;
             background-color: #ffffff;
-            padding: 10px 0;
-            text-align: center;
+            padding: 10px 20px; /* 左右の余白を調整 */
             border-bottom: 1px solid #ddd;
         }
         .logo {
-            width: 150px;
+            width: 100px; /* サイズを縮小 */
             height: auto;
+            margin-left: 20px; /* ロゴの左端に余白を追加 */
         }
         /* コンテンツのメインラッパー */
         .container {
@@ -123,7 +126,9 @@
 
     <!-- ヘッダー -->
     <div class="header">
-        <img src="rogo.png" alt="ロゴ" class="logo">
+        <a href="home.html">
+            <img src="ekaku.png" alt="ロゴ" class="logo">
+        </a>
     </div>
 
     <div class="container">
