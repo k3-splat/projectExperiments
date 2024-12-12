@@ -1,8 +1,7 @@
 import flet as ft
-import pickle
 from pathDatabase import pathDatabase
 from dialogs import NotFolderSelected
-from os import path
+from fileLoad import saveAndloadFile
 
 class projectList:
     projectName = "hoge"
@@ -13,13 +12,13 @@ class projectList:
         cls.projectName = value
 
     @classmethod
-    def getprojectName(cls):
-        return cls.projectName
-
-    @classmethod
     def setprojectObj(cls, value):
         cls.projectObj = value
 
+    @classmethod
+    def getprojectName(cls):
+        return cls.projectName
+    
     @classmethod
     def getprojectObj(cls):
         return cls.projectObj
@@ -52,21 +51,15 @@ class projectList:
                 checkbox.value = False
 
         self.page.update()
-
-    def loadfile(self):
-        binarydatas = "C:/Users/gunda/projectExperiments/Sunagawa/pickles"
-        outputpath = path.join(binarydatas, projectList.getprojectName() + ".pkl")
-
-        with open(outputpath, "rb") as f:
-            projectList.setprojectObj(pickle.load(f))
     
     def openProject(self):
         for checkbox in self.checkboxes:
             if checkbox.value:
                 tag = checkbox.label
+                loading = saveAndloadFile()
 
                 projectList.setprojectName(tag)
-                self.loadfile()
+                projectList.setprojectObj(loading.loadfile(tag))
                 self.page.go("/mainView")
 
                 return

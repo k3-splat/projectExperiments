@@ -22,12 +22,11 @@ from flet import(
 )
 from chooseProjectView import projectList
 import flet.canvas as cv
-from flet.canvas import Line
 from dialogs import askSave
+from fileLoad import saveAndloadFile
 import time
 import pygetwindow as gw
 import subprocess
-import pickle
 from PIL import ImageGrab
 from os import path
 
@@ -138,6 +137,7 @@ class Sidebar:
         )
         return self.view
 
+    
     def toggle_nav_rail(self, e):
         self.nav_rail.visible = not self.nav_rail.visible
         self.toggle_nav_rail_button.selected = not self.toggle_nav_rail_button.selected
@@ -227,7 +227,7 @@ class menubar:
                             max=8,
                             divisions=7,
                             label="{value}",
-                            on_change=lambda e: canVas.setStrokeWidth(e.control.value)
+                            on_change=lambda e: canVas.setWidth(e.control.value)
                         )
                     ]
                 )
@@ -259,13 +259,12 @@ class canVas:
 
     def __init__(self):
         self.state = State()
-        self.drawing = ft.GestureDetector(
-            on_pan_start=self.pan_start,
-            on_pan_update=self.pan_update,
-            drag_interval=10
-        )
         self.cp = cv.Canvas(
-            content=self.drawing
+            content=ft.GestureDetector(
+                on_pan_start=self.pan_start,
+                on_pan_update=self.pan_update,
+                drag_interval=10,
+            )
         )
 
     def pan_start(self, e: ft.DragStartEvent):
@@ -332,44 +331,23 @@ class mainView:
         self.whiteboard = ft.canvas.Fill(ft.Paint(ft.colors.WHITE))
         self.canvases = []
         self.currentIndex = 0
-        self.canvasShapesList = []
+        self.canvasInstanceList = []
         self.backgrounds = []
         self.menubar.controls.extend(
             [
                 ft.TextButton(text="新しいキャンバス", on_click=lambda e: self.makeNextCanvas()),
                 ft.TextButton(text="新しい背景ありキャンバス", on_click=lambda e: self.makeImageCanvas()),
-                ft.TextButton(text="全消し", on_click=lambda e: self.deleteObj()),
                 ft.TextButton(text="戻る", on_click=lambda e: self.moveCanvas(self.currentIndex - 1)),
                 ft.TextButton(text="進む", on_click=lambda e: self.moveCanvas(self.currentIndex + 1)),
                 ft.TextButton(text="ビデオ生成", on_click=lambda e: self.makeVideo())
             ]
         )
         self.appheader.appbar.title = Text(value = projectList.getprojectName(), size = 24, text_align = "center")
-        self.appheader.appbar.leading = ft.IconButton(icon=ft.icons.HOME, on_click=self.savefile)
+        self.appheader.appbar.leading = ft.IconButton(icon=ft.icons.HOME, on_click=lambda e: self.page.go("/startView"))
 
     def savefile(self, e):
-        binarydatas = "C:/Users/gunda/projectExperiments/Sunagawa/pickles"
-        outputpath = path.join(binarydatas, projectList.getprojectName() + ".pkl")
-        data_dict = [
-            cv.Line(
-                x1=10, x2=20, y1=10, y2=20, paint=ft.Paint(color=ft.colors.BLACK, stroke_width=3)
-            ),
-            cv.Line(
-                x1=10, x2=30, y1=10, y2=20, paint=ft.Paint(color=ft.colors.BLACK, stroke_width=3)
-            )
-        ]
-
-        print(self.canvasShapesList)
-        a = [cv.Line(x1=485.0, y1=186.0, x2=481.0, y2=183.0, paint='{"color":"black","stroke_width":3}')]
-
-        with open(outputpath, "wb") as f:
-            pickle.dump(self.canvasShapesList, f)
-
-        self.page.go("/startView")
-
-    def deleteObj(self):
-        currentCanvas = self.canvasShapesList[self.currentIndex]
-        currentCanvas.clear()
+        saving = saveAndloadFile()
+        saving.savefile(projectList.getprojectName(), self.canvases)
 
     def takeCanvasImage(self, i):
         window_title = self.page.title
@@ -393,8 +371,9 @@ class mainView:
 
     def makeNextCanvas(self):
         newCanvasInstance = canVas()
-        self.canvasShapesList.append(newCanvasInstance.cp.shapes)
+        self.canvasInstanceList.append(newCanvasInstance.cp.shapes)
         self.currentIndex += 1
+        newCanvasInstance.cp.shapes.insert(0, self.whiteboard)
         nextCanvas = newCanvasInstance.makeCanvas()
         self.canvases.insert(self.currentIndex, nextCanvas)
         newView = ft.View("/mainView",
@@ -405,19 +384,7 @@ class mainView:
                         self.sidebar,
                         ft.Column([
                             self.menubar,
-                            ft.Stack(
-                                controls=[
-                                    ft.Container(
-                                        padding=0,
-                                        margin=0,
-                                        bgcolor=ft.colors.WHITE,
-                                        width=800,
-                                        height=450,
-                                        border_radius=0
-                                    ),
-                                    nextCanvas
-                                ]
-                            )
+                            nextCanvas
                         ], expand=False)
                     ],
                     expand=True
@@ -431,7 +398,7 @@ class mainView:
 
     def makeImageCanvas(self, image=None):
         newCanvasInstance = canVas()
-        self.canvasShapesList.append(newCanvasInstance.cp.shapes)
+        self.canvasInstanceList.append(newCanvasInstance.cp.shapes)
         self.currentIndex += 1
         nextCanvas = newCanvasInstance.makeCanvas()
         background = image
@@ -505,12 +472,12 @@ class mainView:
         subprocess.call(cmd.split())
 
     def makeView(self):
-        self.page.title = "プロジェクト --" + projectList.getprojectName() + "--"
+        self.page.title = "Video Maker"
         self.page.padding = 10
 
         if projectList.getprojectObj() is None:
             canvasInstancePrimary = canVas()
-            self.canvasShapesList.append(canvasInstancePrimary.cp.shapes)
+            canvasInstancePrimary.cp.shapes.insert(0, self.whiteboard)
             primarycanvas = canvasInstancePrimary.makeCanvas()
             self.canvases.append(primarycanvas)
 
@@ -522,21 +489,10 @@ class mainView:
                             self.sidebar,
                             ft.Column([
                                 self.menubar,
-                                ft.Stack(
-                                    [
-                                        ft.Container(
-                                            padding=0,
-                                            margin=0,
-                                            bgcolor=ft.colors.WHITE,
-                                            width=800,
-                                            height=450,
-                                            border_radius=0
-                                        ),
-                                        primarycanvas
-                                    ]
-                                )
+                                primarycanvas
                             ], expand=False)
-                        ], expand=True
+                        ],
+                        expand=True
                     )
                 ]
             )

@@ -10,8 +10,6 @@ from os import path
 class startView:
     def __init__(self, page: ft.Page):
         self.page = page
-        pdInstance = pd.pathDatabase()
-        pdInstance.initialize_csv()
 
         self.make_directory = fl.mkdir()
         selectDirectory = ft.FilePicker(on_result=lambda e: self.make_directory.input_directory_path(e, self.page, self.inputfoldernamedialog.inputFolderNameDialog))

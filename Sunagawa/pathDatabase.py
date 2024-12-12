@@ -12,6 +12,7 @@ class pathDatabase:
             with open(self.csvFilePath, mode='w', newline='', encoding='utf-8') as file:
                 writer = csv.writer(file)
                 writer.writerow(["ID", "FilePath", "Title", "Tag", "CreatedAt"])
+            print(f"{self.csvFilePath} initialized.")
 
     def add_folder(self, file_path):
         with open(self.csvFilePath, mode='a', newline='', encoding='utf-8') as file:
