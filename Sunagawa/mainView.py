@@ -23,7 +23,6 @@ from flet import(
 from chooseProjectView import projectList
 import flet.canvas as cv
 from canvasView import canvasClass
-from pathDatabase import pathDatabase
 from dialogs import askSave
 import time
 import pygetwindow as gw
@@ -253,6 +252,10 @@ class mainView:
             height=height,
             border_radius=0
         )
+        self.canvases = []
+        self.currentIndex = 0
+        self.canvasShapesList = []
+        self.backgrounds = []
         self.menubar.controls.extend(
             [
                 ft.TextButton(text="新しいキャンバス", on_click=lambda e: self.makeNextCanvas()),
@@ -264,9 +267,12 @@ class mainView:
                 ft.TextButton(text="ビデオ生成", on_click=lambda e: self.makeVideo())
             ]
         )
+        self.appheader.appbar.title = Text(value = projectList.getprojectName(), size = 24, text_align = "center")
         self.appheader.appbar.leading = ft.IconButton(icon=ft.icons.HOME, on_click=self.savefile)
 
     def savefile(self, e):
+        binarydatas = "C:/Users/gunda/projectExperiments/Sunagawa/pickles"
+        outputpath = path.join(binarydatas, projectList.getprojectName() + ".pkl")
         serialized_obj = []
         serialized_bg = []
 
@@ -276,18 +282,15 @@ class mainView:
                 if type(obj) is cv.Line:
                     tmp_list_obj.append(
                         {
-                            "type": "Line",
                             "x1": obj.x1,
                             "y1": obj.y1,
                             "x2": obj.x2,
                             "y2": obj.y2,
-                            "color": obj.paint.color,
-                            "stroke_width": obj.paint.stroke_width
+                            "paint": obj.paint,
                         }
                     )
-                
-            serialized_obj.append(tmp_list_obj)
-
+            
+            tmp_list_bg = []
             serialized_bg.append(
                 {
                     "content": self.backgrounds[i].content,
@@ -300,48 +303,20 @@ class mainView:
                 }
             )
 
-        with open(self.outputpath, "wb") as f:
+            serialized_obj.append(tmp_list_obj)
+            serialized_bg.append(tmp_list_bg)
+
+        with open(outputpath, "wb") as f:
             serialized = {"object": serialized_obj, "background": serialized_bg}
             pickle.dump(serialized, f)
 
+        print(serialized_bg, serialized_obj)
         self.page.go("/startView")
-
-    def loadfile(self):
-        try:
-            with open(self.outputpath, "rb") as f:
-                serialized = pickle.load(f)
-
-            serialized_obj = serialized["object"]
-            serialized_bg = serialized["background"]
-
-            for i in range(len(serialized_obj)):
-                tmp_obj = []
-                for obj in serialized_obj[i]:
-                    if obj["type"] == "Line":
-                        tmp_obj.append(
-                            cv.Line(x1=obj["x1"], y1=obj["y1"], x2=obj["x2"], y2=obj["y2"], paint=ft.Paint(color=obj["color"], stroke_width=obj["stroke_width"]))
-                        )
-
-                self.loadObj.append(tmp_obj)
-                self.backgrounds.append(
-                    ft.Container(
-                        content=serialized_bg[i]['content'],
-                        padding=serialized_bg[i]['padding'],
-                        margin=serialized_bg[i]['margin'],
-                        bgcolor=serialized_bg[i]['bgcolor'],
-                        width=serialized_bg[i]['width'],
-                        height=serialized_bg[i]['height'],
-                        border_radius=serialized_bg[i]['border_radius']
-                    ) 
-                )
-
-        except FileNotFoundError:
-            return -1
 
     def takeCanvasImage(self, i):
         window_title = self.page.title
-        output_canvasshot = "C:/Users/gunda/projectExperiments/Sunagawa/assets/canvases"
-        output_path = path.join(output_canvasshot, f"{self.projectname}_{i}.png")
+        output_canvasshot = "C:/Users/gunda/projectExperiments/Sunagawa/image"
+        output_path = path.join(output_canvasshot, f"{projectList.getprojectName()}_{i}.png")
         windows = [w for w in gw.getAllTitles() if window_title in w]
         if not windows:
             raise Exception(f"Window with title containing '{window_title}' not found.")
@@ -520,21 +495,10 @@ class mainView:
         subprocess.call(cmd.split())
 
     def makeView(self):
-        self.projectname = projectList.getprojectName()
-        self.page.title = "プロジェクト --" + self.projectname + "--"
+        self.page.title = "プロジェクト --" + projectList.getprojectName() + "--"
         self.page.padding = 10
-        self.appheader.appbar.title = Text(value = self.projectname, size = 24, text_align = "center")
-        binarydatas = "C:/Users/gunda/projectExperiments/Sunagawa/assets/pickles" # fletモジュール以外には明示的にパスを指定しないといけない
-        self.outputpath = path.join(binarydatas, self.projectname + ".pkl")
-        self.canvases = []
-        self.currentIndex = 0
-        self.canvasShapesList = []
-        self.backgrounds = []
-        self.loadObj = []
 
-        decideResume = self.loadfile()
-
-        if decideResume == -1:
+        if projectList.getprojectObj() is None:
             canvasInstancePrimary = canvasClass()
             self.canvasShapesList.append(canvasInstancePrimary.cp.shapes)
             primarycanvas = canvasInstancePrimary.makeCanvas()
@@ -563,13 +527,7 @@ class mainView:
             )
 
         else:
-            for i in range(len(self.loadObj)):
-                newCanvasInstance = canvasClass()
-                self.canvasShapesList.append(newCanvasInstance.cp.shapes)
-                newCanvasInstance.cp.shapes += self.loadObj[i]
-                newCanvas = newCanvasInstance.makeCanvas()
-                self.canvases.append(newCanvas)
-
+            self.canvases.extend(projectList.getprojectObj())
             return ft.View("/mainView",
                 appbar=self.appheader.appbar,
                 controls=[
@@ -578,12 +536,7 @@ class mainView:
                             self.sidebar,
                             ft.Column([
                                 self.menubar,
-                                ft.Stack(
-                                    controls=[
-                                        self.backgrounds[self.currentIndex],
-                                        self.canvases[self.currentIndex]
-                                    ]
-                                )
+                                self.canvases[self.currentIndex]
                             ], expand=False)
                         ],
                         expand=True

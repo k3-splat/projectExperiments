@@ -18,7 +18,7 @@ class selectWatchVideo:
 
     def __init__(self, page: ft.Page):
         self.page = page
-        self.output_thumnails = "/thumnails"
+        self.output_thumnails = "C:/Users/gunda/projectExperiments/Sunagawa/thumnails"
         self.refresh_video()
 
     def refresh_video(self):

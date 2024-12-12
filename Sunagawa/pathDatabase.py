@@ -6,7 +6,6 @@ from datetime import datetime
 class pathDatabase:
     def __init__(self):
         self.csvFilePath = "folderPaths.csv"
-        self.pickle_file = "C:/Users/gunda/projectExperiments/Sunagawa/assets/pickles"
 
     def initialize_csv(self):
         if not os.path.exists(self.csvFilePath):  # ファイルが存在しない場合のみ作成
@@ -56,7 +55,6 @@ class pathDatabase:
                     writer.writerow(row)
 
         os.replace(temp_file, self.csvFilePath)
-        os.remove(os.path.join(self.pickle_file, tag + ".pkl"))
         if not deleted:
             print(f"No entry found with tag {tag}")
 

@@ -20,7 +20,7 @@ class manageVideo:
 
     def __init__(self, page: ft.Page):
         self.page = page
-        self.output_thumnails = "/thumnails"
+        self.output_thumnails = "C:/Users/gunda/projectExperiments/Sunagawa/thumnails"
         self.instance_AR = AttentionRemove(
             lambda e: self.removeAndrefresh(),
             lambda e: self.page.close(self.instance_AR.attentionDialog)
