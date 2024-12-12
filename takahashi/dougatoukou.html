@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>動画投稿ページ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff; /* 背景を白に設定 */
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between; /* ロゴとタイトルを両端に配置 */
+            background-color: #ffffff; /* ヘッダーの背景を白に設定 */
+            border-bottom: 1px solid #ddd;
+            padding: 10px 20px;
+        }
+        .logo {
+            width: 100px; /* ロゴの幅を調整 */
+            height: auto;
+        }
+        .header-title {
+            font-size: 24px;
+            color: #000000; /* ヘッダーの文字を黒に設定 */
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%); /* 真ん中に配置 */
+        }
+        main {
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: #ffffff;
+            border-radius: 5px;
+            padding: 30px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            font-weight: normal;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-bottom: 5px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        textarea,
+        input[type="file"] {
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        textarea {
+            resize: vertical;
+        }
+        input[type="submit"] {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="home.html">
+        <img src="ekaku.png" alt="ロゴ" class="logo">
+    </a>
+    <h1 class="header-title">動画投稿ページ</h1>
+</header>
+
+<main>
+    <h2>新しい動画を投稿</h2>
+    <form action="#" method="post" enctype="multipart/form-data">
+        <label for="video-file">動画ファイル</label>
+        <input type="file" id="video-file" name="video-file" accept="video/*" required>
+
+        <label for="video-title">タイトル</label>
+        <input type="text" id="video-title" name="video-title" placeholder="動画のタイトルを入力" required>
+
+        <label for="thumbnail">サムネイル画像</label>
+        <input type="file" id="thumbnail" name="thumbnail" accept="image/*">
+
+        <label for="video-description">説明</label>
+        <textarea id="video-description" name="video-description" placeholder="動画の説明を入力" rows="5"></textarea>
+
+        <input type="submit" value="投稿">
+    </form>
+</main>
+
+</body>
+</html>
+

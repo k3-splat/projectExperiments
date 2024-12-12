@@ -6,7 +6,53 @@
 #各ページの保存があまりできてません。一度playボタンをおすとなぜか保存されます。
 #拡大縮小はまだエラーが出るので、修正中です。
 
+#11/27 
+#再生速度変更できるようにしました。
+#拡大縮小、回転はエラーが出ないようになりましたが、思ってたのとは違う動きになります。
+#色変更ができるようになりました。細かい色変更も実装したいです。
+#画像を挿入できるようにしたい
+
+#12/4
+#画像挿入をしようとしましたが、エラーになってしまいます。
+#致命的なバグあり、ある程度描画すると描画できなくなります。
+#↑リソースの問題？？
+#回転ができるようになりました。しかし、まだ改良の余地あり...
+
+#12/11
+#mainView.pyやcanvasView.pyを参考にしています。
+#このプログラムにCanvasをうまく入れることができず
+#現在難航しております。
+#とりあえず滑らかな自由描画はできるようにしたいです。
+#canvas cvはなんとか
+#cpが、うまくいかないです。
+#仮にうまくいった場合、すべてcpに差し替えます。
+#ページ数を実装しました。
+#バックアップ用のプログラムです
+#Threadを使用
+
+
+#flet最新版だと色が使えない？
+#flet 0.24.00で動作確認済み
+#0.25.0では動きませんでした。
+#
+
+#やりたいことリスト
+#×音声をつける
+#▲変形（回転、拡大縮小）
+#×範囲選択　（範囲を指定し、移動などができる。）
+#×透かし　（前のコマのイラストをすかす）
+#〇図形　（三角形、四角形、円などを描画する）
+#×コピー　貼り付け　（現在のコマを、ほかのコマにコピーする）
+#×画像の取り込み
+#〇コマの速度の変更
+#〇再生、停止
+#〇色変更
+#×テキストの表示
+#自由描画の太さを変える
+
+
 import flet as ft
+
 from flet import (
     Text,
     ElevatedButton,
@@ -29,43 +75,17 @@ from flet import (
     Column,
     CrossAxisAlignment,
     Image,
-    GestureDetector
+    GestureDetector,
+    Slider,
+    Dropdown,
+    dropdown,
+    Page,
 )
 
 #再生ボタンに必要インポート
 import time
 import threading
 
-#言語設定を保持するプロパティ追加用のMainAppクラス
-class MainApp:
-    def __init__(self):
-        self.language = "jp"  # デフォルト言語
-        self.draw_app = DrawApp()  # 日本語版をデフォルトで使用
-        self.draw_app_eng = None   # 英語版は後でインスタンス化
-        self.page = None
-
-    def build(self, page):
-        self.page = page
-        sidebar = Sidebar(self)
-
-        layout = Row(
-            controls=[sidebar.build(), self.draw_app.build()],
-            alignment="start"
-        )
-
-        page.add(layout)
-        page.update()
-
-    def update_ui(self):
-        # サイドバーとDrawAppの再描画
-        self.page.controls.clear()
-        sidebar = Sidebar(self)
-        layout = Row(
-            controls=[sidebar.build(), self.draw_app.build()],
-            alignment="start"
-        )
-        self.page.add(layout)
-        self.page.update()
 
 class AppHeader:
     def __init__(self, page, draw_app):
@@ -125,23 +145,6 @@ class AppHeader:
 
 class Sidebar:
     def __init__(self):
-
-        self.app = app  # MainApp の参照を持つ
-        self.nav_rail_visible = True
-
-        self.nav_rail_items = [
-            NavigationRailDestination(
-                icon_content=Icon(icons.LANGUAGE),
-                label_content=Text("日本語" if self.app.language == "jp" else "English"),
-                on_click=self.change_language,  # 言語切り替えを追加
-            ),
-        ]
-
-        self.nav_rail = NavigationRail(
-            destinations=self.nav_rail_items,
-        )
-
-
         self.nav_rail_visible = True
 
         self.nav_rail_items = [
@@ -182,23 +185,6 @@ class Sidebar:
             tooltip="Collapse Nav Bar",
         )
 
-    def change_language(self, e):
-        # 言語を切り替える
-        if self.app.language == "jp":
-            self.app.language = "en"
-            if not self.app.draw_app_eng:
-                from Drawapp_eng import Drawapp_eng  # 必要に応じてインポート
-                self.app.draw_app_eng = Drawapp_eng()
-            self.app.draw_app = self.app.draw_app_eng  # 英語版に切り替え
-        else:
-            self.app.language = "jp"
-            self.app.draw_app = DrawApp()  # 日本語版に戻す
-        
-        # UI更新
-        self.nav_rail_items[0].label_content.value = "日本語" if self.app.language == "en" else "English"
-        self.nav_rail.update()
-        self.app.update_ui()  # アプリ全体のUI更新
-
     def build(self):
         return Container(
             content=Row(
@@ -227,10 +213,11 @@ class Sidebar:
 
 
 #ここから上がUIの部分
+import asyncio
 
 class DrawApp:
     def __init__(self):
-        self.frames = [[]] # フレームを管理するリスト
+        self.frames = [[]]  # フレームを管理するリスト
         self.current_frame_index = 0
         self.is_playing = False  # 再生中かどうか
         self.play_thread = None  
@@ -243,10 +230,20 @@ class DrawApp:
         self.is_eraser_mode = False
         self.zenksi_mode = False
         self.is_rotate_mode = False
-        self.is_scale_mode = False
+        self.is_scale_mode = False 
+        self.image_mode = False #ガゾウモード
+        #self.page = page  
+
+        self.selected_color = colors.BLACK
+        self.pen_thickness = 5
+
+        self.rotate = 0
+        self.play_speed = 0.5
+        self.page_label = Text(f"Page: {self.current_frame_index + 1}")
+        self.play_task = None
 
     def build(self):
-        self.draw_area = Stack([], width=640, height=480)
+        self.draw_area = Stack([], width=500, height=400)
         self.gesture_detector = GestureDetector(
             mouse_cursor="crosshair",
             on_pan_update=self.on_pan_update,
@@ -259,52 +256,144 @@ class DrawApp:
             ),
         )
         
+        self.play_speed_slider = Slider(
+            min=0.1,
+            max=2.0,
+            value=self.play_speed,
+            divisions=19,
+            label=f"Speed: {self.play_speed:.1f} sec/frame",
+            on_change=self.change_play_speed,
+        )
+
+        speed_label = Text(f"Speed: {self.play_speed:.1f} sec/frame")
+
+        #色を変える
+        color_picker = Dropdown(
+            label="色を選択",
+            options=[
+                dropdown.Option(colors.RED, "赤"),
+                dropdown.Option(colors.GREEN, "緑"),
+                dropdown.Option(colors.BLUE, "青"),
+                dropdown.Option(colors.YELLOW, "黄"),
+                dropdown.Option(colors.BLACK, "黒"),
+                #dropdown.Option(colors.PURPLE, "紫"),
+            ],
+            value=self.selected_color,
+            on_change=self.change_color,
+        )
+
         #ボタン
         rectangle_button = ElevatedButton(
-            text="四角形",
+            text="Rectangle",
             on_click=self.rectangle
         )
 
         free_draw_button = ElevatedButton(
-            text="自由描画",
+            text="freeDraw",
             on_click=self.free
         )
 
         circle_button = ElevatedButton(
-            text="円",
+            text="circle",
             on_click=self.circle
         )
 
         eraser_button = ElevatedButton(
-            text="消しごむ",
+            text="eraser",
             on_click=self.eraser
         )
 
         rotate_button = ElevatedButton(
-            text="回転",
+            text="rotate",
             on_click=self.rotate_mode
         )
 
         scale_button = ElevatedButton(
-            text="縮小", 
+            text="small", 
             on_click=self.scale_mode
         )
 
         #全部消す
         zenkesi_button = ElevatedButton(
-            text="消す",
+            text="delite",
             on_click=self.zenkesi
         )
 
         return Column(
             controls=[
                 Row(
-                    controls=[rectangle_button, free_draw_button, circle_button, eraser_button, rotate_button, scale_button],
+                    controls=[rectangle_button, free_draw_button, circle_button, eraser_button, rotate_button, scale_button, zenkesi_button, color_picker],
                     alignment="center"
                 ),
+                speed_label,
+                self.play_speed_slider,
+                self.page_label,
                 self.gesture_detector
             ]
         )
+
+    def change_color(self, e):
+        self.selected_color = e.control.value
+        self.draw_area.update()
+
+    
+    def insert_image(self, e):
+        # ファイル選択ダイアログを開く
+        self.page.dialog = ft.FilePicker(
+            on_result=self.on_image_selected
+        )
+        self.page.dialog.pick_files(allowed_extensions=["png", "jpg", "jpeg"])
+    
+    def on_image_selected(self, e):
+        if e.files:
+            selected_image = e.files[0].path
+            image_container = Container(
+                content=Image(
+                    src=selected_image,
+                    fit="contain", 
+                    width=200,
+                    height=200,
+                ),
+                left=100,
+                top=100
+            )
+            self.draw_area.controls.append(image_container)
+            self.draw_area.update()
+            self.frames[self.current_frame_index].append(image_container)
+
+    def start_play_animation(self):
+        loop = asyncio.new_event_loop()
+        threading.Thread(target=self.run_play, args=(loop,)).start()
+
+    def run_play(self, loop):
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(self.play_animation())
+    
+    #再生するところ
+    def play_animation(self):
+        if self.is_playing:
+            self.is_playing = False
+            if self.play_task:
+                self.play_task.cancel()
+            return
+
+        self.is_playing = True
+
+        def play():
+            while self.is_playing:
+                self.next_frame()
+                time.sleep(self.play_speed)
+                #time.sleep(self.play_speed)
+
+                if self.current_frame_index == len(self.frames) - 1:
+                    self.is_playing = False 
+                
+                if self.current_frame_index == len(self.frames):
+                    self.current_frame_index = 0
+                    self.load_frame()
+        
+        self.play_thread = threading.Thread(target=play)
+        self.play_thread.start()
 
     def next_frame(self):
         # 現在のフレームを保存
@@ -328,26 +417,16 @@ class DrawApp:
         self.draw_area.controls.extend(self.frames[self.current_frame_index].copy())
         self.draw_area.update()
 
-    #再生するところ
-    def play_animation(self):
-        if self.is_playing:
-            self.is_playing = False
-            return
+        self.page_label.value = f"Page: {self.current_frame_index + 1}"
+        self.page_label.update()
 
-        self.is_playing = True
+#asyncio
 
-
-        def play():
-            while self.is_playing:
-                self.next_frame()
-                time.sleep(0.5)
-
-                if self.current_frame_index == len(self.frames) - 1:
-                    self.is_playing = False 
-
-        self.play_thread = threading.Thread(target=play)
-        self.play_thread.start()
-
+    #スピードを変える
+    def change_play_speed(self, e):
+        self.play_speed = e.control.value 
+        self.play_speed_slider.label = f"Speed: {self.play_speed:.1f} sec/frame" 
+        self.play_speed_slider.update()
     
     def rectangle(self, e):
         self.is_rotate_mode = False
@@ -431,7 +510,7 @@ class DrawApp:
                 top=top,
                 width=width,
                 height=height,
-                bgcolor=colors.BLACK,
+                bgcolor=self.selected_color,
                 border_radius=0,
             )
             self.draw_area.controls.append(rectangle)
@@ -441,9 +520,9 @@ class DrawApp:
             line = Container(
                 left=self.start_x,
                 top=self.start_y,
-                width=2,  
-                height=2, 
-                bgcolor=colors.BLACK,
+                width=5,
+                height=5, 
+                bgcolor=self.selected_color,
                 border_radius=1,
             )
             self.draw_area.controls.append(line)
@@ -460,7 +539,7 @@ class DrawApp:
                 top=self.start_y - current_radius,
                 width=current_radius * 2,
                 height=current_radius * 2,
-                bgcolor=colors.BLACK,
+                bgcolor=self.selected_color,
                 border_radius=current_radius,
             )
             self.draw_area.controls.append(circle)
@@ -469,285 +548,27 @@ class DrawApp:
             #消しゴムのところ
             self.erase_shape(e.local_x, e.local_y)
 
-        elif zenkesi_mode:
-            self.zenkesi(e.local_x, e.local_y)
+        elif self.zenkesi:
+            self.clear_all()
+            self.draw_area.controls.clear()
+            self.draw_area.update()
 
         elif self.is_rotate_mode:
             for shape in self.draw_area.controls:
-                shape.rotate = (shape.rotate + 10) % 360
+                current_rotation = shape.rotate if shape.rotate is not None else 0
+                shape.rotate = (current_rotation + 0.01) % 360
+                shape.update()
         elif self.is_scale_mode:
             for shape in self.draw_area.controls:
                 shape.width *= 0.9
                 shape.height *= 0.9
         self.draw_area.update()
 
-    def erase_shape(self, x, y):
-        #消しゴムモード
-        for shape in self.draw_area.controls:
-            if (shape.left <= x <= shape.left + shape.width and
-                shape.top <= y <= shape.top + shape.height):
-                self.draw_area.controls.remove(shape)
-                break
-    
-    def zenkesi(self, x, y):
-        self.draw_area.controls.clear() 
-
-
-    def on_pan_end(self, e):
-        pass
-
-class Drawapp_eng:
-     def __init__(self):
-        self.frames = [[]] # フレームを管理するリスト
-        self.current_frame_index = 0
-        self.is_playing = False  # 再生中かどうか
-        self.play_thread = None  
-        self.points = []
-        self.start_x = 0 
-        self.start_y = 0
-        self.is_rectangle_mode = False #モード選択の時に使用
-        self.is_drawing_mode = False
-        self.is_circle_mode = False
-        self.is_eraser_mode = False
-        self.zenksi_mode = False
-        self.is_rotate_mode = False
-        self.is_scale_mode = False
-
-    def build(self):
-        self.draw_area = Stack([], width=640, height=480)
-        self.gesture_detector = GestureDetector(
-            mouse_cursor="crosshair",
-            on_pan_update=self.on_pan_update,
-            on_pan_start=self.on_pan_start,
-            on_pan_end=self.on_pan_end,
-            content=Container(
-                content=self.draw_area,
-                bgcolor=colors.WHITE,
-                alignment=alignment.top_left
-            ),
-        )
-        
-        #ボタン
-        rectangle_button = ElevatedButton(
-            text="square",
-            on_click=self.rectangle
-        )
-
-        free_draw_button = ElevatedButton(
-            text="free drawing",
-            on_click=self.free
-        )
-
-        circle_button = ElevatedButton(
-            text="circle",
-            on_click=self.circle
-        )
-
-        eraser_button = ElevatedButton(
-            text="eraser",
-            on_click=self.eraser
-        )
-
-        rotate_button = ElevatedButton(
-            text="rotate",
-            on_click=self.rotate_mode
-        )
-
-        scale_button = ElevatedButton(
-            text="reduction", 
-            on_click=self.scale_mode
-        )
-
-        #全部消す
-        zenkesi_button = ElevatedButton(
-            text="erase",
-            on_click=self.zenkesi
-        )
-
-        return Column(
-            controls=[
-                Row(
-                    controls=[rectangle_button, free_draw_button, circle_button, eraser_button, rotate_button, scale_button],
-                    alignment="center"
-                ),
-                self.gesture_detector
-            ]
-        )
-
-    def next_frame(self):
-        # 現在のフレームを保存
-        self.frames[self.current_frame_index] = self.draw_area.controls.copy()
-        if self.current_frame_index < len(self.frames) - 1:
-            self.current_frame_index += 1
-        else:
-            # 新しいフレームを追加
-            self.frames.append([])
-            self.current_frame_index += 1
-        self.load_frame()
-
-    def prev_frame(self):
-        if self.current_frame_index > 0:
-            self.current_frame_index -= 1
-        self.load_frame()
-
-    def load_frame(self):
-        # フレームの図形を描画エリアに表示
+    def clear_all(self):
+    #全ての図形を消去
         self.draw_area.controls.clear()
-        self.draw_area.controls.extend(self.frames[self.current_frame_index].copy())
         self.draw_area.update()
 
-    #再生するところ
-    def play_animation(self):
-        if self.is_playing:
-            self.is_playing = False
-            return
-
-        self.is_playing = True
-
-
-        def play():
-            while self.is_playing:
-                self.next_frame()
-                time.sleep(0.5)
-
-                if self.current_frame_index == len(self.frames) - 1:
-                    self.is_playing = False 
-
-        self.play_thread = threading.Thread(target=play)
-        self.play_thread.start()
-
-    
-    def rectangle(self, e):
-        self.is_rotate_mode = False
-        self.is_scale_mode = False
-        self.is_rectangle_mode = True
-        self.is_drawing_mode = False
-        self.is_circle_mode = False
-        self.is_eraser_mode = False
-        self.zenkesi = False
-
-    def free(self, e):
-        self.is_rotate_mode = False
-        self.is_scale_mode = False
-        self.is_drawing_mode = True
-        self.is_rectangle_mode = False
-        self.is_circle_mode = False
-        self.is_eraser_mode = False
-        self.zenkesi = False
-
-     def circle(self, e):
-        self.is_rotate_mode = False
-        self.is_scale_mode = False
-        self.is_rectangle_mode = False
-        self.is_drawing_mode = False
-        self.is_circle_mode = True
-        self.is_eraser_mode = False
-        self.zenkesi = False
-
-    def eraser(self, e):
-        self.is_rotate_mode = False
-        self.is_scale_mode = False
-        self.is_rectangle_mode = False
-        self.is_drawing_mode = False
-        self.is_circle_mode = False
-        self.is_eraser_mode = True
-        self.zenkesi = False
-    
-    def zenkesi(self, e):
-        self.is_rotate_mode = False
-        self.is_scale_mode = False
-        self.is_rectangle_mode = False
-        self.is_drawing_mode = False
-        self.is_circle_mode = False
-        self.is_eraser_mode = False
-        self.zenkesi = True
-
-    def rotate_mode(self, e):
-        self.is_rotate_mode = True
-        self.is_scale_mode = False
-        self.is_rectangle_mode = False
-        self.is_drawing_mode = False
-        self.is_circle_mode = False
-        self.is_eraser_mode = False
-        self.zenkesi = False
-
-    def scale_mode(self, e):
-        self.is_rotate_mode = False
-        self.is_scale_mode = True
-        self.is_rectangle_mode = False
-        self.is_drawing_mode = False
-        self.is_circle_mode = False
-        self.is_eraser_mode = False
-        self.zenkesi = False
-
-     def on_pan_start(self, e):
-        self.start_x = e.local_x
-        self.start_y = e.local_y
-        self.points.clear()
-
-    #以下、条件分岐を用いてモード選択を行う
-    def on_pan_update(self, e):
-        #四角形描画のところ
-        if self.is_rectangle_mode:
-            left = min(self.start_x, e.local_x)
-            top = min(self.start_y, e.local_y)
-            width = abs(e.local_x - self.start_x)
-            height = abs(e.local_y - self.start_y)
-
-            rectangle = Container(
-                left=left,
-                top=top,
-                width=width,
-                height=height,
-                bgcolor=colors.BLACK,
-                border_radius=0,
-            )
-            self.draw_area.controls.append(rectangle)
-
-        elif self.is_drawing_mode:
-            #自由描画のところ
-            line = Container(
-                left=self.start_x,
-                top=self.start_y,
-                width=2,  
-                height=2, 
-                bgcolor=colors.BLACK,
-                border_radius=1,
-            )
-            self.draw_area.controls.append(line)
-
-            self.start_x = e.local_x
-            self.start_y = e.local_y
-
-        elif self.is_circle_mode:
-            #円の描画のところ
-            current_radius = int(((e.local_x - self.start_x) ** 2 + (e.local_y - self.start_y) ** 2) ** 0.5)
-
-            circle = Container(
-                left=self.start_x - current_radius,
-                top=self.start_y - current_radius,
-                width=current_radius * 2,
-                height=current_radius * 2,
-                bgcolor=colors.BLACK,
-                border_radius=current_radius,
-            )
-            self.draw_area.controls.append(circle)
-
-        elif self.is_eraser_mode:
-            #消しゴムのところ
-            self.erase_shape(e.local_x, e.local_y)
-
-        elif zenkesi_mode:
-            self.zenkesi(e.local_x, e.local_y)
-
-        elif self.is_rotate_mode:
-            for shape in self.draw_area.controls:
-                shape.rotate = (shape.rotate + 10) % 360
-        elif self.is_scale_mode:
-            for shape in self.draw_area.controls:
-                shape.width *= 0.9
-                shape.height *= 0.9
-        self.draw_area.update()
 
     def erase_shape(self, x, y):
         #消しゴムモード
@@ -759,6 +580,7 @@ class Drawapp_eng:
     
     def zenkesi(self, x, y):
         self.draw_area.controls.clear() 
+        self.draw_area.update()
 
 
     def on_pan_end(self, e):
@@ -767,9 +589,8 @@ class Drawapp_eng:
 def main(page: ft.Page):
     page.title = "Video Maker"
     page.padding = 10
-    
-    app = MainApp()
-    app.build(page)
+
+    draw_app = DrawApp()
     AppHeader(page, draw_app)
     sidebar = Sidebar()
 

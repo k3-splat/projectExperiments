@@ -16,15 +16,18 @@
         }
         /* ヘッダーのスタイル */
         .header {
+            display: flex;
+            justify-content: flex-start; /* ロゴを左端に配置 */
+            align-items: center;
             width: 100%;
             background-color: #ffffff;
-            padding: 10px 0;
-            text-align: center;
+            padding: 10px 20px; /* 左右の余白を調整 */
             border-bottom: 1px solid #ddd;
         }
         .logo {
-            width: 150px;
+            width: 100px; /* サイズを縮小 */
             height: auto;
+            margin-left: 20px; /* ロゴの左端に余白を追加 */
         }
         /* コンテンツのメインラッパー */
         .container {
@@ -50,26 +53,30 @@
             margin-top: 20px;
             margin-bottom: 10px;
         }
-        /* いいねとコメントボタン */
-        .interaction-buttons {
+        /* いいねボタンとアイコン */
+        .like-section {
             display: flex;
             align-items: center;
-            margin-top: 10px;
+            margin-top: 20px;
         }
-        .like-button, .comment-button {
+        .like-icon {
+            width: 50px;
+            height: 50px;
+            margin-right: 10px; /* アイコンとボタンの間に余白を追加 */
+        }
+        .like-button {
             display: flex;
             align-items: center;
             padding: 10px 15px;
-            margin-right: 10px;
             background-color: #e0e0e0;
             border: none;
             border-radius: 5px;
             cursor: pointer;
         }
-        .like-button:hover, .comment-button:hover {
+        .like-button:hover {
             background-color: #d0d0d0;
         }
-        .like-button img, .comment-button img {
+        .like-button img {
             width: 20px;
             height: 20px;
             margin-right: 5px;
@@ -123,7 +130,9 @@
 
     <!-- ヘッダー -->
     <div class="header">
-        <img src="rogo.png" alt="ロゴ" class="logo">
+        <a href="home.html">
+            <img src="ekaku.png" alt="ロゴ" class="logo">
+        </a>
     </div>
 
     <div class="container">
@@ -135,13 +144,13 @@
         <!-- 動画タイトル -->
         <div class="video-title">動画タイトルがここに入ります</div>
 
-        <!-- いいね・コメントボタン -->
-        <div class="interaction-buttons">
+        <!-- いいねボタンとアイコン -->
+        <div class="like-section">
+            <a href="userpage.html">
+                <img src="aikon.png" alt="アイコン" class="like-icon">
+            </a>
             <button class="like-button">
                 <img src="like-icon.png" alt="いいね"> いいね
-            </button>
-            <button class="comment-button">
-                <img src="comment-icon.png" alt="コメント"> コメント
             </button>
         </div>
 
@@ -172,4 +181,6 @@
 
 </body>
 </html>
+
+
 

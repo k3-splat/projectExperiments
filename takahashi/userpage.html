@@ -14,14 +14,14 @@
         /* ヘッダーのスタイル */
         .header {
             display: flex;
-            justify-content: center; /* ロゴを中央に配置 */
+            justify-content: flex-start; /* ロゴを左端に配置 */
             align-items: center;
             background-color: #ffffff;
-            padding: 10px 0;
+            padding: 10px 20px; /* 左右の余白を調整 */
             border-bottom: 1px solid #ddd;
         }
         .logo {
-            width: 150px;
+            width: 100px; /* サイズを縮小 */
             height: auto;
         }
         /* ユーザープロフィールのスタイル */
@@ -49,6 +49,11 @@
             font-size: 24px;
             font-weight: bold;
             margin-bottom: 10px;
+            color: #000000; /* ユーザー名を黒字に変更 */
+            cursor: pointer; /* クリック可能であることを示すポインタ */
+        }
+        .user-name:hover {
+            text-decoration: underline; /* ホバー時に下線を表示 */
         }
         /* 動画一覧のスタイル */
         .video-list {
@@ -72,6 +77,11 @@
             height: 180px;
             background-color: #cccccc;
         }
+        .thumbnail a img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
         .video-title {
             font-size: 16px;
             margin: 10px;
@@ -84,6 +94,14 @@
             text-align: center;
             border-top: 1px solid #ddd;
             margin-top: 40px;
+            font-size: 14px;
+        }
+        .footer a {
+            color: #007BFF; /* 青色に設定 */
+            text-decoration: underline; /* 下線を追加 */
+        }
+        .footer a:hover {
+            color: #0056b3; /* ホバー時の色変更 */
         }
     </style>
 </head>
@@ -91,7 +109,9 @@
 
     <!-- ヘッダー -->
     <div class="header">
-        <img src="rogo.png" alt="ロゴ" class="logo">
+        <a href="home.html">
+            <img src="ekaku.png" alt="ロゴ" class="logo">
+        </a>
     </div>
 
     <!-- ユーザープロフィール -->
@@ -99,7 +119,7 @@
         <div class="profile-icon">
             <img src="aikon.png" alt="ユーザーアイコン">
         </div>
-        <div class="user-name">ユーザー名</div>
+        <a href="loginout.html" class="user-name">ユーザー名</a>
     </div>
 
     <!-- ユーザーの投稿動画一覧 -->
@@ -107,21 +127,27 @@
         <!-- 動画カード1 -->
         <div class="video-card">
             <div class="thumbnail">
-                <img src="samune.png" alt="サムネイル" style="width: 100%; height: 100%; object-fit: cover;">
+                <a href="dougakoment.html">
+                    <img src="samune.png" alt="サムネイル">
+                </a>
             </div>
             <div class="video-title">動画タイトル1</div>
         </div>
         <!-- 動画カード2 -->
         <div class="video-card">
             <div class="thumbnail">
-                <img src="samune.png" alt="サムネイル" style="width: 100%; height: 100%; object-fit: cover;">
+                <a href="dougakoment.html">
+                    <img src="samune.png" alt="サムネイル">
+                </a>
             </div>
             <div class="video-title">動画タイトル2</div>
         </div>
         <!-- 動画カード3 -->
         <div class="video-card">
             <div class="thumbnail">
-                <img src="samune.png" alt="サムネイル" style="width: 100%; height: 100%; object-fit: cover;">
+                <a href="dougakoment.html">
+                    <img src="samune.png" alt="サムネイル">
+                </a>
             </div>
             <div class="video-title">動画タイトル3</div>
         </div>
@@ -130,10 +156,12 @@
 
     <!-- フッター -->
     <div class="footer">
-        &copy; 2024 動画投稿サイト
+        <p>動画を投稿しますか？<a href="dougatoukou.html">こちら</a>をクリックしてください。</p>
     </div>
 
 </body>
 </html>
-</html>
+
+
+
 

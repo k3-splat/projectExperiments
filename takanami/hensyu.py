@@ -18,6 +18,22 @@
 #↑リソースの問題？？
 #回転ができるようになりました。しかし、まだ改良の余地あり...
 
+#12/11
+#mainView.pyやcanvasView.pyを参考にしています。
+#このプログラムにCanvasをうまく入れることができず
+#現在難航しております。
+#とりあえず滑らかな自由描画はできるようにしたいです。
+#canvas cvはなんとか
+#cpが、うまくいかないです。
+#仮にうまくいった場合、すべてcpに差し替えます。
+#ページ数を実装しました。
+#asyncio を使用しました。
+
+#flet最新版だと色が使えない？
+#flet 0.24.00で動作確認済み
+#0.25.0では動きませんでした。
+#
+
 #やりたいことリスト
 #×音声をつける
 #▲変形（回転、拡大縮小）
@@ -34,6 +50,7 @@
 
 
 import flet as ft
+
 from flet import (
     Text,
     ElevatedButton,
@@ -60,7 +77,7 @@ from flet import (
     Slider,
     Dropdown,
     dropdown,
-    Page
+    Page,
 )
 
 #再生ボタンに必要インポート
@@ -194,8 +211,7 @@ class Sidebar:
 
 
 #ここから上がUIの部分
-#import tkinter as tk
-#from tkinter import ttk
+import asyncio
 
 class DrawApp:
     def __init__(self):
@@ -221,6 +237,8 @@ class DrawApp:
 
         self.rotate = 0
         self.play_speed = 0.5
+        self.page_label = Text(f"Page: {self.current_frame_index + 1}")
+        self.play_task = None
 
     def build(self):
         self.draw_area = Stack([], width=500, height=400)
@@ -256,17 +274,11 @@ class DrawApp:
                 dropdown.Option(colors.BLUE, "青"),
                 dropdown.Option(colors.YELLOW, "黄"),
                 dropdown.Option(colors.BLACK, "黒"),
+                #dropdown.Option(colors.PURPLE, "紫"),
             ],
             value=self.selected_color,
             on_change=self.change_color,
         )
-
-        #self.file_picker = FilePicker(on_result=self.insert_image)
-
-        #image_button = ElevatedButton(
-        #    text="画像挿入", 
-        #    on_click=self.image
-        #)
 
         #ボタン
         rectangle_button = ElevatedButton(
@@ -305,26 +317,83 @@ class DrawApp:
             on_click=self.zenkesi
         )
 
-        image_button = ElevatedButton(
-            text="Image",
-            on_click=self.insert_image
-        )
-
         return Column(
             controls=[
                 Row(
-                    controls=[rectangle_button, free_draw_button, circle_button, eraser_button, rotate_button, scale_button, zenkesi_button, color_picker, image_button],
+                    controls=[rectangle_button, free_draw_button, circle_button, eraser_button, rotate_button, scale_button, zenkesi_button, color_picker],
                     alignment="center"
                 ),
                 speed_label,
                 self.play_speed_slider,
-
+                self.page_label,
                 self.gesture_detector
             ]
         )
 
     def change_color(self, e):
         self.selected_color = e.control.value
+        self.draw_area.update()
+
+    
+    def insert_image(self, e):
+        # ファイル選択ダイアログを開く
+        self.page.dialog = ft.FilePicker(
+            on_result=self.on_image_selected
+        )
+        self.page.dialog.pick_files(allowed_extensions=["png", "jpg", "jpeg"])
+    
+    def on_image_selected(self, e):
+        if e.files:
+            selected_image = e.files[0].path
+            image_container = Container(
+                content=Image(
+                    src=selected_image,
+                    fit="contain", 
+                    width=200,
+                    height=200,
+                ),
+                left=100,
+                top=100
+            )
+            self.draw_area.controls.append(image_container)
+            self.draw_area.update()
+            self.frames[self.current_frame_index].append(image_container)
+
+    def start_play_animation(self):
+        loop = asyncio.new_event_loop()
+        threading.Thread(target=self.run_play, args=(loop,)).start()
+
+    def run_play(self, loop):
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(self.play_animation())
+    
+    #再生するところ
+    async def play_animation(self):
+        if self.is_playing:
+            self.is_playing = False
+            if self.play_task:
+                self.play_task.cancel()
+            return
+
+        self.is_playing = True
+
+        async def play():
+            while self.is_playing:
+                self.next_frame()
+                await asyncio.sleep(self.play_speed)
+                #time.sleep(self.play_speed)
+
+                if self.current_frame_index == len(self.frames) - 1:
+                    self.is_playing = False 
+                
+                if self.current_frame_index == len(self.frames):
+                    self.current_frame_index = 0
+                    self.load_frame()
+        
+        #self.play_task = asyncio.create_task(play())
+        await play()
+        #self.play_thread = threading.Thread(target=play)
+        #self.play_thread.start()
 
     def next_frame(self):
         # 現在のフレームを保存
@@ -348,57 +417,9 @@ class DrawApp:
         self.draw_area.controls.extend(self.frames[self.current_frame_index].copy())
         self.draw_area.update()
 
-    def insert_image(self, e):
-        # ファイル選択ダイアログを開く
-        self.page.dialog = ft.FilePicker(
-            on_result=self.on_image_selected
-        )
-        self.page.dialog.pick_files(allowed_extensions=["png", "jpg", "jpeg"])
-    
-    def on_image_selected(self, e):
-        if e.files:
-            # 選択した画像を描画エリアに追加
-            selected_image = e.files[0].path
-            image_container = Container(
-                content=Image(
-                    src=selected_image,
-                    fit="contain",  # 画像のフィットモード
-                    width=200,  # 表示サイズ（調整可能）
-                    height=200,
-                ),
-                left=100,  # 画像の初期位置
-                top=100
-            )
-            self.draw_area.controls.append(image_container)
-            self.draw_area.update()
-            # 現在のフレームに画像を保存
-            self.frames[self.current_frame_index].append(image_container)
-
-    
-    #再生するところ
-    def play_animation(self):
-        if self.is_playing:
-            self.is_playing = False
-            return
-
-        self.is_playing = True
-
-
-        def play():
-            while self.is_playing:
-                self.next_frame()
-                time.sleep(self.play_speed)
-
-                if self.current_frame_index == len(self.frames) - 1:
-                    self.is_playing = False 
-                
-                if self.current_frame_index == len(self.frames):
-                    self.current_frame_index = 0
-                    self.load_frame()
-
-        self.play_thread = threading.Thread(target=play)
-        self.play_thread.start()
-
+        self.page_label.value = f"Page: {self.current_frame_index + 1}"
+        self.page_label.update()
+        
 #asyncio
 
     #スピードを変える
@@ -499,7 +520,7 @@ class DrawApp:
             line = Container(
                 left=self.start_x,
                 top=self.start_y,
-                width=5,  
+                width=5,
                 height=5, 
                 bgcolor=self.selected_color,
                 border_radius=1,
