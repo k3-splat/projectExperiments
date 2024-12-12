@@ -53,26 +53,30 @@
             margin-top: 20px;
             margin-bottom: 10px;
         }
-        /* いいねとコメントボタン */
-        .interaction-buttons {
+        /* いいねボタンとアイコン */
+        .like-section {
             display: flex;
             align-items: center;
-            margin-top: 10px;
+            margin-top: 20px;
         }
-        .like-button, .comment-button {
+        .like-icon {
+            width: 50px;
+            height: 50px;
+            margin-right: 10px; /* アイコンとボタンの間に余白を追加 */
+        }
+        .like-button {
             display: flex;
             align-items: center;
             padding: 10px 15px;
-            margin-right: 10px;
             background-color: #e0e0e0;
             border: none;
             border-radius: 5px;
             cursor: pointer;
         }
-        .like-button:hover, .comment-button:hover {
+        .like-button:hover {
             background-color: #d0d0d0;
         }
-        .like-button img, .comment-button img {
+        .like-button img {
             width: 20px;
             height: 20px;
             margin-right: 5px;
@@ -140,13 +144,13 @@
         <!-- 動画タイトル -->
         <div class="video-title">動画タイトルがここに入ります</div>
 
-        <!-- いいね・コメントボタン -->
-        <div class="interaction-buttons">
+        <!-- いいねボタンとアイコン -->
+        <div class="like-section">
+            <a href="userpage.html">
+                <img src="aikon.png" alt="アイコン" class="like-icon">
+            </a>
             <button class="like-button">
                 <img src="like-icon.png" alt="いいね"> いいね
-            </button>
-            <button class="comment-button">
-                <img src="comment-icon.png" alt="コメント"> コメント
             </button>
         </div>
 
@@ -177,4 +181,6 @@
 
 </body>
 </html>
+
+
 
