@@ -291,7 +291,7 @@ class mainView:
                     )
             
             tmp_list_bg = []
-            serialized_bg.append(
+            tmp_list_bg.append(
                 {
                     "content": self.backgrounds[i].content,
                     "padding": self.backgrounds[i].padding,
