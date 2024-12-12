@@ -6,7 +6,6 @@ from os import path
 
 class projectList:
     projectName = "hoge"
-    projectObj = None
 
     @classmethod
     def setprojectName(cls, value):
@@ -15,14 +14,6 @@ class projectList:
     @classmethod
     def getprojectName(cls):
         return cls.projectName
-
-    @classmethod
-    def setprojectObj(cls, value):
-        cls.projectObj = value
-
-    @classmethod
-    def getprojectObj(cls):
-        return cls.projectObj
 
     def __init__(self, page: ft.Page):
         self.page = page
@@ -52,13 +43,6 @@ class projectList:
                 checkbox.value = False
 
         self.page.update()
-
-    def loadfile(self):
-        binarydatas = "C:/Users/gunda/projectExperiments/Sunagawa/pickles"
-        outputpath = path.join(binarydatas, projectList.getprojectName() + ".pkl")
-
-        with open(outputpath, "rb") as f:
-            projectList.setprojectObj(pickle.load(f))
     
     def openProject(self):
         for checkbox in self.checkboxes:
@@ -66,7 +50,6 @@ class projectList:
                 tag = checkbox.label
 
                 projectList.setprojectName(tag)
-                self.loadfile()
                 self.page.go("/mainView")
 
                 return
