@@ -13,6 +13,9 @@
 #まだ、見掛け倒しです
 #消しゴムで消した後に円の縮小をするとおかしいことになります
 #なぜか自由描画の縮小ができない。。
+#アニメーション再生も追加
+#アニメーションのページ数もどうにかしたい
+#アニメーションソフトのバーの検討
 
 import flet as ft
 from flet import(
@@ -243,6 +246,7 @@ class menubar:
 
 
 import flet as ft
+import time
 
 class mainView:
     def __init__(self, page: ft.Page):
@@ -267,14 +271,53 @@ class mainView:
                 ft.TextButton(text="円", on_click=lambda e: self.switch_to_circle_mode()),
                 ft.TextButton(text="回転", on_click=lambda e: self.kurukuru()),
                 ft.TextButton(text="縮小", on_click=lambda e: self.small()),
-                ft.TextButton(text="消しゴム", on_click=lambda e: self.eraser())
+                ft.TextButton(text="消しゴム", on_click=lambda e: self.eraser()),
+                ft.TextButton(text="再生", on_click=lambda e: self.playAnimation()),
+                ft.TextButton(text="スピード変更", on_click=lambda e: self.changeSpeed())
+                
             ]
         )
         self.canvases = []
-
+        self.speed = 0.1
         self.currentIndex = 0
-        self.draw_area = ft.Column()  # 描画エリアを保持する場所
+        self.draw_area = ft.Column()
+        self.page_number_text = ft.Text(value=f"現在のページ: {self.currentIndex + 1}", size=16)
 
+    
+    def playAnimation(self):
+        if not hasattr(self, 'animating') or not self.animating:
+            self.animating = True
+            self.animateFrames()
+        
+    def changeSpeed(self):
+        if self.speed > 0.05:
+            self.speed -= 0.05
+        else:
+            self.speed = 0.1 
+
+        print(f"再生スピード: {self.speed}秒")
+
+    def animateFrames(self):
+        if self.canvases:
+            for i in range(len(self.canvases)):
+                current_canvas = self.canvases[i]
+                newView = self.createView(current_canvas)
+                
+                self.page.views.clear()
+                self.page.views.append(newView)
+                self.currentIndex = len(self.canvases) - 1 
+                self.page_number_text.value = f"現在のページ: {self.currentIndex + 1}"
+
+                self.page.update()
+                
+                time.sleep(self.speed) 
+                
+                if not self.animating:
+                    break 
+
+            self.animating = False
+
+    
     def eraser(e):
         canVas.setDrawMode("eraser")
 
@@ -313,7 +356,9 @@ class mainView:
         newView = self.createView(nextCanvas)
         self.page.views.clear()
         self.page.views.append(newView)
+        self.page_number_text.value = f"現在のページ: {self.currentIndex + 1}"
         self.page.update()
+
 
     def makeImageCanvas(self):
         newCanvasInstance = canVas()
@@ -330,6 +375,9 @@ class mainView:
         self.page.views.append(newView)
         self.page.update()
 
+        self.page_number_text.value = f"現在のページ: {self.currentIndex + 1}"
+        self.page.update()
+
     def backCanvas(self):
         if self.currentIndex > 0:
             self.currentIndex -= 1
@@ -338,12 +386,18 @@ class mainView:
             self.page.views.append(newView)
             self.page.update()
 
+            self.page_number_text.value = f"現在のページ: {self.currentIndex + 1}"
+            self.page.update()
+
     def goNextCanvas(self):
         if self.currentIndex < len(self.canvases) - 1:  # 最後のキャンバスに到達していない場合
             self.currentIndex += 1
             newView = self.createView(self.canvases[self.currentIndex])
             self.page.views.clear()
             self.page.views.append(newView)
+            self.page.update()
+
+            self.page_number_text.value = f"現在のページ: {self.currentIndex + 1}"
             self.page.update()
 
     def createView(self, canvas):
@@ -356,6 +410,7 @@ class mainView:
                         self.sidebar,
                         ft.Column([
                             self.menubar,
+                            self.page_number_text,
                             canvas
                         ], expand=False)
                     ],
