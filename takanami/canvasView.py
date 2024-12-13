@@ -200,7 +200,7 @@ class canVas:
         return ft.Container(
             self.cp,
             border_radius=0,
-            width=800, # アスペクト比に準拠
+            width=800,
             height=450
         )
 
