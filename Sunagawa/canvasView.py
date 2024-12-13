@@ -5,26 +5,33 @@ class State:
     x: float
     y: float
 
-class canVas:
+class canvasClass:
     color = ft.colors.BLACK
-    width = 3
+    stroke_width = 3
+    canvasWidth = 800
+    canvasHeight = 450
 
     @classmethod
     def setColor(cls, color: ft.colors):
         cls.color = color
 
     @classmethod
-    def setWidth(cls, width: int):
-        cls.width = width
+    def setStrokeWidth(cls, width: int):
+        cls.stroke_width = width
+
+    @classmethod
+    def getCanvasSize(cls):
+        return cls.canvasWidth, cls.canvasHeight
 
     def __init__(self):
         self.state = State()
+        self.drawing = ft.GestureDetector(
+            on_pan_start=self.pan_start,
+            on_pan_update=self.pan_update,
+            drag_interval=10
+        )
         self.cp = cv.Canvas(
-            content=ft.GestureDetector(
-                on_pan_start=self.pan_start,
-                on_pan_update=self.pan_update,
-                drag_interval=10,
-            )
+            content=self.drawing
         )
 
     def pan_start(self, e: ft.DragStartEvent):
@@ -34,7 +41,7 @@ class canVas:
     def pan_update(self, e: ft.DragUpdateEvent):
         self.cp.shapes.append(
             cv.Line(
-                self.state.x, self.state.y, e.local_x, e.local_y, paint=ft.Paint(color=canVas.color, stroke_width=canVas.width)
+                self.state.x, self.state.y, e.local_x, e.local_y, paint=ft.Paint(color=canvasClass.color, stroke_width=canvasClass.stroke_width)
             )
         )
         self.cp.update()
@@ -46,7 +53,7 @@ class canVas:
         self.cp.shapes.append(
             cv.Rect(
                 x=x, y=y, width=width, height=height,
-                paint=ft.Paint(color=canVas.color, stroke_width=canVas.width, style="stroke")
+                paint=ft.Paint(color=canvasClass.color, stroke_width=canvasClass.stroke_width, style="stroke")
             )
         )
         self.cp.update()
@@ -56,7 +63,7 @@ class canVas:
         self.cp.shapes.append(
             cv.Circle(
                 x=x, y=y, radius=radius,
-                paint=ft.Paint(color=canVas.color, stroke_width=canVas.width, style="stroke")
+                paint=ft.Paint(color=canvasClass.color, stroke_width=canvasClass.stroke_width, style="stroke")
             )
         )
         self.cp.update()
@@ -66,19 +73,17 @@ class canVas:
         self.cp.shapes.append(
             cv.Oval(
                 x=x, y=y, width=width, height=height,
-                paint=ft.Paint(color=canVas.color, stroke_width=canVas.width, style="stroke")
+                paint=ft.Paint(color=canvasClass.color, stroke_width=canvasClass.stroke_width, style="stroke")
             )
         )
         self.cp.update()
 
     def makeCanvas(self):
+        width, height = canvasClass.getCanvasSize()
+
         return ft.Container(
             self.cp,
             border_radius=0,
-            width=800, # アスペクト比に準拠
-            height=450
+            width=width, # アスペクト比に準拠
+            height=height
         )
-
-
-if __name__=="__main__":
-    pass

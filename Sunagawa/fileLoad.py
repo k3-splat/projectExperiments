@@ -41,21 +41,6 @@ class mkdir:
         
         except Exception:
             return -2
-        
-
-class saveAndloadFile:
-    def __init__(self):
-        self.saveAndloadPath = "C:/Users/gunda/projectExperiments/Sunagawa/pickles"
-
-    def savefile(self, tag, obj):
-        file = os.path.join(self.saveAndloadPath, tag + ".pickle")
-        with open(file, 'wb') as f:
-            pickle.dump(obj, f)
-
-    def loadfile(self, tag):
-        file = os.path.join(self.saveAndloadPath, tag + ".pickle")
-        with open(file, "rb") as f:
-            return pickle.loads(f)
 
 
 class input_material:

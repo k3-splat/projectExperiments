@@ -1,27 +1,19 @@
 import flet as ft
+import pickle
 from pathDatabase import pathDatabase
 from dialogs import NotFolderSelected
-from fileLoad import saveAndloadFile
+from os import path
 
 class projectList:
     projectName = "hoge"
-    projectObj = None
 
     @classmethod
     def setprojectName(cls, value):
         cls.projectName = value
 
     @classmethod
-    def setprojectObj(cls, value):
-        cls.projectObj = value
-
-    @classmethod
     def getprojectName(cls):
         return cls.projectName
-    
-    @classmethod
-    def getprojectObj(cls):
-        return cls.projectObj
 
     def __init__(self, page: ft.Page):
         self.page = page
@@ -56,10 +48,8 @@ class projectList:
         for checkbox in self.checkboxes:
             if checkbox.value:
                 tag = checkbox.label
-                loading = saveAndloadFile()
 
                 projectList.setprojectName(tag)
-                projectList.setprojectObj(loading.loadfile(tag))
                 self.page.go("/mainView")
 
                 return

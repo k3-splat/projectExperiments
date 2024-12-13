@@ -6,13 +6,13 @@ from datetime import datetime
 class pathDatabase:
     def __init__(self):
         self.csvFilePath = "folderPaths.csv"
+        self.pickle_file = "C:/Users/gunda/projectExperiments/Sunagawa/assets/pickles"
 
     def initialize_csv(self):
         if not os.path.exists(self.csvFilePath):  # ファイルが存在しない場合のみ作成
             with open(self.csvFilePath, mode='w', newline='', encoding='utf-8') as file:
                 writer = csv.writer(file)
                 writer.writerow(["ID", "FilePath", "Title", "Tag", "CreatedAt"])
-            print(f"{self.csvFilePath} initialized.")
 
     def add_folder(self, file_path):
         with open(self.csvFilePath, mode='a', newline='', encoding='utf-8') as file:
@@ -56,6 +56,7 @@ class pathDatabase:
                     writer.writerow(row)
 
         os.replace(temp_file, self.csvFilePath)
+        os.remove(os.path.join(self.pickle_file, tag + ".pkl"))
         if not deleted:
             print(f"No entry found with tag {tag}")
 
