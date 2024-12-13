@@ -23,7 +23,6 @@ from flet import(
 from chooseProjectView import projectList
 import flet.canvas as cv
 from canvasView import canvasClass
-from pathDatabase import pathDatabase
 from dialogs import askSave
 import time
 import pygetwindow as gw

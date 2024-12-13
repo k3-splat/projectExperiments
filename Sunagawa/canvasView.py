@@ -12,12 +12,25 @@ class canvasClass:
     canvasHeight = 450
 
     @classmethod
-    def setColor(cls, color: ft.colors):
+    def setColor(cls, color):
         cls.color = color
 
     @classmethod
-    def setStrokeWidth(cls, width: int):
+    def getColor(cls):
+        return cls.color
+
+    @classmethod
+    def setStrokeWidth(cls, width):
         cls.stroke_width = width
+
+    @classmethod
+    def getStrokeWidth(cls):
+        return cls.stroke_width
+    
+    @classmethod
+    def setCnavasSize(cls, width, height):
+        cls.canvasWidth = width
+        cls.canvasHeight = height
 
     @classmethod
     def getCanvasSize(cls):
@@ -26,54 +39,53 @@ class canvasClass:
     def __init__(self):
         self.state = State()
         self.drawing = ft.GestureDetector(
-            on_pan_start=self.pan_start,
-            on_pan_update=self.pan_update,
+            on_pan_start=self.pan_freestroke_start,
+            on_pan_update=self.pan_freestroke_update,
             drag_interval=10
         )
         self.cp = cv.Canvas(
             content=self.drawing
         )
 
-    def pan_start(self, e: ft.DragStartEvent):
+    def pan_freestroke_start(self, e: ft.DragStartEvent):
         self.state.x = e.local_x
         self.state.y = e.local_y
 
-    def pan_update(self, e: ft.DragUpdateEvent):
+    def pan_freestroke_update(self, e: ft.DragUpdateEvent):
         self.cp.shapes.append(
             cv.Line(
-                self.state.x, self.state.y, e.local_x, e.local_y, paint=ft.Paint(color=canvasClass.color, stroke_width=canvasClass.stroke_width)
+                x1=self.state.x,
+                y1=self.state.y,
+                x2=e.local_x,
+                y2=e.local_y,
+                paint=ft.Paint(
+                    color=canvasClass.getColor(),
+                    stroke_width=canvasClass.getStrokeWidth()
+                )
             )
         )
         self.cp.update()
         self.state.x = e.local_x
         self.state.y = e.local_y
 
-    def draw_rectangle(self, x, y, width, height):
-        """Draws a rectangle on the canvas."""
+    def pan_shape_start(self, e: ft.DragStartEvent):
+        self.state.x = e.local_x
+        self.state.y = e.local_y
+        self.cp.shapes.append(None) # hogeオブジェクト，意味はない
+
+    def pan_storke_rect_update(self, e: ft.DragUpdateEvent):
+        self.cp.shapes.pop() # 先に描画された図形をポップして削除
         self.cp.shapes.append(
             cv.Rect(
-                x=x, y=y, width=width, height=height,
-                paint=ft.Paint(color=canvasClass.color, stroke_width=canvasClass.stroke_width, style="stroke")
-            )
-        )
-        self.cp.update()
-
-    def draw_circle(self, x, y, radius):
-        """Draws a circle on the canvas."""
-        self.cp.shapes.append(
-            cv.Circle(
-                x=x, y=y, radius=radius,
-                paint=ft.Paint(color=canvasClass.color, stroke_width=canvasClass.stroke_width, style="stroke")
-            )
-        )
-        self.cp.update()
-
-    def draw_oval(self, x, y, width, height):
-        """Draws an oval on the canvas."""
-        self.cp.shapes.append(
-            cv.Oval(
-                x=x, y=y, width=width, height=height,
-                paint=ft.Paint(color=canvasClass.color, stroke_width=canvasClass.stroke_width, style="stroke")
+                x=self.state.x,
+                y=self.state.y,
+                width=e.local_x - self.state.x,
+                height=e.local_y - self.state.y,
+                paint=ft.Paint(
+                    color=canvasClass.getColor(),
+                    stroke_width=canvasClass.getStrokeWidth(),
+                    style=ft.PaintingStyle("stroke")
+                )
             )
         )
         self.cp.update()
