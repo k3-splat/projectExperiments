@@ -273,17 +273,31 @@ class mainView:
                 ft.TextButton(text="縮小", on_click=lambda e: self.small()),
                 ft.TextButton(text="消しゴム", on_click=lambda e: self.eraser()),
                 ft.TextButton(text="再生", on_click=lambda e: self.playAnimation()),
-                ft.TextButton(text="スピード変更", on_click=lambda e: self.changeSpeed())
-                
+                #ft.TextButton(text="スピード変更", on_click=lambda e: self.changeSpeed())
             ]
         )
         self.canvases = []
         self.speed = 0.1
         self.currentIndex = 0
+        self.animating = False
         self.draw_area = ft.Column()
         self.page_number_text = ft.Text(value=f"現在のページ: {self.currentIndex + 1}", size=16)
 
-    
+        #スピード調節
+        self.speed_slider = ft.Slider(
+            value=self.speed,
+            min=0.05,
+            max=1.0,
+            divisions=19,
+            label="{value:.2f}秒",
+            on_change=self.update_speed
+        )
+        self.menubar.controls.append(self.speed_slider)
+
+    def update_speed(self, e: ft.ControlEvent):
+        self.speed = e.control.value
+        print(f"再生スピードが {self.speed:.2f} 秒に変更されました。")
+
     def playAnimation(self):
         if not hasattr(self, 'animating') or not self.animating:
             self.animating = True
@@ -337,12 +351,10 @@ class mainView:
         canVas.setDrawMode("free")
     
     def toggle_rectangle_mode(self):
-        """長方形モードに切り替える"""
         self.is_rectangle_mode = True
         print("長方形モード")
 
     def toggle_free_mode(self):
-        """自由描画モードに切り替える"""
         self.is_rectangle_mode = False
         print("自由描画モード")
 

@@ -42,7 +42,6 @@ class canVas:
         self.state.y = e.local_y
 
     def pan_update(self, e: ft.DragUpdateEvent):
-        """ドラッグ更新時の描画処理"""
         if canVas.draw_mode == "free":  # 自由描画モード
             # 線を描画
             self.cp.shapes.append(
@@ -54,13 +53,11 @@ class canVas:
             self.cp.update()
             self.state.x = e.local_x
             self.state.y = e.local_y
-        elif canVas.draw_mode == "rectangle":  # 長方形描画モード
-            # 長方形を描画
+        elif canVas.draw_mode == "rectangle": 
             width = e.local_x - self.state.x
             height = e.local_y - self.state.y
             self.draw_rectangle(self.state.x, self.state.y, width, height)
-        elif canVas.draw_mode == "circle":  # 円描画モード
-            # 円を描画
+        elif canVas.draw_mode == "circle":
             radius = max(abs(e.local_x - self.state.x), abs(e.local_y - self.state.y))
             self.draw_circle(self.state.x, self.state.y, radius)
         elif canVas.draw_mode == "Rotate":
@@ -72,6 +69,10 @@ class canVas:
         elif canVas.draw_mode == "eraser":
             print("消しゴム")
             self.erase(e)
+
+    def pan_end(self, e: ft.DragEndEvent):
+        if canVas.draw_mode == "rectangle":
+            self.finalize_rectangle()
 
     def erase(self, e: ft.DragUpdateEvent):
     
@@ -100,11 +101,48 @@ class canVas:
                     shape.height *= 0.95
                 shape.update()
     
+    def draw_rotated_rectangle(self, rect, angle):
+        """長方形を回転して手動で描画"""
+        cx = rect.x + rect.width / 2
+        cy = rect.y + rect.height / 2
+
+        # 頂点を計算
+        top_left = self.rotate_point(rect.x, rect.y, cx, cy, angle)
+        top_right = self.rotate_point(rect.x + rect.width, rect.y, cx, cy, angle)
+        bottom_left = self.rotate_point(rect.x, rect.y + rect.height, cx, cy, angle)
+        bottom_right = self.rotate_point(rect.x + rect.width, rect.y + rect.height, cx, cy, angle)
+
+        self.cp.shapes.append(
+            cv.Line(*top_left, *top_right, paint=ft.Paint(color=rect.paint.color, stroke_width=rect.paint.stroke_width))
+        )
+        self.cp.shapes.append(
+            cv.Line(*top_right, *bottom_right, paint=ft.Paint(color=rect.paint.color, stroke_width=rect.paint.stroke_width))
+        )
+        self.cp.shapes.append(
+            cv.Line(*bottom_right, *bottom_left, paint=ft.Paint(color=rect.paint.color, stroke_width=rect.paint.stroke_width))
+        )
+        self.cp.shapes.append(
+            cv.Line(*bottom_left, *top_left, paint=ft.Paint(color=rect.paint.color, stroke_width=rect.paint.stroke_width))
+        )
+
+        self.cp.update()
+
+    def rotate_point(self, x, y, cx, cy, angle):
+        radians = math.radians(angle)
+        cos_a = math.cos(radians)
+        sin_a = math.sin(radians)
+        nx = cos_a * (x - cx) - sin_a * (y - cy) + cx
+        ny = sin_a * (x - cx) + cos_a * (y - cy) + cy
+        return nx, ny
+
     def rotate_shape(self):
+        """すべての図形を回転"""
         for shape in self.cp.shapes:
-            current_rotation = shape.rotate if shape.rotate is not None else 0
-            shape.rotate = (current_rotation + 0.01) % 360
-            shape.update() 
+            if isinstance(shape, cv.Rect):
+                self.draw_rotated_rectangle(shape, 5)
+
+        self.cp.update()
+
     
     def draw_rectangle(self, x, y, width, height):
         if self.current_rectangle is None:
@@ -122,6 +160,7 @@ class canVas:
             self.current_rectangle.update()
         
         self.cp.update()
+
     def store(self):
         self.cp.shapes.append(self.current_rectangle)
     
@@ -138,18 +177,14 @@ class canVas:
                 x=x, y=y, radius=radius,
                 paint=ft.Paint(color=canVas.color, stroke_width=canVas.width, style="stroke")
             )
-        # 描画中の円を `shapes` に追加
             self.cp.shapes.append(self.current_circle)
         else:
-        # すでに描画中の円があれば、位置や半径を更新
             self.current_circle.x = x
             self.current_circle.y = y
             self.current_circle.radius = radius
             self.current_circle.update()
 
-    # 描画が完了した場合、円を確定
-
-        self.cp.update()  # 更新を呼び出して描画を反映
+        self.cp.update()
 
     def draw_oval(self, x, y, width, height):
         """楕円を描画"""
