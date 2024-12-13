@@ -17,6 +17,8 @@
 #アニメーションのページ数もどうにかしたい
 #アニメーションソフトのバーの検討
 
+#長方形？？
+
 import flet as ft
 from flet import(
     Text,
@@ -273,6 +275,7 @@ class mainView:
                 ft.TextButton(text="縮小", on_click=lambda e: self.small()),
                 ft.TextButton(text="消しゴム", on_click=lambda e: self.eraser()),
                 ft.TextButton(text="再生", on_click=lambda e: self.playAnimation()),
+                ft.TextButton(text="コピー", on_click=lambda e: self.copyCurrentCanvas())
                 #ft.TextButton(text="スピード変更", on_click=lambda e: self.changeSpeed())
             ]
         )
@@ -283,7 +286,13 @@ class mainView:
         self.draw_area = ft.Column()
         self.page_number_text = ft.Text(value=f"現在のページ: {self.currentIndex + 1}", size=16)
 
+
+    def copyCurrentCanvas(self):
+        print("コピー")
+
+
         #スピード調節
+
         self.speed_slider = ft.Slider(
             value=self.speed,
             min=0.05,

@@ -28,6 +28,7 @@ class canVas:
         self.current_rectangle = None
         self.current_rectangles = []
         self.current_circle = None
+        #self.is_dragging = None
 
         self.cp = cv.Canvas(
             content=ft.GestureDetector(
@@ -146,18 +147,28 @@ class canVas:
     
     def draw_rectangle(self, x, y, width, height):
         if self.current_rectangle is None:
-            self.current_rectangle = cv.Rect(
+            #self.current_rectangle = cv.Rect(
+            #    x=x, y=y, width=width, height=height,
+            #    paint=ft.Paint(color=canVas.color, stroke_width=canVas.width, style="stroke")
+            #)
+            self.cp.shapes.append(
+                cv.Rect(
                 x=x, y=y, width=width, height=height,
                 paint=ft.Paint(color=canVas.color, stroke_width=canVas.width, style="stroke")
+                )
             )
-            self.store()
+            #self.cp.shapes.append(self.current_rectangle)
             self.cp.update()
+            print("かきはじめかきおわり")
         else:
             self.current_rectangle.x = x
             self.current_rectangle.y = y
             self.current_rectangle.width = width
             self.current_rectangle.height = height
+            #self.cp.shapes.append(self.current_rectangle)
+            print("かいかき")
             self.current_rectangle.update()
+            
         
         self.cp.update()
 
@@ -177,11 +188,13 @@ class canVas:
                 x=x, y=y, radius=radius,
                 paint=ft.Paint(color=canVas.color, stroke_width=canVas.width, style="stroke")
             )
+            print("かきはじめかきおわり")
             self.cp.shapes.append(self.current_circle)
         else:
             self.current_circle.x = x
             self.current_circle.y = y
             self.current_circle.radius = radius
+            print("かきかき")
             self.current_circle.update()
 
         self.cp.update()
