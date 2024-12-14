@@ -44,6 +44,9 @@ class canVas:
             )
         )
 
+    def on_click(self,e):
+        print("クリック")
+    
     def pan_start(self, e: ft.DragStartEvent):
         self.state.x = e.local_x
         self.state.y = e.local_y
@@ -111,37 +114,40 @@ class canVas:
                 shape.update()
     
     #pass
+    def rotate_shape(self):
+        for shape in self.cp.shapes:
+            if isinstance(shape, cv.Rect):
+                angle = 5
+                self.draw_rotated_rectangle(shape, angle)
+            else:
+                print("回転できていない")
+        self.cp.update()
+
     def draw_rotated_rectangle(self, rect, angle):
-        """長方形を回転して描画"""
-    # 長方形の中心を計算
-        #rect.rotation_angle += angle
         cx = rect.x + rect.width / 2
         cy = rect.y + rect.height / 2
 
-    # 各頂点を計算
-        #angle = rect.rotation_angle
         top_left = self.rotate_point(rect.x, rect.y, cx, cy, angle)
         top_right = self.rotate_point(rect.x + rect.width, rect.y, cx, cy, angle)
         bottom_left = self.rotate_point(rect.x, rect.y + rect.height, cx, cy, angle)
         bottom_right = self.rotate_point(rect.x + rect.width, rect.y + rect.height, cx, cy, angle)
 
-    # 元の長方形を削除し、回転後の図形を追加
-        rect.paint.color = "black"  # 回転中にわかりやすくするための色変更
-        self.cp.shapes.remove(rect)  # 元の長方形を削除
-        self.cp.shapes.append(
-            cv.Line(*top_left, *top_right, paint=ft.Paint(color=rect.paint.color, stroke_width=rect.paint.stroke_width))
-        )
-        self.cp.shapes.append(
-            cv.Line(*top_right, *bottom_right, paint=ft.Paint(color=rect.paint.color, stroke_width=rect.paint.stroke_width))
-        )
-        self.cp.shapes.append(
-            cv.Line(*bottom_right, *bottom_left, paint=ft.Paint(color=rect.paint.color, stroke_width=rect.paint.stroke_width))
-        )
-        self.cp.shapes.append(
-            cv.Line(*bottom_left, *top_left, paint=ft.Paint(color=rect.paint.color, stroke_width=rect.paint.stroke_width))
-        )
+        self.cp.shapes.remove(rect) 
+        color = rect.paint.color 
+        stroke_width = rect.paint.stroke_width
 
-        #self.cp.update()
+        self.cp.shapes.append(
+            cv.Line(*top_left, *top_right, paint=ft.Paint(color=color, stroke_width=stroke_width))
+        )
+        self.cp.shapes.append(
+            cv.Line(*top_right, *bottom_right, paint=ft.Paint(color=color, stroke_width=stroke_width))
+        )
+        self.cp.shapes.append(
+            cv.Line(*bottom_right, *bottom_left, paint=ft.Paint(color=color, stroke_width=stroke_width))
+        )
+        self.cp.shapes.append(
+            cv.Line(*bottom_left, *top_left, paint=ft.Paint(color=color, stroke_width=stroke_width))
+        )
 
     def rotate_point(self, x, y, cx, cy, angle):
         """点を中心点を基準に回転"""
@@ -152,13 +158,6 @@ class canVas:
         ny = sin_a * (x - cx) + cos_a * (y - cy) + cy
         return nx, ny
 
-    def rotate_shape(self):
-        for shape in self.cp.shapes:
-            print("一つ足りないrotate_shape")
-            #if isinstance(shape, cv.Rect):
-            print("ここにきてるよrotateShape")
-            self.draw_rotated_rectangle(shape, 5)
-        self.cp.update()
     
     def pan_shape_start(self, e: ft.DragStartEvent):
         self.state.x = e.local_x
@@ -176,7 +175,7 @@ class canVas:
                 paint=ft.Paint(
                     color=canVas.color,
                     stroke_width=canVas.width,
-                    style=ft.PaintingStyle("fill")
+                    style=ft.PaintingStyle("stroke")
                 )
             )
         )
