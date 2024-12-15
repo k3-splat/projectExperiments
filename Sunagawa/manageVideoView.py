@@ -5,25 +5,19 @@ from os import path
 from os import stat
 from datetime import datetime
 from pathDatabase import pathDatabase
-from dialogs import AttentionRemove
+from dialogs import AttentionRemove, inputVideoNameDialog
 
 class manageVideo:
-    removeVideo = ""
-
-    @classmethod
-    def setremoveVideo(cls, value):
-        cls.removeVideo = value
-
-    @classmethod
-    def getremoveVideo(cls):
-        return cls.removeVideo
-
     def __init__(self, page: ft.Page):
         self.page = page
-        self.output_thumnails = "/thumnails"
+        self.output_thumnails = "C:/Users/gunda/projectExperiments/Sunagawa/thumnails"
         self.instance_AR = AttentionRemove(
             lambda e: self.removeAndrefresh(),
             lambda e: self.page.close(self.instance_AR.attentionDialog)
+        )
+        self.instance_IV = inputVideoNameDialog(
+            lambda e: self.changeVideoName(self.instance_IV.inputVideoNameDialog.content.value),
+            lambda e: self.page.close(self.instance_IV.inputVideoNameDialog)
         )
 
         self.refresh_video()
@@ -35,9 +29,10 @@ class manageVideo:
         self.refreshThumnails()
 
         for video in videos:
+            tag = path.basename(video['FilePath'])
             videoPath = path.join(video['FilePath'], video['Title'])
             videoTitle = video['Title']
-            thumnailPath = path.join(self.output_thumnails, path.basename(video['FilePath']) + "_thumnail.png")
+            thumnailPath = path.join(self.output_thumnails, videoTitle + "_thumnail.png")
             self.get_video_thumbnail(videoPath, thumnailPath)
 
             self.filerow.append(
@@ -56,7 +51,11 @@ class manageVideo:
                             ft.PopupMenuButton(
                                 content=ft.Icon(name=ft.icons.VIDEO_SETTINGS),
                                 items=[
-                                    ft.PopupMenuItem(icon=ft.icons.FILE_UPLOAD, text="投稿する", on_click=lambda e: None),
+                                    ft.PopupMenuItem(
+                                        icon=ft.icons.FILE_UPLOAD,
+                                        text="名前を変更する",
+                                        on_click=lambda e, tg=tag: self.openVideoNameDialog(tg)
+                                    ),
                                     ft.PopupMenuItem(
                                         icon=ft.icons.DELETE,
                                         text="削除する",
@@ -89,13 +88,27 @@ class manageVideo:
         # リソースを解放
         cap.release()
 
+    def openVideoNameDialog(self, tag):
+        self.tag = tag
+        self.page.open(self.instance_IV.inputVideoNameDialog)
+
+    def changeVideoName(self, newName):
+        pd = pathDatabase()
+        pd.update_video_title(self.tag, newName + ".mp4")
+
+        self.refresh_video()
+        self.page.close(self.instance_IV.inputVideoNameDialog)
+        self.page.views.clear()
+        self.page.views.append(self.makeView())
+        self.page.update()
+
     def setremovevideoAndopen(self, videopath):
-        manageVideo.setremoveVideo(videopath)
+        self.videopath = videopath
         self.page.open(self.instance_AR.attentionDialog)
 
     def removeAndrefresh(self):
-        if path.exists(manageVideo.removeVideo):
-            os.remove(manageVideo.removeVideo)
+        if path.exists(self.videopath):
+            os.remove(self.videopath)
         
         self.refresh_video()
         self.page.close(self.instance_AR.attentionDialog)

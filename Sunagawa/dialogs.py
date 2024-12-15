@@ -59,7 +59,7 @@ class manageFolders:
             message=ft.Row([ft.Text("何を管理しますか？")], alignment=ft.MainAxisAlignment.CENTER),
             cancel=ft.CupertinoActionSheetAction(content=ft.Text("キャンセル")),
             actions=[
-                ft.CupertinoActionSheetAction(content=ft.Text("プロジェクトを削除する")),
+                ft.CupertinoActionSheetAction(content=ft.Text("プロジェクトを管理する")),
                 ft.CupertinoActionSheetAction(content=ft.Text("作った動画を管理する")),
             ],
         )
@@ -117,9 +117,9 @@ class askSave:
         self.askSaveDialog = ft.AlertDialog(
             title=ft.Text("comfirm"),
             modal=False,
-            content=ft.Text("保存して終了しますか？"),
+            content=ft.Text("終了しますか？"),
             actions=[
-                ft.TextButton("はい"),
+                ft.TextButton("保存して終了する"),
                 ft.TextButton("保存せず終了する"),
                 ft.Text("キャンセル")
             ]
@@ -145,3 +145,19 @@ class NotFolderSelected:
         )
         
         self.banner.actions[0].on_click = fun
+
+
+class inputVideoNameDialog:
+    def __init__(self, fun1, fun2):
+        self.inputVideoNameDialog = ft.AlertDialog(
+            title=ft.Text("新しい名前を入力してください"),
+            modal=True,
+            content=ft.TextField(),
+            actions=[
+                ft.TextButton("変更"),
+                ft.TextButton("キャンセル")
+            ]
+        )
+
+        self.inputVideoNameDialog.actions[0].on_click = fun1
+        self.inputVideoNameDialog.actions[1].on_click = fun2

@@ -149,6 +149,37 @@ class menubar:
         self.menubar = ft.MenuBar(
             expand=False,
             controls=[
+                ft.TextButton(text="ペン", on_click=lambda e: canvasClass.setDrawMode("free")),
+                ft.SubmenuButton(
+                    content=ft.Text("四角形"),
+                    controls=[
+                        ft.MenuItemButton(
+                            content=ft.Text("塗りつぶしあり"),
+                            leading=ft.Icon(name=ft.icons.RECTANGLE),
+                            on_click=lambda e: canvasClass.setDrawMode("rectangle_fill")
+                        ),
+                        ft.MenuItemButton(
+                            content=ft.Text("塗りつぶしなし"),
+                            leading=ft.Icon(name=ft.icons.RECTANGLE_OUTLINED),
+                            on_click=lambda e: canvasClass.setDrawMode("rectangle_stroke")
+                        )
+                    ]
+                ),
+                ft.SubmenuButton(
+                    content=ft.Text("円"),
+                    controls=[
+                        ft.MenuItemButton(
+                            content=ft.Text("塗りつぶしあり"),
+                            leading=ft.Icon(name=ft.icons.CIRCLE),
+                            on_click=lambda e: canvasClass.setDrawMode("circle_fill")
+                        ),
+                        ft.MenuItemButton(
+                            content=ft.Text("塗りつぶしなし"),
+                            leading=ft.Icon(name=ft.icons.CIRCLE_OUTLINED),
+                            on_click=lambda e: canvasClass.setDrawMode("circle_stroke")
+                        )
+                    ]
+                ),
                 ft.SubmenuButton(
                     content=ft.Text("ペンの色"),
                     controls=[
@@ -266,41 +297,74 @@ class mainView:
         self.appheader.appbar.leading = ft.IconButton(icon=ft.icons.HOME, on_click=self.savefile)
 
     def savefile(self, e):
-        serialized_obj = []
-        serialized_bg = []
+        serialized_stack = []
 
-        for i in range(len(self.canvases)):
-            tmp_list_obj = []
-            for obj in self.canvasShapesList[i]:
-                if type(obj) is cv.Line:
-                    tmp_list_obj.append(
-                        {
-                            "type": "Line",
-                            "x1": obj.x1,
-                            "y1": obj.y1,
-                            "x2": obj.x2,
-                            "y2": obj.y2,
-                            "color": obj.paint.color,
-                            "stroke_width": obj.paint.stroke_width
-                        }
-                    )
+        for i in range(len(self.stackList)):
+            for stack in self.stackList[i]:
+                tmp_list_layer = []
+                for layer in stack.controls:
+                    tmp_list_obj = []
+                    if type(layer) is ft.Container:
+                        if type(layer.content) is cv.Canvas:
+                            for obj in layer.content.shapes:
+                                if type(obj) is cv.Line:
+                                    tmp_list_obj.append(
+                                        {
+                                            "type": "Line",
+                                            "x1": obj.x1,
+                                            "y1": obj.y1,
+                                            "x2": obj.x2,
+                                            "y2": obj.y2,
+                                            "color": obj.paint.color,
+                                            "stroke_width": obj.paint.stroke_width
+                                        }
+                                    )
+                                
+                                elif type(obj) is cv.Rect:
+                                    pass
+
+                                elif type(obj) is cv.Circle:
+                                    pass
+
+                                elif type(obj) is cv.Oval:
+                                    pass
+
+                                elif type(obj) is cv.Path:
+                                    pass
+
+                                elif type(obj) is cv.Arc:
+                                    pass
+                            
+                            tmp_list_layer.append(tmp_list_obj)
+
+                        elif type(layer.content) is None:
+                            tmp_list_layer.append({
+                                "type": "background",
+                                "bgcolor": layer.bgcolor
+                            })
+
+                    elif type(layer) is ft.Image:
+                        tmp_list_layer.append({
+                            "type": "background_image",
+                            "src": layer.src
+                        })
+
+                    elif type(layer) is ft.GestureDetector:
+                        tmp_list_layer.append(
+                            {
+                                "type": "image",
+                                "left": layer.left,
+                                "top": layer.top,
+                                "src": layer.content.src,
+                                "width": layer.content.width,
+                                "height": layer.content.height
+                            }
+                        )
                 
-            serialized_obj.append(tmp_list_obj)
-
-            serialized_bg.append(
-                {
-                    "content": self.backgrounds[i].content,
-                    "padding": self.backgrounds[i].padding,
-                    "margin": self.backgrounds[i].margin,
-                    "bgcolor": self.backgrounds[i].bgcolor,
-                    "width": self.backgrounds[i].width,
-                    "height": self.backgrounds[i].height,
-                    "border_radius": self.backgrounds[i].border_radius
-                }
-            )
+            serialized_stack.append(tmp_list_obj)
 
         with open(self.outputpath, "wb") as f:
-            serialized = {"object": serialized_obj, "background": serialized_bg}
+            serialized = serialized_stack
             pickle.dump(serialized, f)
 
         self.page.go("/startView")
@@ -310,29 +374,77 @@ class mainView:
             with open(self.outputpath, "rb") as f:
                 serialized = pickle.load(f)
 
-            serialized_obj = serialized["object"]
-            serialized_bg = serialized["background"]
+            self.load_stacks = []
+            for stack in serialized:
+                tmp_list_stack = []
+                for layer in stack:
+                    tmp_list_layer = []
+                    if type(layer) is list:
+                        canvas_instance = canvasClass()
+                        for obj in layer:
+                            if obj["type"] == "Line":
+                                canvas_instance.cp.shapes.append(
+                                    cv.Line(x1=obj["x1"], y1=obj["y1"], x2=obj["x2"], y2=obj["y2"], paint=ft.Paint(color=obj["color"], stroke_width=obj["stroke_width"]))
+                                )
+                            
+                            elif obj["type"] == "Rect":
+                                pass
 
-            for i in range(len(serialized_obj)):
-                tmp_obj = []
-                for obj in serialized_obj[i]:
-                    if obj["type"] == "Line":
-                        tmp_obj.append(
-                            cv.Line(x1=obj["x1"], y1=obj["y1"], x2=obj["x2"], y2=obj["y2"], paint=ft.Paint(color=obj["color"], stroke_width=obj["stroke_width"]))
-                        )
+                            elif obj["type"] == "Circle":
+                                pass
 
-                self.loadObj.append(tmp_obj)
-                self.backgrounds.append(
-                    ft.Container(
-                        content=serialized_bg[i]['content'],
-                        padding=serialized_bg[i]['padding'],
-                        margin=serialized_bg[i]['margin'],
-                        bgcolor=serialized_bg[i]['bgcolor'],
-                        width=serialized_bg[i]['width'],
-                        height=serialized_bg[i]['height'],
-                        border_radius=serialized_bg[i]['border_radius']
-                    ) 
-                )
+                            elif obj["type"] == "Oval":
+                                pass
+
+                            elif obj["type"] == "Path":
+                                pass
+
+                            elif obj["type"] == "Arc":
+                                pass
+                            
+                        canvas = canvas_instance.makeCanvas()
+                        tmp_list_layer.append(canvas)
+
+                    elif type(layer) is dict:
+                        if layer["type"] == "background":
+                            width, height = canvasClass.getCanvasSize()
+                            tmp_list_layer.append(
+                                ft.Container(
+                                    padding=0,
+                                    margin=0,
+                                    bgcolor=layer["bgcolor"],
+                                    width=width,
+                                    height=height,
+                                    border_radius=0
+                                )
+                            )
+
+                        elif layer["type"] == "background_image":
+                            width, height = canvasClass.getCanvasSize()
+                            tmp_list_layer.append(
+                                ft.Image(
+                                    src=layer["src"],
+                                    width=width,
+                                    height=height
+                                )
+                            )
+
+                        elif layer["type"] == "image":
+                            tmp_list_layer.append(
+                                ft.GestureDetector(
+                                    content=ft.Image(
+                                        src=layer["src"],
+                                        width=layer["width"],
+                                        height=layer["height"],
+                                    ),
+                                    left=layer["left"],
+                                    top=layer["top"]
+                                )
+                            )
+
+                    tmp_list_stack.append(tmp_list_layer)
+                
+                self.load_stacks.append(tmp_list_stack)
 
         except FileNotFoundError:
             return -1
@@ -511,6 +623,10 @@ class mainView:
         except IndexError:
             pass
 
+    def modeChange(self):
+        mode = canvasClass.getDrawMode()
+
+
     def getIntermediateFrame(self):
         self.takeCanvasImage(self.currentIndex)
         self.takeCanvasImage(self.currentIndex + 1)
@@ -525,21 +641,22 @@ class mainView:
         self.appheader.appbar.title = Text(value = self.projectname, size = 24, text_align = "center")
         binarydatas = "C:/Users/gunda/projectExperiments/Sunagawa/assets/pickles" # fletモジュール以外には明示的にパスを指定しないといけない
         self.outputpath = path.join(binarydatas, self.projectname + ".pkl")
-        self.canvases = []
         self.currentIndex = 0
-        self.canvasShapesList = []
-        self.backgrounds = []
-        self.loadObj = []
 
         decideResume = self.loadfile()
 
         if decideResume == -1:
+            self.stackList = []
             canvasInstancePrimary = canvasClass()
-            self.canvasShapesList.append(canvasInstancePrimary.cp.shapes)
             primarycanvas = canvasInstancePrimary.makeCanvas()
             whiteboard = self.whiteboard
-            self.backgrounds.append(whiteboard)
-            self.canvases.append(primarycanvas)
+            primaryStack = ft.Stack(
+                controls=[
+                    whiteboard,
+                    primarycanvas
+                ]
+            )
+            self.stackList.append(primaryStack)
 
             return ft.View("/mainView",
                 appbar=self.appheader.appbar,
@@ -549,12 +666,7 @@ class mainView:
                             self.sidebar,
                             ft.Column([
                                 self.menubar,
-                                ft.Stack(
-                                    controls=[
-                                        whiteboard,
-                                        primarycanvas
-                                    ]
-                                )
+                                primaryStack
                             ], expand=False)
                         ], expand=True
                     )
@@ -562,7 +674,7 @@ class mainView:
             )
 
         else:
-            for i in range(len(self.loadObj)):
+            for i in range(len(self.load_stacks)):
                 newCanvasInstance = canvasClass()
                 self.canvasShapesList.append(newCanvasInstance.cp.shapes)
                 newCanvasInstance.cp.shapes += self.loadObj[i]

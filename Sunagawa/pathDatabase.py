@@ -92,6 +92,55 @@ class pathDatabase:
                 if row["Tag"] == tag:
                     return True
         return False
+    
+    def update_video_title(self, tag, new_title):
+        temp_file = self.csvFilePath + ".tmp"
+        updated = False
+        
+        with open(self.csvFilePath, mode='r', newline='', encoding='utf-8') as infile, \
+            open(temp_file, mode='w', newline='', encoding='utf-8') as outfile:
+            reader = csv.DictReader(infile)
+            fieldnames = reader.fieldnames
+            writer = csv.DictWriter(outfile, fieldnames=fieldnames)
+            writer.writeheader()
+
+            for row in reader:
+                if row["Tag"] == tag:
+                    old_path = os.path.join(row["FilePath"], row["Title"])
+                    row["Title"] = new_title
+                    new_path = os.path.join(row["FilePath"], row["Title"])
+                    os.rename(old_path, new_path)
+                    updated = True
+                writer.writerow(row)
+
+        os.replace(temp_file, self.csvFilePath)
+        if not updated:
+            print(f"No entry found with tag {tag}")
+
+    def update_tag(self, old_tag, new_tag):
+        temp_file = self.csvFilePath + ".tmp"
+        updated = False
+        
+        with open(self.csvFilePath, mode='r', newline='', encoding='utf-8') as infile, \
+            open(temp_file, mode='w', newline='', encoding='utf-8') as outfile:
+            reader = csv.DictReader(infile)
+            fieldnames = reader.fieldnames
+            writer = csv.DictWriter(outfile, fieldnames=fieldnames)
+            writer.writeheader()
+
+            for row in reader:
+                if row["Tag"] == old_tag:
+                    old_path = row["FilePath"]
+                    new_path = os.path.join(os.path.dirname(row["FilePath"]), new_tag)
+                    row["Tag"] = new_tag
+                    row["FilePath"] = new_path
+                    os.rename(old_path, new_path)
+                    updated = True
+                writer.writerow(row)
+
+        os.replace(temp_file, self.csvFilePath)
+        if not updated:
+            print(f"No entry found with tag {old_tag}")
 
 
 if __name__ == "__main__":
