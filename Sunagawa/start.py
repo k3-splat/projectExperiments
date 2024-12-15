@@ -10,6 +10,8 @@ from os import path
 class startView:
     def __init__(self, page: ft.Page):
         self.page = page
+        pdInstance = pd.pathDatabase()
+        pdInstance.initialize_csv()
 
         self.make_directory = fl.mkdir()
         selectDirectory = ft.FilePicker(on_result=lambda e: self.make_directory.input_directory_path(e, self.page, self.inputfoldernamedialog.inputFolderNameDialog))
@@ -90,7 +92,7 @@ class startView:
             self.inputfoldernamedialog.inputFolderNameDialog.content.label = "Making directory is failure. Please try it again."
             self.inputfoldernamedialog.inputFolderNameDialog.content.border_color = 'RED'
         else:
-            projectList.projectName = path.basename(filePath)
+            projectList.setprojectName(path.basename(filePath))
 
             self.inputfoldernamedialog.inputFolderNameDialog.content.label = ""
             self.inputfoldernamedialog.inputFolderNameDialog.content.border_color = ''

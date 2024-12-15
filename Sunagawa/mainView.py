@@ -22,11 +22,12 @@ from flet import(
 )
 from chooseProjectView import projectList
 import flet.canvas as cv
+from canvasView import canvasClass
 from dialogs import askSave
-from fileLoad import saveAndloadFile
 import time
 import pygetwindow as gw
 import subprocess
+import pickle
 from PIL import ImageGrab
 from os import path
 
@@ -137,7 +138,6 @@ class Sidebar:
         )
         return self.view
 
-    
     def toggle_nav_rail(self, e):
         self.nav_rail.visible = not self.nav_rail.visible
         self.toggle_nav_rail_button.selected = not self.toggle_nav_rail_button.selected
@@ -155,67 +155,67 @@ class menubar:
                         ft.MenuItemButton(
                             content=ft.Text("白"),
                             leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.WHITE),
-                            on_click=lambda e: canVas.setColor(ft.colors.WHITE)
+                            on_click=lambda e: canvasClass.setColor(ft.colors.WHITE)
                         ),
                         ft.MenuItemButton(
                             content=ft.Text("黄"),
                             leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.YELLOW),
-                            on_click=lambda e: canVas.setColor(ft.colors.YELLOW)
+                            on_click=lambda e: canvasClass.setColor(ft.colors.YELLOW)
                         ),
                         ft.MenuItemButton(
                             content=ft.Text("黄緑"),
                             leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.LIGHT_GREEN),
-                            on_click=lambda e: canVas.setColor(ft.colors.LIGHT_GREEN)
+                            on_click=lambda e: canvasClass.setColor(ft.colors.LIGHT_GREEN)
                         ),
                         ft.MenuItemButton(
                             content=ft.Text("緑"),
                             leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.GREEN),
-                            on_click=lambda e: canVas.setColor(ft.colors.GREEN)
+                            on_click=lambda e: canvasClass.setColor(ft.colors.GREEN)
                         ),
                         ft.MenuItemButton(
                             content=ft.Text("水"),
                             leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.LIGHT_BLUE),
-                            on_click=lambda e: canVas.setColor(ft.colors.LIGHT_BLUE)
+                            on_click=lambda e: canvasClass.setColor(ft.colors.LIGHT_BLUE)
                         ),
                         ft.MenuItemButton(
                             content=ft.Text("青"),
                             leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.BLUE),
-                            on_click=lambda e: canVas.setColor(ft.colors.BLUE)
+                            on_click=lambda e: canvasClass.setColor(ft.colors.BLUE)
                         ),
                         ft.MenuItemButton(
                             content=ft.Text("紫"),
                             leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.PURPLE),
-                            on_click=lambda e: canVas.setColor(ft.colors.PURPLE)
+                            on_click=lambda e: canvasClass.setColor(ft.colors.PURPLE)
                         ),
                         ft.MenuItemButton(
                             content=ft.Text("桃"),
                             leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.PINK),
-                            on_click=lambda e: canVas.setColor(ft.colors.PINK)
+                            on_click=lambda e: canvasClass.setColor(ft.colors.PINK)
                         ),
                         ft.MenuItemButton(
                             content=ft.Text("赤"),
                             leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.RED),
-                            on_click=lambda e: canVas.setColor(ft.colors.RED)
+                            on_click=lambda e: canvasClass.setColor(ft.colors.RED)
                         ),
                         ft.MenuItemButton(
                             content=ft.Text("橙"),
                             leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.ORANGE),
-                            on_click=lambda e: canVas.setColor(ft.colors.ORANGE)
+                            on_click=lambda e: canvasClass.setColor(ft.colors.ORANGE)
                         ),
                         ft.MenuItemButton(
                             content=ft.Text("薄橙"),
                             leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.AMBER),
-                            on_click=lambda e: canVas.setColor(ft.colors.AMBER)
+                            on_click=lambda e: canvasClass.setColor(ft.colors.AMBER)
                         ),
                         ft.MenuItemButton(
                             content=ft.Text("茶"),
                             leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.BROWN),
-                            on_click=lambda e: canVas.setColor(ft.colors.BROWN)
+                            on_click=lambda e: canvasClass.setColor(ft.colors.BROWN)
                         ),
                         ft.MenuItemButton(
                             content=ft.Text("黒"),
                             leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.BLACK),
-                            on_click=lambda e: canVas.setColor(ft.colors.BLACK)
+                            on_click=lambda e: canvasClass.setColor(ft.colors.BLACK)
                         )
                     ]
                 ),
@@ -227,96 +227,11 @@ class menubar:
                             max=8,
                             divisions=7,
                             label="{value}",
-                            on_change=lambda e: canVas.setWidth(e.control.value)
+                            on_change=lambda e: canvasClass.setStrokeWidth(e.control.value)
                         )
                     ]
                 )
             ]
-        )
-
-
-class State:
-    x: float
-    y: float
-
-class canVas:
-    color = ft.colors.BLACK
-    stroke_width = 3
-    canvasWidth = 800
-    canvasHeight = 450
-
-    @classmethod
-    def setColor(cls, color: ft.colors):
-        cls.color = color
-
-    @classmethod
-    def setStrokeWidth(cls, width: int):
-        cls.stroke_width = width
-
-    @classmethod
-    def getCanvasSize(cls):
-        return cls.canvasWidth, cls.canvasHeight
-
-    def __init__(self):
-        self.state = State()
-        self.cp = cv.Canvas(
-            content=ft.GestureDetector(
-                on_pan_start=self.pan_start,
-                on_pan_update=self.pan_update,
-                drag_interval=10,
-            )
-        )
-
-    def pan_start(self, e: ft.DragStartEvent):
-        self.state.x = e.local_x
-        self.state.y = e.local_y
-
-    def pan_update(self, e: ft.DragUpdateEvent):
-        self.cp.shapes.append(
-            cv.Line(
-                self.state.x, self.state.y, e.local_x, e.local_y, paint=ft.Paint(color=canVas.color, stroke_width=canVas.stroke_width)
-            )
-        )
-        self.cp.update()
-        self.state.x = e.local_x
-        self.state.y = e.local_y
-
-    def draw_rectangle(self, x, y, width, height):
-        """Draws a rectangle on the canvas."""
-        self.cp.shapes.append(
-            cv.Rect(
-                x=x, y=y, width=width, height=height,
-                paint=ft.Paint(color=canVas.color, stroke_width=canVas.stroke_width, style="stroke")
-            )
-        )
-        self.cp.update()
-
-    def draw_circle(self, x, y, radius):
-        """Draws a circle on the canvas."""
-        self.cp.shapes.append(
-            cv.Circle(
-                x=x, y=y, radius=radius,
-                paint=ft.Paint(color=canVas.color, stroke_width=canVas.stroke_width, style="stroke")
-            )
-        )
-        self.cp.update()
-
-    def draw_oval(self, x, y, width, height):
-        """Draws an oval on the canvas."""
-        self.cp.shapes.append(
-            cv.Oval(
-                x=x, y=y, width=width, height=height,
-                paint=ft.Paint(color=canVas.color, stroke_width=canVas.stroke_width, style="stroke")
-            )
-        )
-        self.cp.update()
-
-    def makeCanvas(self):
-        return ft.Container(
-            self.cp,
-            border_radius=0,
-            width=800, # アスペクト比に準拠
-            height=450
         )
 
 
@@ -328,31 +243,104 @@ class mainView:
         self.sidebar = sidebarInstance.build()
         menubarInstance = menubar()
         self.menubar = menubarInstance.menubar
-        self.whiteboard = ft.canvas.Fill(ft.Paint(ft.colors.WHITE))
-        self.canvases = []
-        self.currentIndex = 0
-        self.canvasInstanceList = []
-        self.backgrounds = []
+        width, height = canvasClass.getCanvasSize()
+        self.whiteboard = ft.Container(
+            padding=0,
+            margin=0,
+            bgcolor=ft.colors.WHITE,
+            width=width,
+            height=height,
+            border_radius=0
+        )
         self.menubar.controls.extend(
             [
                 ft.TextButton(text="新しいキャンバス", on_click=lambda e: self.makeNextCanvas()),
                 ft.TextButton(text="新しい背景ありキャンバス", on_click=lambda e: self.makeImageCanvas()),
+                ft.TextButton(text="全消し", on_click=lambda e: self.deleteObj()),
+                ft.TextButton(text="コマ消し", on_click=lambda e: self.deleteCanvas(self.currentIndex)),
                 ft.TextButton(text="戻る", on_click=lambda e: self.moveCanvas(self.currentIndex - 1)),
                 ft.TextButton(text="進む", on_click=lambda e: self.moveCanvas(self.currentIndex + 1)),
                 ft.TextButton(text="ビデオ生成", on_click=lambda e: self.makeVideo())
             ]
         )
-        self.appheader.appbar.title = Text(value = projectList.getprojectName(), size = 24, text_align = "center")
-        self.appheader.appbar.leading = ft.IconButton(icon=ft.icons.HOME, on_click=lambda e: self.page.go("/startView"))
+        self.appheader.appbar.leading = ft.IconButton(icon=ft.icons.HOME, on_click=self.savefile)
 
     def savefile(self, e):
-        saving = saveAndloadFile()
-        saving.savefile(projectList.getprojectName(), self.canvases)
+        serialized_obj = []
+        serialized_bg = []
+
+        for i in range(len(self.canvases)):
+            tmp_list_obj = []
+            for obj in self.canvasShapesList[i]:
+                if type(obj) is cv.Line:
+                    tmp_list_obj.append(
+                        {
+                            "type": "Line",
+                            "x1": obj.x1,
+                            "y1": obj.y1,
+                            "x2": obj.x2,
+                            "y2": obj.y2,
+                            "color": obj.paint.color,
+                            "stroke_width": obj.paint.stroke_width
+                        }
+                    )
+                
+            serialized_obj.append(tmp_list_obj)
+
+            serialized_bg.append(
+                {
+                    "content": self.backgrounds[i].content,
+                    "padding": self.backgrounds[i].padding,
+                    "margin": self.backgrounds[i].margin,
+                    "bgcolor": self.backgrounds[i].bgcolor,
+                    "width": self.backgrounds[i].width,
+                    "height": self.backgrounds[i].height,
+                    "border_radius": self.backgrounds[i].border_radius
+                }
+            )
+
+        with open(self.outputpath, "wb") as f:
+            serialized = {"object": serialized_obj, "background": serialized_bg}
+            pickle.dump(serialized, f)
+
+        self.page.go("/startView")
+
+    def loadfile(self):
+        try:
+            with open(self.outputpath, "rb") as f:
+                serialized = pickle.load(f)
+
+            serialized_obj = serialized["object"]
+            serialized_bg = serialized["background"]
+
+            for i in range(len(serialized_obj)):
+                tmp_obj = []
+                for obj in serialized_obj[i]:
+                    if obj["type"] == "Line":
+                        tmp_obj.append(
+                            cv.Line(x1=obj["x1"], y1=obj["y1"], x2=obj["x2"], y2=obj["y2"], paint=ft.Paint(color=obj["color"], stroke_width=obj["stroke_width"]))
+                        )
+
+                self.loadObj.append(tmp_obj)
+                self.backgrounds.append(
+                    ft.Container(
+                        content=serialized_bg[i]['content'],
+                        padding=serialized_bg[i]['padding'],
+                        margin=serialized_bg[i]['margin'],
+                        bgcolor=serialized_bg[i]['bgcolor'],
+                        width=serialized_bg[i]['width'],
+                        height=serialized_bg[i]['height'],
+                        border_radius=serialized_bg[i]['border_radius']
+                    ) 
+                )
+
+        except FileNotFoundError:
+            return -1
 
     def takeCanvasImage(self, i):
         window_title = self.page.title
-        output_canvasshot = "C:/Users/gunda/projectExperiments/Sunagawa/image"
-        output_path = path.join(output_canvasshot, f"{projectList.getprojectName()}_{i}.png")
+        output_canvasshot = "C:/Users/gunda/projectExperiments/Sunagawa/assets/canvases"
+        output_path = path.join(output_canvasshot, f"{self.projectname}_{i}.png")
         windows = [w for w in gw.getAllTitles() if window_title in w]
         if not windows:
             raise Exception(f"Window with title containing '{window_title}' not found.")
@@ -370,12 +358,13 @@ class mainView:
             self.takeCanvasImage(i)
 
     def makeNextCanvas(self):
-        newCanvasInstance = canVas()
-        self.canvasInstanceList.append(newCanvasInstance.cp.shapes)
+        newCanvasInstance = canvasClass()
+        self.canvasShapesList.append(newCanvasInstance.cp.shapes)
         self.currentIndex += 1
-        newCanvasInstance.cp.shapes.insert(0, self.whiteboard)
         nextCanvas = newCanvasInstance.makeCanvas()
+        whiteboard = self.whiteboard
         self.canvases.insert(self.currentIndex, nextCanvas)
+        self.backgrounds.append(whiteboard)
         newView = ft.View("/mainView",
             appbar=self.appheader.appbar,
             controls=[
@@ -384,7 +373,12 @@ class mainView:
                         self.sidebar,
                         ft.Column([
                             self.menubar,
-                            nextCanvas
+                            ft.Stack(
+                                controls=[
+                                    whiteboard,
+                                    nextCanvas
+                                ]
+                            )
                         ], expand=False)
                     ],
                     expand=True
@@ -397,8 +391,8 @@ class mainView:
         self.page.update()
 
     def makeImageCanvas(self, image=None):
-        newCanvasInstance = canVas()
-        self.canvasInstanceList.append(newCanvasInstance.cp.shapes)
+        newCanvasInstance = canvasClass()
+        self.canvasShapesList.append(newCanvasInstance.cp.shapes)
         self.currentIndex += 1
         nextCanvas = newCanvasInstance.makeCanvas()
         background = image
@@ -435,6 +429,54 @@ class mainView:
         self.page.views.append(newView)
         self.page.update()
 
+    def deleteObj(self):
+        currentCanvas = self.canvasShapesList[self.currentIndex]
+        currentCanvas.clear()
+
+    def deleteCanvas(self, pagenum):
+        try:
+            if len(self.canvases) == 1:
+                raise IndexError
+
+            if 0 <= pagenum <= len(self.canvases) - 1:
+                del self.canvases[pagenum]
+                del self.canvasShapesList[pagenum]
+                del self.backgrounds[pagenum]
+
+                if self.currentIndex >= pagenum:
+                    if self.currentIndex != 0:
+                        self.currentIndex -= 1
+
+                    newView = ft.View("/mainView",
+                        appbar=self.appheader.appbar,
+                        controls=[
+                            ft.Row(
+                                controls=[
+                                    self.sidebar,
+                                    ft.Column([
+                                        self.menubar,
+                                        ft.Stack(
+                                            controls=[
+                                                self.backgrounds[self.currentIndex],
+                                                self.canvases[self.currentIndex]
+                                            ]
+                                        )
+                                    ], expand=False)
+                                ],
+                                expand=True
+                            )
+                        ]
+                    )
+
+                    self.page.views.clear()
+                    self.page.views.append(newView)
+                    self.page.update()
+            else:
+                raise IndexError
+
+        except IndexError:
+            pass
+
     def moveCanvas(self, pagenum):
         try:
             if 0 <= pagenum <= len(self.canvases) - 1:
@@ -447,7 +489,12 @@ class mainView:
                                 self.sidebar,
                                 ft.Column([
                                     self.menubar,
-                                    self.canvases[self.currentIndex]
+                                    ft.Stack(
+                                        controls=[
+                                            self.backgrounds[pagenum],
+                                            self.canvases[pagenum]
+                                        ]
+                                    )
                                 ], expand=False)
                             ],
                             expand=True
@@ -472,13 +519,26 @@ class mainView:
         subprocess.call(cmd.split())
 
     def makeView(self):
-        self.page.title = "Video Maker"
+        self.projectname = projectList.getprojectName()
+        self.page.title = "プロジェクト --" + self.projectname + "--"
         self.page.padding = 10
+        self.appheader.appbar.title = Text(value = self.projectname, size = 24, text_align = "center")
+        binarydatas = "C:/Users/gunda/projectExperiments/Sunagawa/assets/pickles" # fletモジュール以外には明示的にパスを指定しないといけない
+        self.outputpath = path.join(binarydatas, self.projectname + ".pkl")
+        self.canvases = []
+        self.currentIndex = 0
+        self.canvasShapesList = []
+        self.backgrounds = []
+        self.loadObj = []
 
-        if projectList.getprojectObj() is None:
-            canvasInstancePrimary = canVas()
-            canvasInstancePrimary.cp.shapes.insert(0, self.whiteboard)
+        decideResume = self.loadfile()
+
+        if decideResume == -1:
+            canvasInstancePrimary = canvasClass()
+            self.canvasShapesList.append(canvasInstancePrimary.cp.shapes)
             primarycanvas = canvasInstancePrimary.makeCanvas()
+            whiteboard = self.whiteboard
+            self.backgrounds.append(whiteboard)
             self.canvases.append(primarycanvas)
 
             return ft.View("/mainView",
@@ -489,16 +549,26 @@ class mainView:
                             self.sidebar,
                             ft.Column([
                                 self.menubar,
-                                primarycanvas
+                                ft.Stack(
+                                    controls=[
+                                        whiteboard,
+                                        primarycanvas
+                                    ]
+                                )
                             ], expand=False)
-                        ],
-                        expand=True
+                        ], expand=True
                     )
                 ]
             )
 
         else:
-            self.canvases.extend(projectList.getprojectObj())
+            for i in range(len(self.loadObj)):
+                newCanvasInstance = canvasClass()
+                self.canvasShapesList.append(newCanvasInstance.cp.shapes)
+                newCanvasInstance.cp.shapes += self.loadObj[i]
+                newCanvas = newCanvasInstance.makeCanvas()
+                self.canvases.append(newCanvas)
+
             return ft.View("/mainView",
                 appbar=self.appheader.appbar,
                 controls=[
@@ -507,7 +577,12 @@ class mainView:
                             self.sidebar,
                             ft.Column([
                                 self.menubar,
-                                self.canvases[self.currentIndex]
+                                ft.Stack(
+                                    controls=[
+                                        self.backgrounds[self.currentIndex],
+                                        self.canvases[self.currentIndex]
+                                    ]
+                                )
                             ], expand=False)
                         ],
                         expand=True
