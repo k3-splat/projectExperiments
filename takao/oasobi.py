@@ -30,7 +30,18 @@ def main(page: ft.Page):
     )
     img_miru_clickable = ft.GestureDetector(
         content=img_miru,
-        on_tap=lambda e: print("見たな?")
+        on_tap=lambda e: print("見ます?")
+    )
+
+    img_kanri = ft.Image(
+        src=f"/kanribotan.png",
+        width=250,
+        height=200,
+        fit=ft.ImageFit.CONTAIN,
+    )
+    img_kanri_clickable = ft.GestureDetector(
+        content=img_kanri,
+        on_tap=lambda e: print("管理します?")
     )
 
     img_tsukuru = ft.Image(
@@ -41,7 +52,7 @@ def main(page: ft.Page):
     )
     img_tsukuru_clickable = ft.GestureDetector(
         content=img_tsukuru,
-        on_tap=lambda e: print("まだ作れませ～ん")
+        on_tap=lambda e: print("作ります?")
     )
 
     def update_time():
@@ -74,16 +85,7 @@ def main(page: ft.Page):
         ft.Row(
             [
                 img_miru_clickable,
-                ft.Container(
-                    content=ft.Text("絵"),
-                    margin=10,
-                    padding=10,
-                    alignment=ft.alignment.center,
-                    bgcolor=ft.colors.BLACK,
-                    width=200,
-                    height=200,
-                    border_radius=5,
-                ),
+                img_kanri_clickable,
                 img_tsukuru_clickable,
             ],
             alignment=ft.MainAxisAlignment.CENTER,
