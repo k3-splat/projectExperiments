@@ -55,6 +55,37 @@ class canvasClass:
             )
         )
 
+    def modeChange(self):
+        if canvasClass.draw_mode == "free":  # 自由描画モード
+            self.cp.content.on_pan_start = self.pan_normal_start
+            self.cp.content.on_pan_update = self.pan_free_update
+
+        elif canvasClass.draw_mode == "rectangle_fill": 
+            self.cp.content.on_pan_start = self.pan_shape_start
+            self.cp.content.on_pan_update = self.pan_rectangle_fill_update
+
+        elif canvasClass.draw_mode == "rectangle_stroke": 
+            self.cp.content.on_pan_start = self.pan_shape_start
+            self.cp.content.on_pan_update = self.pan_rectangle_stroke_update
+
+        elif canvasClass.draw_mode == "circle_fill":
+            self.cp.content.on_pan_start = self.pan_shape_start
+            self.cp.content.on_pan_update = self.pan_circle_fill_update
+
+        elif canvasClass.draw_mode == "circle_stroke":
+            self.cp.content.on_pan_start = self.pan_shape_start
+            self.cp.content.on_pan_update = self.pan_circle_stroke_update
+
+        elif canvasClass.draw_mode == "scaling":
+            self.cp.content.on_pan_start = self.pan_scaling_start
+            self.cp.content.on_pan_update = self.pan_scaling_update
+
+        elif canvasClass.draw_mode == "Small":
+            pass
+
+        elif canvasClass.draw_mode == "eraser":
+            pass
+
     def pan_normal_start(self, e: ft.DragStartEvent):
         self.state.x = e.local_x
         self.state.y = e.local_y
@@ -62,7 +93,37 @@ class canvasClass:
     def pan_shape_start(self, e:ft.DragStartEvent):
         self.state.x = e.local_x
         self.state.y = e.local_y
-        self.cp.shapes.append(None)
+        self.cp.shapes.append(cv.Points(
+            points=[ft.Offset(e.local_x, e.local_y)],
+            point_mode=cv.PointMode.POINTS
+        ))
+
+    def pan_scaling_start(self, e: ft.DragStartEvent):
+        self.state.x = e.local_x
+        self.state.y = e.local_y
+        indexList = []
+        self.cp.content.mouse_corsor = ft.MouseCursor.RESIZE_UP_LEFT_DOWN_RIGHT
+
+        for shape in self.cp.shapes:
+            if type(shape) is cv.Rect:
+                if shape.paint.style == "fill":
+                    if shape.width < 0 and shape.height < 0:
+                        if shape.x + shape.width <= e.local_x <= shape.x and shape.y + shape.height <= e.local_y <= shape.y:
+                            indexList.append(self.cp.shapes.index(shape))
+
+                    elif shape.width < 0:
+                        if shape.x + shape.width <= e.local_x <= shape.x and shape.y <= e.local_y <= shape.y + shape.height:
+                            indexList.append(self.cp.shapes.index(shape))
+
+                    elif shape.height < 0:
+                        if shape.x <= e.local_x <= shape.x + shape.width and shape.y + shape.height <= e.local_y <= shape.y:
+                            indexList.append(self.cp.shapes.index(shape))
+
+                    else:
+                        if shape.x <= e.local_x <= shape.x + shape.width and shape.y <= e.local_y <= shape.y + shape.height:
+                            indexList.append(self.cp.shapes.index(shape))
+
+        print(indexList)
 
     def pan_free_update(self, e: ft.DragUpdateEvent):
         self.cp.shapes.append(
@@ -148,15 +209,22 @@ class canvasClass:
         self.cp.update()
 
     def pan_scaling_update(self, e: ft.DragUpdateEvent):
-        for shape in self.cp.shapes:
-            if isinstance(shape, (cv.Rect, cv.Circle, cv.Oval)):
-                if isinstance(shape, cv.Rect):
-                    if shape.x <= self.state.x <= shape.x + shape.width and shape.y <= self.state.y <= shape.y + shape.height:
-                        ratio = shape.height / shape.width
-                        shape.width = max(abs(e.local_x - self.state.x), abs(e.local_y - self.state.y))
-                        shape.height = shape.width * ratio
-
-                shape.update()
+        self.cp.shapes.pop(self.scaling_index)
+        self.cp.shapes.insert(
+            self.scaling_index,
+            cv.Rect(
+                x=self.scaling_x,
+                y=self.scaling_y,
+                width=e.local_x - self.scaling_x,
+                height=e.local_y - self.scaling_y,
+                paint=ft.Paint(
+                    color=canvasClass.getColor(),
+                    stroke_width=canvasClass.getStrokeWidth(),
+                    style=ft.PaintingStyle("fill")
+                )
+            )
+        )
+        self.cp.update()
 
     def makeCanvas(self):
         width, height = canvasClass.getCanvasSize()

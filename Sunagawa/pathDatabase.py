@@ -5,7 +5,7 @@ from datetime import datetime
 
 class pathDatabase:
     def __init__(self):
-        self.csvFilePath = "folderPaths.csv"
+        self.csvFilePath = "C:/Users/gunda/projectExperiments/Sunagawa/folderPaths.csv"
         self.pickle_file = "C:/Users/gunda/projectExperiments/Sunagawa/assets/pickles"
 
     def initialize_csv(self):
@@ -13,6 +13,8 @@ class pathDatabase:
             with open(self.csvFilePath, mode='w', newline='', encoding='utf-8') as file:
                 writer = csv.writer(file)
                 writer.writerow(["ID", "FilePath", "Title", "Tag", "CreatedAt"])
+        else:
+            print(True)
 
     def add_folder(self, file_path):
         with open(self.csvFilePath, mode='a', newline='', encoding='utf-8') as file:
@@ -62,13 +64,22 @@ class pathDatabase:
 
     def read_data(self):
         folders = []
-        with open(self.csvFilePath, mode='r', newline='', encoding='utf-8') as file:
-            reader = csv.DictReader(file)
+        temp_file = self.csvFilePath + ".tmp"
+
+        with open(self.csvFilePath, mode='r', newline='', encoding='utf-8') as infile, \
+            open(temp_file, mode='w', newline='', encoding='utf-8') as outfile:
+            reader = csv.DictReader(infile)
+            fieldnames = reader.fieldnames
+            writer = csv.DictWriter(outfile, fieldnames=fieldnames)
+            writer.writeheader()
+
             for row in reader:
                 if os.path.exists(row["FilePath"]):
                     folders.append(row)
-                else:
-                    self.remove_folder(row["Tag"])
+                    writer.writerow(row)
+        
+        os.replace(temp_file, self.csvFilePath)
+
         return folders
     
     def get_video(self):

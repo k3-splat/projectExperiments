@@ -1,8 +1,9 @@
 import flet as ft
 import os
+import shutil
 from os import path
 from pathDatabase import pathDatabase
-from dialogs import AttentionRemove, NotFolderSelected, inputVideoNameDialog
+from dialogs import AttentionRemove, inputVideoNameDialog
 
 class removeList:
     def __init__(self, page: ft.Page):
@@ -35,14 +36,14 @@ class removeList:
                             content=ft.Icon(name=ft.icons.SETTINGS),
                             items=[
                                 ft.PopupMenuItem(
-                                    icon=ft.icons.FILE_UPLOAD,
+                                    icon=ft.icons.FOLDER,
                                     text="名前を変更する",
                                     on_click=lambda e, tg=tag: self.openTagNameDialog(tg)
                                 ),
                                 ft.PopupMenuItem(
                                     icon=ft.icons.DELETE,
                                     text="削除する",
-                                    on_click=lambda e, fp=filepath: lambda e: self.setRemoveFilePath(fp)
+                                    on_click=lambda e, tg=tag: self.setRemoveFilePath(tg)
                                 ),
                             ],
                             tooltip="管理する"
@@ -100,13 +101,15 @@ class removeList:
         self.page.views.append(self.makeView())
         self.page.update()
 
-    def setRemoveFilePath(self, filepath):
-        self.filepath = filepath
+    def setRemoveFilePath(self, tag):
+        self.tag = tag
         self.page.open(self.instance_AR.attentionDialog)
 
     def removeAndRefresh(self):
-        if path.exists(self.filepath):
-            os.remove(self.filepath)
+        pd = pathDatabase()
+
+        if path.exists(self.tag):
+            pd.remove_folder(self.tag)
 
         self.refresh_data()
         self.page.views.clear()

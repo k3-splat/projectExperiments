@@ -1,5 +1,4 @@
 import flet as ft
-import pickle
 from pathDatabase import pathDatabase
 from dialogs import NotFolderSelected
 from os import path

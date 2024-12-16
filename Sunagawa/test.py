@@ -1,7 +1,4 @@
 import flet as ft
-
-def main(page: ft.Page):
-    import flet as ft
 import flet.canvas as cv
 
 class State:
@@ -36,6 +33,12 @@ def main(page: ft.Page):
                     )
                 )
             ),
+            cv.Rect(
+                x=100,
+                y=100,
+                width=-50,
+                height=10
+            )
         ],
         content=ft.GestureDetector(
             on_pan_start=pan_start,
@@ -45,28 +48,14 @@ def main(page: ft.Page):
         expand=False,
     )
 
-    def on_pan_update2(e: ft.DragUpdateEvent):
-        e.control.top = max(0, e.control.top + e.delta_y)
-        e.control.left = max(0, e.control.left + e.delta_x)
-        e.control.update()
-
-    gd1 = ft.GestureDetector(
-        mouse_cursor=ft.MouseCursor.MOVE,
-        drag_interval=10,
-        on_vertical_drag_update=on_pan_update2,
-        left=100,
-        top=100,
-        content=ft.Container(bgcolor=ft.colors.BLUE, width=50, height=50),
-    )
-
-    page.add( ft.Stack([
+    page.add(
         ft.Container(
             cp,
             border_radius=5,
             width=float("inf"),
             expand=True,
-        ),
-        gd1
-    ], width=1000, height=500))
+        )
+    )
+
 
 ft.app(main)
