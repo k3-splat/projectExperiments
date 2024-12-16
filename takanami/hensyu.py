@@ -419,7 +419,7 @@ class DrawApp:
 
         self.page_label.value = f"Page: {self.current_frame_index + 1}"
         self.page_label.update()
-
+        
 #asyncio
 
     #スピードを変える

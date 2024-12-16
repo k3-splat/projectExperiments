@@ -1,0 +1,3 @@
+フェッチやコミット等githubと同期するときは"Github desktop"で操作すること．
+特定のコミットの状態に戻るには「checkout <復元したいコミットID> Sunagawa」で戻ること．
+音声の挿入はMoviePyが使えそう
