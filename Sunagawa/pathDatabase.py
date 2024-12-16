@@ -5,7 +5,7 @@ from datetime import datetime
 
 class pathDatabase:
     def __init__(self):
-        self.csvFilePath = "folderPaths.csv"
+        self.csvFilePath = "C:/Users/gunda/projectExperiments/Sunagawa/folderPaths.csv"
         self.pickle_file = "C:/Users/gunda/projectExperiments/Sunagawa/assets/pickles"
 
     def initialize_csv(self):
@@ -13,6 +13,8 @@ class pathDatabase:
             with open(self.csvFilePath, mode='w', newline='', encoding='utf-8') as file:
                 writer = csv.writer(file)
                 writer.writerow(["ID", "FilePath", "Title", "Tag", "CreatedAt"])
+        else:
+            print(True)
 
     def add_folder(self, file_path):
         with open(self.csvFilePath, mode='a', newline='', encoding='utf-8') as file:
@@ -62,13 +64,22 @@ class pathDatabase:
 
     def read_data(self):
         folders = []
-        with open(self.csvFilePath, mode='r', newline='', encoding='utf-8') as file:
-            reader = csv.DictReader(file)
+        temp_file = self.csvFilePath + ".tmp"
+
+        with open(self.csvFilePath, mode='r', newline='', encoding='utf-8') as infile, \
+            open(temp_file, mode='w', newline='', encoding='utf-8') as outfile:
+            reader = csv.DictReader(infile)
+            fieldnames = reader.fieldnames
+            writer = csv.DictWriter(outfile, fieldnames=fieldnames)
+            writer.writeheader()
+
             for row in reader:
                 if os.path.exists(row["FilePath"]):
                     folders.append(row)
-                else:
-                    self.remove_folder(row["Tag"])
+                    writer.writerow(row)
+        
+        os.replace(temp_file, self.csvFilePath)
+
         return folders
     
     def get_video(self):
@@ -92,6 +103,55 @@ class pathDatabase:
                 if row["Tag"] == tag:
                     return True
         return False
+    
+    def update_video_title(self, tag, new_title):
+        temp_file = self.csvFilePath + ".tmp"
+        updated = False
+        
+        with open(self.csvFilePath, mode='r', newline='', encoding='utf-8') as infile, \
+            open(temp_file, mode='w', newline='', encoding='utf-8') as outfile:
+            reader = csv.DictReader(infile)
+            fieldnames = reader.fieldnames
+            writer = csv.DictWriter(outfile, fieldnames=fieldnames)
+            writer.writeheader()
+
+            for row in reader:
+                if row["Tag"] == tag:
+                    old_path = os.path.join(row["FilePath"], row["Title"])
+                    row["Title"] = new_title
+                    new_path = os.path.join(row["FilePath"], row["Title"])
+                    os.rename(old_path, new_path)
+                    updated = True
+                writer.writerow(row)
+
+        os.replace(temp_file, self.csvFilePath)
+        if not updated:
+            print(f"No entry found with tag {tag}")
+
+    def update_tag(self, old_tag, new_tag):
+        temp_file = self.csvFilePath + ".tmp"
+        updated = False
+        
+        with open(self.csvFilePath, mode='r', newline='', encoding='utf-8') as infile, \
+            open(temp_file, mode='w', newline='', encoding='utf-8') as outfile:
+            reader = csv.DictReader(infile)
+            fieldnames = reader.fieldnames
+            writer = csv.DictWriter(outfile, fieldnames=fieldnames)
+            writer.writeheader()
+
+            for row in reader:
+                if row["Tag"] == old_tag:
+                    old_path = row["FilePath"]
+                    new_path = os.path.join(os.path.dirname(row["FilePath"]), new_tag)
+                    row["Tag"] = new_tag
+                    row["FilePath"] = new_path
+                    os.rename(old_path, new_path)
+                    updated = True
+                writer.writerow(row)
+
+        os.replace(temp_file, self.csvFilePath)
+        if not updated:
+            print(f"No entry found with tag {old_tag}")
 
 
 if __name__ == "__main__":

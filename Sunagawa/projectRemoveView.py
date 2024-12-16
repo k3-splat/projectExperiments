@@ -1,7 +1,9 @@
 import flet as ft
+import os
+import shutil
+from os import path
 from pathDatabase import pathDatabase
-from dialogs import AttentionRemove
-from dialogs import NotFolderSelected
+from dialogs import AttentionRemove, inputVideoNameDialog
 
 class removeList:
     def __init__(self, page: ft.Page):
@@ -11,26 +13,47 @@ class removeList:
             lambda e: self.removeAndRefresh(),
             lambda e: self.page.close(self.instance_AR.attentionDialog)
         )
+        self.instance_IV = inputVideoNameDialog(
+            lambda e: self.changeTagName(self.instance_IV.inputVideoNameDialog.content.value),
+            lambda e: self.page.close(self.instance_IV.inputVideoNameDialog)
+        )
 
     def refresh_data(self):
         db = pathDatabase()
         self.folders = db.read_data()
         self.filerow = []
-        self.checkboxes = []
 
         for folder in self.folders:
-            checkbox = ft.Checkbox(label=f"{folder['Tag']}")
-            self.checkboxes.append(checkbox)
+            tag = folder['Tag']
+            filepath = folder['FilePath']
             self.filerow.append(ft.DataRow(
                 cells=[
-                    ft.DataCell(checkbox),
-                    ft.DataCell(ft.Text(f"{folder['FilePath']}")), 
-                    ft.DataCell(ft.Text(f"{folder['CreatedAt']}"))
+                    ft.DataCell(ft.Text(f"{tag}")),
+                    ft.DataCell(ft.Text(f"{filepath}")), 
+                    ft.DataCell(ft.Text(f"{folder['CreatedAt']}")),
+                    ft.DataCell(
+                        ft.PopupMenuButton(
+                            content=ft.Icon(name=ft.icons.SETTINGS),
+                            items=[
+                                ft.PopupMenuItem(
+                                    icon=ft.icons.FOLDER,
+                                    text="名前を変更する",
+                                    on_click=lambda e, tg=tag: self.openTagNameDialog(tg)
+                                ),
+                                ft.PopupMenuItem(
+                                    icon=ft.icons.DELETE,
+                                    text="削除する",
+                                    on_click=lambda e, tg=tag: self.setRemoveFilePath(tg)
+                                ),
+                            ],
+                            tooltip="管理する"
+                        )
+                    )
                 ]
             ))
 
     def makeView(self):
-        self.page.title = "プロジェクトを削除する"
+        self.page.title = "プロジェクトを管理する"
         backbutton = ft.IconButton(
             icon=ft.icons.ARROW_BACK, 
             on_click=lambda e: self.page.go("/startView"),
@@ -38,19 +61,13 @@ class removeList:
         )
         appbar = ft.AppBar(
             leading=backbutton,
-            title=ft.Text("削除するプロジェクトを選択"),
-            actions=[
-                ft.ElevatedButton(
-                    icon=ft.icons.DELETE, 
-                    text="削除する", 
-                    on_click=lambda e: self.emptyChekbox()
-                )
-            ]
+            title=ft.Text("プロジェクトを管理する")
         )
         datalabel = [
-            ft.DataColumn(ft.Text("フォルダ名"), heading_row_alignment=ft.MainAxisAlignment.END),
+            ft.DataColumn(ft.Text("フォルダ名")),
             ft.DataColumn(ft.Text("フォルダパス")),
-            ft.DataColumn(ft.Text("作成日時"))
+            ft.DataColumn(ft.Text("作成日時")),
+            ft.DataColumn(ft.Text("操作"))
         ]
 
         if not self.filerow:
@@ -70,22 +87,29 @@ class removeList:
                 )
             ], horizontal_alignment=ft.CrossAxisAlignment.CENTER)
         
-    def emptyChekbox(self):
-        for checkbox in self.checkboxes:
-            if checkbox.value:
-                self.page.open(self.instance_AR.attentionDialog)
-                return
+    def openTagNameDialog(self, tag):
+        self.tag = tag
+        self.page.open(self.instance_IV.inputVideoNameDialog)
 
-        bannerInstance = NotFolderSelected(
-            lambda e: self.page.close(bannerInstance.banner)
-        )
-        self.page.open(bannerInstance.banner)
+    def changeTagName(self, newTag):
+        pd = pathDatabase()
+        pd.update_tag(self.tag, newTag)
+
+        self.refresh_data()
+        self.page.close(self.instance_IV.inputVideoNameDialog)
+        self.page.views.clear()
+        self.page.views.append(self.makeView())
+        self.page.update()
+
+    def setRemoveFilePath(self, tag):
+        self.tag = tag
+        self.page.open(self.instance_AR.attentionDialog)
 
     def removeAndRefresh(self):
-        db = pathDatabase()
-        for checkbox in self.checkboxes:
-            if checkbox.value:
-                db.remove_folder(checkbox.label)
+        pd = pathDatabase()
+
+        if path.exists(self.tag):
+            pd.remove_folder(self.tag)
 
         self.refresh_data()
         self.page.views.clear()

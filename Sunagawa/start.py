@@ -82,6 +82,19 @@ class startView:
             mouse_cursor=ft.MouseCursor.CLICK
         )
 
+        img_kanri = ft.Image(
+            src="/kanribotan.png", width=250,
+            height=200,
+            fit=ft.ImageFit.CONTAIN
+        )
+
+        self.img_kanri_clickable = ft.GestureDetector(
+            content=img_kanri,
+            on_tap=lambda e: self.page.open(self.choosemanagedialog.bottom_sheet),
+            disabled=self.page.web,
+            mouse_cursor=ft.MouseCursor.CLICK
+        )
+
     def mkdir_hole(self):
         filePath = self.make_directory.make_directory(self.inputfoldernamedialog.inputFolderNameDialog.content.value)
 
@@ -137,16 +150,7 @@ class startView:
             ft.Row(
                 [
                     self.img_miru_clickable,
-                    ft.Container(
-                        content=ft.Text("管理する"),
-                        alignment=ft.alignment.center,
-                        bgcolor=ft.colors.BLACK,
-                        width=200,
-                        height=200,
-                        border_radius=5,
-                        ink=True,
-                        on_click=lambda e: self.page.open(self.choosemanagedialog.bottom_sheet)
-                    ),
+                    self.img_kanri_clickable,
                     self.img_tsukuru_clickable,
                 ],
                 alignment=ft.MainAxisAlignment.CENTER,
