@@ -16,9 +16,8 @@ def main(page: ft.Page):
     )
 
     img_title = ft.Image(
-        src=f"/titlekamo.png",
-        width=760,
-        height=100,
+        src=f"/title_kari.png",
+        width=800,
         fit=ft.ImageFit.CONTAIN,
     )
 
