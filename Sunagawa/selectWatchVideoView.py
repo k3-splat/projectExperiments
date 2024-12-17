@@ -1,5 +1,6 @@
 import flet as ft
 import cv2
+import os
 from os import path
 from os import stat
 from datetime import datetime
@@ -25,6 +26,7 @@ class selectWatchVideo:
         db = pathDatabase()
         videos = db.get_video()
         self.filerow = []
+        self.refreshThumnails()
 
         for video in videos:
             videoPath = path.join(video['FilePath'], video['Title'])
@@ -73,6 +75,12 @@ class selectWatchVideo:
 
         # リソースを解放
         cap.release()
+
+    def refreshThumnails(self):
+        for _, _, thumnails in os.walk(self.output_thumnails):
+            for thumnail in thumnails:
+                tp = path.join(self.output_thumnails, thumnail)
+                os.remove(tp)
 
     def openVideoView(self, video):
         selectWatchVideo.setVideo(video)

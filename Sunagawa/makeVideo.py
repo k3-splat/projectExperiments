@@ -4,6 +4,7 @@ from tqdm import tqdm
 import cv2
 
 class makeVideo:
+    
     input_dir   = 'image'           # 入力する画像が保存されたフォルダ名
     output_path = input_dir + '_cv' + '.mp4'    # 作成する 動画ファイル
     print(output_path)

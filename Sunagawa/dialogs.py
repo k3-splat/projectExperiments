@@ -32,6 +32,22 @@ class inputPageDialog:
         self.inputPageDialog.actions[1].on_click = fun2
 
 
+class inputFPSNameDialog:
+    def __init__(self, fun1, fun2):
+        self.inputFPSDialog = ft.AlertDialog(
+            title=ft.Text("FPSを入力してください"),
+            modal=True,
+            content=ft.TextField(),
+            actions=[
+                ft.TextButton("作成"),
+                ft.TextButton("キャンセル")
+            ]
+        )
+
+        self.inputFPSDialog.actions[0].on_click = fun1
+        self.inputFPSDialog.actions[1].on_click = fun2
+
+
 class chooseContiNewDialog:
     def __init__(self, fun1, fun2, fun3):
         chooseContiNewDialog = ft.CupertinoActionSheet(

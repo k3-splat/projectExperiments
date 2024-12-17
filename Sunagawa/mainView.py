@@ -15,7 +15,7 @@ import flet.canvas as cv
 from canvasView import canvasClass
 from dialogs import askSave
 from dialogs import inputPageDialog
-import shutil
+import os
 import time
 import pygetwindow as gw
 import subprocess
@@ -289,6 +289,8 @@ class AppHeader_jpn():
 class mainView:
     def __init__(self, page: ft.Page):
         self.page = page
+        self.stackList = []
+        self.fps = 1
         pick_bgimage = ft.FilePicker(on_result=self.addBgImage)
         pick_image = ft.FilePicker(on_result=self.addImage)
         self.page.overlay.extend([pick_bgimage, pick_image])
@@ -349,7 +351,7 @@ class mainView:
             ),
         )
         self.appheader_eng.appbar.actions[0].content.controls.insert(
-            2,
+            4,
             ft.SubmenuButton(
                 content=ft.Text("Canvas"),
                 controls=[
@@ -365,7 +367,7 @@ class mainView:
             )
         )
         self.appheader_eng.appbar.actions[0].content.controls.insert(
-            4,
+            5,
             ft.SubmenuButton(
                 content=ft.Text("Backgrounds"),
                 controls=[
@@ -448,7 +450,7 @@ class mainView:
             )
         )
         self.appheader_eng.appbar.actions[0].content.controls.insert(
-            5,
+            6,
             ft.SubmenuButton(
                 content=ft.Text("Manipulation"),
                 controls=[
@@ -464,15 +466,15 @@ class mainView:
             )
         )
         self.appheader_eng.appbar.actions[0].content.controls.insert(
-            6,
+            7,
             TextButton(text="Next Canvas", on_click=lambda e: self.moveCanvas(self.currentIndex + 1))
         )
         self.appheader_eng.appbar.actions[0].content.controls.insert(
-            7,
+            8,
             TextButton(text="Previous Canvas", on_click=lambda e: self.moveCanvas(self.currentIndex + 1))
         )
         self.appheader_eng.appbar.actions[0].content.controls.insert(
-            8,
+            9,
             ft.SubmenuButton(
                 content=ft.Text("Delete"),
                 controls=[
@@ -492,7 +494,7 @@ class mainView:
             )
         )
         self.appheader_eng.appbar.actions[0].content.controls.insert(
-            9,
+            10,
             TextButton(text="Generate Video", on_click=lambda e: self.makeVideo())
         )
         self.appheader_jpn.appbar.actions[0].content.controls.insert(
@@ -544,7 +546,7 @@ class mainView:
             ),
         )
         self.appheader_jpn.appbar.actions[0].content.controls.insert(
-            2,
+            4,
             ft.SubmenuButton(
                 content=ft.Text("ページ"),
                 controls=[
@@ -560,7 +562,7 @@ class mainView:
             )
         )
         self.appheader_jpn.appbar.actions[0].content.controls.insert(
-            4,
+            5,
             ft.SubmenuButton(
                 content=ft.Text("背景"),
                 controls=[
@@ -643,7 +645,7 @@ class mainView:
             )
         )
         self.appheader_jpn.appbar.actions[0].content.controls.insert(
-            5,
+            6,
             ft.SubmenuButton(
                 content=ft.Text("操作"),
                 controls=[
@@ -659,15 +661,15 @@ class mainView:
             )
         )
         self.appheader_jpn.appbar.actions[0].content.controls.insert(
-            6,
+            7,
             TextButton(text="次のページ", on_click=lambda e: self.moveCanvas(self.currentIndex + 1))
         )
         self.appheader_jpn.appbar.actions[0].content.controls.insert(
-            7,
+            8,
             TextButton(text="前のページ", on_click=lambda e: self.moveCanvas(self.currentIndex - 1))
         )
         self.appheader_jpn.appbar.actions[0].content.controls.insert(
-            8,
+            9,
             ft.SubmenuButton(
                 content=ft.Text("削除"),
                 controls=[
@@ -687,7 +689,23 @@ class mainView:
             )
         )
         self.appheader_jpn.appbar.actions[0].content.controls.insert(
-            9,
+            10,
+            ft.SubmenuButton(
+                content=ft.Text("コマの再生"),
+                controls=[
+                    ft.Slider(
+                        min=1,
+                        max=30,
+                        divisions=30,
+                        label="{value}fps",
+                        on_change=lambda e: self.setFPS(e.control.value)
+                    ),
+                    ft.ElevatedButton(text="再生", on_click=lambda e: self.play())
+                ]
+            )
+        )
+        self.appheader_jpn.appbar.actions[0].content.controls.insert(
+            11,
             TextButton(text="ビデオの作成", on_click=lambda e: self.makeVideo())
         )
 
@@ -854,23 +872,40 @@ class mainView:
 
     def takeCanvasImage(self, i):
         window_title = self.page.title
-        output_canvasshot = "C:/Users/gunda/projectExperiments/Sunagawa/assets/canvases"
-        output_path = path.join(output_canvasshot, f"{self.projectname}_{i}.png")
+        self.output_canvasshot = "C:/Users/gunda/projectExperiments/Sunagawa/assets/canvases"
+        output_path = path.join(self.output_canvasshot, f"{self.projectname}_{i}.png")
+        self.refreshcanvases()
         windows = [w for w in gw.getAllTitles() if window_title in w]
         if not windows:
             raise Exception(f"Window with title containing '{window_title}' not found.")
         
         window = gw.getWindowsWithTitle(windows[0])[0]
-        bbox = (window.left, window.top + 170, 1600, 800)
+        bbox = (window.left + 15, window.top + 88, 1030, 667)
 
         screenshot = ImageGrab.grab(bbox=bbox)
         screenshot.save(output_path)
+
+    def setFPS(self, fps):
+        self.fps = fps
+    
+    def play(self):
+        for i in range(len(self.stackList)):
+            time_onecanvas = 1 / self.fps
+            self.moveCanvas(i)
+            time.sleep(time_onecanvas)
 
     def makeVideo(self):
         for i in range(len(self.stackList)):
             self.moveCanvas(i)
             time.sleep(0.5)
             self.takeCanvasImage(i)
+
+    def refreshcanvases(self):
+        for _, _, canvases in os.walk(self.output_canvasshot):
+            for canvas in canvases:
+                if self.projectname in canvas:
+                    tp = path.join(self.output_canvasshot, canvas)
+                    os.remove(tp)
 
     def changeBgcolor(self, color):
         self.stackList[self.currentIndex].controls[0].bgcolor = color
@@ -910,9 +945,10 @@ class mainView:
 
     def makeNextCanvas(self):
         newCanvasInstance = canvasClass()
+        self.canvasInstanceList.append(newCanvasInstance)
+        newCanvasInstance.modeChange()
         nextCanvas = newCanvasInstance.makeCanvas()
         self.currentIndex += 1
-        print(self.currentIndex)
         width, height = canvasClass.getCanvasSize()
         whiteboard = ft.Container(
             padding=0,
@@ -941,8 +977,9 @@ class mainView:
                 ft.Row(
                     controls=[
                         ft.Column([
+                            ft.Text(f"Page Number:{self.currentIndex}"),
                             newStack
-                        ], expand=False, horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+                        ], expand=False, horizontal_alignment=ft.CrossAxisAlignment.START)
                     ],
                     expand=True
                 )
@@ -1044,8 +1081,9 @@ class mainView:
                                 ft.Row(
                                     controls=[
                                         ft.Column([
+                                            ft.Text(f"現在のページ:{self.currentIndex}"),
                                             self.stackList[self.currentIndex]
-                                        ], expand=False, horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+                                        ], expand=False, horizontal_alignment=ft.CrossAxisAlignment.START)
                                     ],
                                     expand=True
                                 )
@@ -1059,8 +1097,9 @@ class mainView:
                                 ft.Row(
                                     controls=[
                                         ft.Column([
+                                            ft.Text(f"Page Number:{self.currentIndex}"),
                                             self.stackList[self.currentIndex]
-                                        ], expand=False, horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+                                        ], expand=False, horizontal_alignment=ft.CrossAxisAlignment.START)
                                     ],
                                     expand=True
                                 )
@@ -1089,8 +1128,9 @@ class mainView:
                             ft.Row(
                                 controls=[
                                     ft.Column([
+                                        ft.Text(f"現在のページ:{self.currentIndex}"),
                                         self.stackList[self.currentIndex]
-                                    ], expand=False, horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+                                    ], expand=False, horizontal_alignment=ft.CrossAxisAlignment.START)
                                 ],
                                 expand=True
                             )
@@ -1104,8 +1144,9 @@ class mainView:
                             ft.Row(
                                 controls=[
                                     ft.Column([
+                                        ft.Text(f"Page Number:{self.currentIndex}"),
                                         self.stackList[self.currentIndex]
-                                    ], expand=False, horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+                                    ], expand=False, horizontal_alignment=ft.CrossAxisAlignment.START)
                                 ],
                                 expand=True
                             )
@@ -1128,6 +1169,7 @@ class mainView:
             canvasInstance.modeChange()
 
     def getIntermediateFrame(self):
+
         self.takeCanvasImage(self.currentIndex)
         self.takeCanvasImage(self.currentIndex + 1)
 
@@ -1151,8 +1193,9 @@ class mainView:
                 ft.Row(
                     controls=[
                         ft.Column([
+                            ft.Text(f"Page Number:{self.currentIndex}"),
                             self.stackList[self.currentIndex]
-                        ], expand=False,horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+                        ], expand=False,horizontal_alignment=ft.CrossAxisAlignment.START)
                     ],
                     expand=True
                 )
@@ -1206,8 +1249,9 @@ class mainView:
                     ft.Row(
                         controls=[
                             ft.Column([
+                                ft.Text(f"Page Number:{self.currentIndex}"),
                                 primaryStack
-                            ], expand=False, horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+                            ], expand=False, horizontal_alignment=ft.CrossAxisAlignment.START)
                         ], expand=True
                     )
                 ]
@@ -1220,8 +1264,9 @@ class mainView:
                     ft.Row(
                         controls=[
                             ft.Column([
+                                ft.Text(f"Page Number:{self.currentIndex}"),
                                 self.stackList[self.currentIndex]
-                            ], expand=False, horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+                            ], expand=False, horizontal_alignment=ft.CrossAxisAlignment.START)
                         ],
                         expand=True
                     )
