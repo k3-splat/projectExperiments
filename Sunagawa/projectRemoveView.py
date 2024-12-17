@@ -1,6 +1,4 @@
 import flet as ft
-import os
-import shutil
 from os import path
 from pathDatabase import pathDatabase
 from dialogs import AttentionRemove, inputVideoNameDialog

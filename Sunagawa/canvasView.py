@@ -8,8 +8,8 @@ class State:
 class canvasClass:
     color = ft.colors.BLACK
     stroke_width = 3
-    canvasWidth = 800
-    canvasHeight = 450
+    canvasWidth = 1000
+    canvasHeight = 563
     draw_mode = "free"
 
     @classmethod
@@ -99,31 +99,42 @@ class canvasClass:
         ))
 
     def pan_scaling_start(self, e: ft.DragStartEvent):
-        self.state.x = e.local_x
-        self.state.y = e.local_y
-        indexList = []
-        self.cp.content.mouse_corsor = ft.MouseCursor.RESIZE_UP_LEFT_DOWN_RIGHT
+        self.cp.content.mouse_cursor = ft.MouseCursor.RESIZE_UP_LEFT_DOWN_RIGHT
 
         for shape in self.cp.shapes:
             if type(shape) is cv.Rect:
-                if shape.paint.style == "fill":
+                if shape.paint.style == ft.PaintingStyle("fill"):
                     if shape.width < 0 and shape.height < 0:
                         if shape.x + shape.width <= e.local_x <= shape.x and shape.y + shape.height <= e.local_y <= shape.y:
-                            indexList.append(self.cp.shapes.index(shape))
+                            self.scaling_index = self.cp.shapes.index(shape)
+                            self.scaling_x = shape.x
+                            self.scaling_y = shape.y
+                            self.scaling_width = shape.width
+                            self.ratio = shape.height / shape.width
 
                     elif shape.width < 0:
                         if shape.x + shape.width <= e.local_x <= shape.x and shape.y <= e.local_y <= shape.y + shape.height:
-                            indexList.append(self.cp.shapes.index(shape))
+                            self.scaling_index = self.cp.shapes.index(shape)
+                            self.scaling_x = shape.x
+                            self.scaling_y = shape.y
+                            self.scaling_width = shape.width
+                            self.ratio = shape.height / shape.width
 
                     elif shape.height < 0:
                         if shape.x <= e.local_x <= shape.x + shape.width and shape.y + shape.height <= e.local_y <= shape.y:
-                            indexList.append(self.cp.shapes.index(shape))
+                            self.scaling_index = self.cp.shapes.index(shape)
+                            self.scaling_x = shape.x
+                            self.scaling_y = shape.y
+                            self.scaling_width = shape.width
+                            self.ratio = shape.height / shape.width
 
                     else:
                         if shape.x <= e.local_x <= shape.x + shape.width and shape.y <= e.local_y <= shape.y + shape.height:
-                            indexList.append(self.cp.shapes.index(shape))
-
-        print(indexList)
+                            self.scaling_index = self.cp.shapes.index(shape)
+                            self.scaling_x = shape.x
+                            self.scaling_y = shape.y
+                            self.scaling_width = shape.width
+                            self.ratio = shape.height / shape.width
 
     def pan_free_update(self, e: ft.DragUpdateEvent):
         self.cp.shapes.append(
@@ -210,13 +221,19 @@ class canvasClass:
 
     def pan_scaling_update(self, e: ft.DragUpdateEvent):
         self.cp.shapes.pop(self.scaling_index)
+        if self.scaling_width >= 0:
+            width = max(abs(e.local_x - self.scaling_x), abs(e.local_y - self.scaling_y))
+
+        else:
+            width = -max(abs(e.local_x - self.scaling_x), abs(e.local_y - self.scaling_y))
+
         self.cp.shapes.insert(
             self.scaling_index,
             cv.Rect(
                 x=self.scaling_x,
                 y=self.scaling_y,
-                width=e.local_x - self.scaling_x,
-                height=e.local_y - self.scaling_y,
+                width=width,
+                height=width * self.ratio,
                 paint=ft.Paint(
                     color=canvasClass.getColor(),
                     stroke_width=canvasClass.getStrokeWidth(),

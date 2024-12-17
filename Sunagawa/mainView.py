@@ -1,29 +1,20 @@
 import flet as ft
 from flet import(
     Text,
-    ElevatedButton,
-    PopupMenuItem,
+    TextButton,
     Row,
-    IconButton,
     AppBar,
     Icon,
     Container,
-    PopupMenuButton,
     margin,
     colors,
-    icons,
-    NavigationRail,
-    NavigationRailDestination,
-    NavigationRailLabelType,
-    Page,
-    alignment,
-    border_radius,
-    CrossAxisAlignment,
+    icons
 )
 from chooseProjectView import projectList
 import flet.canvas as cv
 from canvasView import canvasClass
 from dialogs import askSave
+from dialogs import inputPageDialog
 import time
 import pygetwindow as gw
 import subprocess
@@ -32,25 +23,14 @@ from PIL import ImageGrab
 from os import path
 
 # make header
-class appHeader:
-    def __init__(self, page: Page):
+class AppHeader_eng():
+    def __init__(self, page: ft.Page):
         self.page = page
 
-        # define some button
-        next_button = ElevatedButton(text = "next")
-        back_button = ElevatedButton(text = "back")
-        undo_button = ElevatedButton(text = "undo")
-
-        # make kebab button
-        display_button = ElevatedButton(text = "display")
-        self.appbar_items = [
-            PopupMenuItem(text = "settings"),
-            PopupMenuItem(),
-            PopupMenuItem(text = "help"),
-        ]
-
         self.appbar = AppBar(
+            leading = Icon(icons.TRIP_ORIGIN_ROUNDED),
             leading_width = 60,
+            title = Text(value = projectList.getprojectName(), size = 24, text_align = "center"),
             center_title = False,
             toolbar_height = 50,
             bgcolor = colors.SURFACE_VARIANT,
@@ -58,12 +38,104 @@ class appHeader:
                 Container(
                     content = Row(
                         [
-                            display_button,
-                            undo_button,
-                            back_button,
-                            next_button,
-                            PopupMenuButton(
-                                items = self.appbar_items
+                            ft.SubmenuButton(
+                                content=ft.Text("Color"),
+                                controls=[
+                                    ft.MenuItemButton(
+                                        content=ft.Text("White"),
+                                        leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.WHITE),
+                                        on_click=lambda e: canvasClass.setColor(ft.colors.WHITE)
+                                    ),
+                                    ft.MenuItemButton(
+                                        content=ft.Text("Yellow"),
+                                        leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.YELLOW),
+                                        on_click=lambda e: canvasClass.setColor(ft.colors.YELLOW)
+                                    ),
+                                    ft.MenuItemButton(
+                                        content=ft.Text("Light Green"),
+                                        leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.LIGHT_GREEN),
+                                        on_click=lambda e: canvasClass.setColor(ft.colors.LIGHT_GREEN)
+                                    ),
+                                    ft.MenuItemButton(
+                                        content=ft.Text("Green"),
+                                        leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.GREEN),
+                                        on_click=lambda e: canvasClass.setColor(ft.colors.GREEN)
+                                    ),
+                                    ft.MenuItemButton(
+                                        content=ft.Text("Light Blue"),
+                                        leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.LIGHT_BLUE),
+                                        on_click=lambda e: canvasClass.setColor(ft.colors.LIGHT_BLUE)
+                                    ),
+                                    ft.MenuItemButton(
+                                        content=ft.Text("Blue"),
+                                        leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.BLUE),
+                                        on_click=lambda e: canvasClass.setColor(ft.colors.BLUE)
+                                    ),
+                                    ft.MenuItemButton(
+                                        content=ft.Text("Purple"),
+                                        leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.PURPLE),
+                                        on_click=lambda e: canvasClass.setColor(ft.colors.PURPLE)
+                                    ),
+                                    ft.MenuItemButton(
+                                        content=ft.Text("Pink"),
+                                        leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.PINK),
+                                        on_click=lambda e: canvasClass.setColor(ft.colors.PINK)
+                                    ),
+                                    ft.MenuItemButton(
+                                        content=ft.Text("Red"),
+                                        leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.RED),
+                                        on_click=lambda e: canvasClass.setColor(ft.colors.RED)
+                                    ),
+                                    ft.MenuItemButton(
+                                        content=ft.Text("Orange"),
+                                        leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.ORANGE),
+                                        on_click=lambda e: canvasClass.setColor(ft.colors.ORANGE)
+                                    ),
+                                    ft.MenuItemButton(
+                                        content=ft.Text("Amber"),
+                                        leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.AMBER),
+                                        on_click=lambda e: canvasClass.setColor(ft.colors.AMBER)
+                                    ),
+                                    ft.MenuItemButton(
+                                        content=ft.Text("Brown"),
+                                        leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.BROWN),
+                                        on_click=lambda e: canvasClass.setColor(ft.colors.BROWN)
+                                    ),
+                                    ft.MenuItemButton(
+                                        content=ft.Text("Black"),
+                                        leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.BLACK),
+                                        on_click=lambda e: canvasClass.setColor(ft.colors.BLACK)
+                                    )
+                                ]
+                            ),
+                            ft.SubmenuButton(
+                                content=ft.Text("Line's Width"),
+                                controls=[
+                                    ft.Slider(
+                                        min=1,
+                                        max=12,
+                                        divisions=11,
+                                        label="{value}",
+                                        on_change=lambda e: canvasClass.setStrokeWidth(e.control.value)
+                                    )
+                                ]
+                            ),
+                            ft.SubmenuButton(
+                                content = ft.Text("Settings"),
+                                controls = [
+                                    ft.SubmenuButton(
+                                        content = ft.Text("Language"),
+                                        controls = [
+                                            ft.MenuItemButton(
+                                                content = ft.Text("日本語")
+                                            ),
+                                        ],
+                                    ),
+                                    ft.MenuItemButton(
+                                        content = ft.Text("Theme"),
+                                        on_click = self.Theme_Change,
+                                    )
+                                ],
                             ),
                         ],
                         alignment = "spaceBetween",
@@ -73,302 +145,555 @@ class appHeader:
             ],
         )
 
-
-class Sidebar:
-    def __init__(self):
-        self.nav_rail_visible = True
-
-        # make some button
-        self.nav_rail_items = [
-            NavigationRailDestination(
-                icon_content = Icon(icons.FOLDER_OUTLINED),
-                selected_icon_content = Icon(icons.FOLDER_OUTLINED),
-                label_content = Text("file"),
-            ),
-            NavigationRailDestination(
-                icon_content = Icon(icons.CREATE),
-                selected_icon_content = Icon(icons.CREATE_OUTLINED),
-                label_content = Text("edit"), 
-            ),
-            NavigationRailDestination(
-                icon_content = Icon(icons.SETTINGS),
-                selected_icon_content = Icon(icons.SETTINGS_OUTLINED),
-                label_content = Text("Settings"),
-            ),
-        ]
-
-        self.nav_rail = NavigationRail(
-            height = 300,
-            selected_index = None,
-            label_type=NavigationRailLabelType.ALL,
-            min_width = 100,
-            min_extended_width = 400,
-            group_alignment = -0.9,
-            destinations = self.nav_rail_items,
-            on_change=lambda e: print("Selected destination: ", e.control.selected_index),
-        )
-        self.toggle_nav_rail_button = IconButton(
-            icon = icons.ARROW_CIRCLE_LEFT,
-            icon_color = colors.BLUE_GREY_400,
-            selected = False,
-            selected_icon = icons.ARROW_CIRCLE_RIGHT,
-            on_click = self.toggle_nav_rail,
-            tooltip = "Collapse Nav Bar",   
-        )
+        #Method of changing theme
+    def Theme_Change(self, e):
+        self.page.theme_mode = "light" if self.page.theme_mode == "dark" else "dark"
+        self.page.update()
 
     def build(self):
-        self.view = Container(
-            content = Row(
-                [
-                    self.nav_rail,
-                    Container(
-                        bgcolor = colors.BLACK26,
-                        border_radius = border_radius.all(30),
-                        height = 220,
-                        alignment = alignment.center_right,
-                        width = 2
+        return self.appbar
+
+#AppHeader for Japanese
+class AppHeader_jpn():
+    def __init__(self, page: ft.Page):
+        self.page = page
+
+        self.appbar = AppBar(
+            leading = Icon(icons.TRIP_ORIGIN_ROUNDED),
+            leading_width = 60,
+            title = Text(value = "プロジェクト名", size = 24, text_align = "center"),
+            center_title = False,
+            toolbar_height = 50,
+            bgcolor = colors.SURFACE_VARIANT,
+            actions = [
+                Container(
+                    content = Row(
+                        [
+                            ft.SubmenuButton(
+                                content=ft.Text("色"),
+                                controls=[
+                                    ft.MenuItemButton(
+                                        content=ft.Text("白"),
+                                        leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.WHITE),
+                                        on_click=lambda e: canvasClass.setColor(ft.colors.WHITE)
+                                    ),
+                                    ft.MenuItemButton(
+                                        content=ft.Text("黄"),
+                                        leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.YELLOW),
+                                        on_click=lambda e: canvasClass.setColor(ft.colors.YELLOW)
+                                    ),
+                                    ft.MenuItemButton(
+                                        content=ft.Text("黄緑"),
+                                        leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.LIGHT_GREEN),
+                                        on_click=lambda e: canvasClass.setColor(ft.colors.LIGHT_GREEN)
+                                    ),
+                                    ft.MenuItemButton(
+                                        content=ft.Text("緑"),
+                                        leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.GREEN),
+                                        on_click=lambda e: canvasClass.setColor(ft.colors.GREEN)
+                                    ),
+                                    ft.MenuItemButton(
+                                        content=ft.Text("水"),
+                                        leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.LIGHT_BLUE),
+                                        on_click=lambda e: canvasClass.setColor(ft.colors.LIGHT_BLUE)
+                                    ),
+                                    ft.MenuItemButton(
+                                        content=ft.Text("青"),
+                                        leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.BLUE),
+                                        on_click=lambda e: canvasClass.setColor(ft.colors.BLUE)
+                                    ),
+                                    ft.MenuItemButton(
+                                        content=ft.Text("紫"),
+                                        leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.PURPLE),
+                                        on_click=lambda e: canvasClass.setColor(ft.colors.PURPLE)
+                                    ),
+                                    ft.MenuItemButton(
+                                        content=ft.Text("桃"),
+                                        leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.PINK),
+                                        on_click=lambda e: canvasClass.setColor(ft.colors.PINK)
+                                    ),
+                                    ft.MenuItemButton(
+                                        content=ft.Text("赤"),
+                                        leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.RED),
+                                        on_click=lambda e: canvasClass.setColor(ft.colors.RED)
+                                    ),
+                                    ft.MenuItemButton(
+                                        content=ft.Text("橙"),
+                                        leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.ORANGE),
+                                        on_click=lambda e: canvasClass.setColor(ft.colors.ORANGE)
+                                    ),
+                                    ft.MenuItemButton(
+                                        content=ft.Text("薄橙"),
+                                        leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.AMBER),
+                                        on_click=lambda e: canvasClass.setColor(ft.colors.AMBER)
+                                    ),
+                                    ft.MenuItemButton(
+                                        content=ft.Text("茶"),
+                                        leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.BROWN),
+                                        on_click=lambda e: canvasClass.setColor(ft.colors.BROWN)
+                                    ),
+                                    ft.MenuItemButton(
+                                        content=ft.Text("黒"),
+                                        leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.BLACK),
+                                        on_click=lambda e: canvasClass.setColor(ft.colors.BLACK)
+                                    )
+                                ]
+                            ),
+                            ft.SubmenuButton(
+                                content=ft.Text("線の太さ"),
+                                controls=[
+                                    ft.Slider(
+                                        min=1,
+                                        max=12,
+                                        divisions=11,
+                                        label="{value}",
+                                        on_change=lambda e: canvasClass.setStrokeWidth(e.control.value)
+                                    )
+                                ]
+                            ),
+                            ft.SubmenuButton(
+                                content = ft.Text("設定"),
+                                controls = [
+                                    ft.SubmenuButton(
+                                        content = ft.Text("言語"),
+                                        controls = [
+                                            ft.MenuItemButton(
+                                                content = ft.Text("English")
+                                            ),
+                                        ],
+                                    ),
+                                    ft.MenuItemButton(
+                                        content = ft.Text("テーマ"),
+                                        on_click = self.Theme_Change,
+                                    )
+                                ],
+                            ),
+                        ],
+                        alignment = "spaceBetween",
                     ),
-                    self.toggle_nav_rail_button,
-                ],
-                expand=False,
-                vertical_alignment = CrossAxisAlignment.START,
-                alignment=ft.MainAxisAlignment.START,
-                visible = self.nav_rail_visible,
-            )
-        )
-        return self.view
-
-    def toggle_nav_rail(self, e):
-        self.nav_rail.visible = not self.nav_rail.visible
-        self.toggle_nav_rail_button.selected = not self.toggle_nav_rail_button.selected
-        self.toggle_nav_rail_button.tooltip = "O Side Bar" if self.toggle_nav_rail_button.selected else "Collapse Side Bar"
-
-
-class menubar:
-    def __init__(self):
-        self.menubar = ft.MenuBar(
-            expand=False,
-            controls=[
-                ft.SubmenuButton(
-                    content=ft.Text("ペンの色"),
-                    controls=[
-                        ft.MenuItemButton(
-                            content=ft.Text("白"),
-                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.WHITE),
-                            on_click=lambda e: canvasClass.setColor(ft.colors.WHITE)
-                        ),
-                        ft.MenuItemButton(
-                            content=ft.Text("黄"),
-                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.YELLOW),
-                            on_click=lambda e: canvasClass.setColor(ft.colors.YELLOW)
-                        ),
-                        ft.MenuItemButton(
-                            content=ft.Text("黄緑"),
-                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.LIGHT_GREEN),
-                            on_click=lambda e: canvasClass.setColor(ft.colors.LIGHT_GREEN)
-                        ),
-                        ft.MenuItemButton(
-                            content=ft.Text("緑"),
-                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.GREEN),
-                            on_click=lambda e: canvasClass.setColor(ft.colors.GREEN)
-                        ),
-                        ft.MenuItemButton(
-                            content=ft.Text("水"),
-                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.LIGHT_BLUE),
-                            on_click=lambda e: canvasClass.setColor(ft.colors.LIGHT_BLUE)
-                        ),
-                        ft.MenuItemButton(
-                            content=ft.Text("青"),
-                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.BLUE),
-                            on_click=lambda e: canvasClass.setColor(ft.colors.BLUE)
-                        ),
-                        ft.MenuItemButton(
-                            content=ft.Text("紫"),
-                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.PURPLE),
-                            on_click=lambda e: canvasClass.setColor(ft.colors.PURPLE)
-                        ),
-                        ft.MenuItemButton(
-                            content=ft.Text("桃"),
-                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.PINK),
-                            on_click=lambda e: canvasClass.setColor(ft.colors.PINK)
-                        ),
-                        ft.MenuItemButton(
-                            content=ft.Text("赤"),
-                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.RED),
-                            on_click=lambda e: canvasClass.setColor(ft.colors.RED)
-                        ),
-                        ft.MenuItemButton(
-                            content=ft.Text("橙"),
-                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.ORANGE),
-                            on_click=lambda e: canvasClass.setColor(ft.colors.ORANGE)
-                        ),
-                        ft.MenuItemButton(
-                            content=ft.Text("薄橙"),
-                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.AMBER),
-                            on_click=lambda e: canvasClass.setColor(ft.colors.AMBER)
-                        ),
-                        ft.MenuItemButton(
-                            content=ft.Text("茶"),
-                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.BROWN),
-                            on_click=lambda e: canvasClass.setColor(ft.colors.BROWN)
-                        ),
-                        ft.MenuItemButton(
-                            content=ft.Text("黒"),
-                            leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.BLACK),
-                            on_click=lambda e: canvasClass.setColor(ft.colors.BLACK)
-                        )
-                    ]
-                ),
-                ft.SubmenuButton(
-                    content=ft.Text("線の太さ"),
-                    controls=[
-                        ft.Slider(
-                            min=1,
-                            max=8,
-                            divisions=7,
-                            label="{value}",
-                            on_change=lambda e: canvasClass.setStrokeWidth(e.control.value)
-                        )
-                    ]
+                    margin = margin.only(left = 25, right = 50)
                 )
-            ]
+            ],
         )
+
+        #Method of changing theme
+    def Theme_Change(self, e):
+        self.page.theme_mode = "light" if self.page.theme_mode == "dark" else "dark"
+        self.page.update()
+
+    def build(self):
+        return self.appbar
 
 
 class mainView:
     def __init__(self, page: ft.Page):
         self.page = page
-        pick_image = ft.FilePicker(on_result=self.addBgImage)
-        self.page.overlay.extend([pick_image])
-        self.appheader = appHeader(self.page)
-        sidebarInstance = Sidebar()
-        self.sidebar = sidebarInstance.build()
-        menubarInstance = menubar()
-        self.menubar = menubarInstance.menubar
-        self.menubar.controls.extend(
-            [
-                ft.TextButton(text="新しいキャンバス", on_click=lambda e: self.makeNextCanvas()),
-                ft.TextButton(text="新しい背景ありキャンバス", on_click=lambda e: pick_image.pick_files(dialog_title="画像を選択", allowed_extensions=["jpg", "png"])),
-                ft.TextButton(text="ペン", on_click=lambda e: self.changeMode("free")),
-                ft.SubmenuButton(
-                    content=ft.Text("四角形"),
-                    controls=[
-                        ft.MenuItemButton(
-                            content=ft.Text("塗りつぶしあり"),
-                            leading=ft.Icon(name=ft.icons.RECTANGLE),
-                            on_click=lambda e: self.changeMode("rectangle_fill")
-                        ),
-                        ft.MenuItemButton(
-                            content=ft.Text("塗りつぶしなし"),
-                            leading=ft.Icon(name=ft.icons.RECTANGLE_OUTLINED),
-                            on_click=lambda e: self.changeMode("rectangle_stroke")
-                        )
-                    ]
-                ),
-                ft.SubmenuButton(
-                    content=ft.Text("円"),
-                    controls=[
-                        ft.MenuItemButton(
-                            content=ft.Text("塗りつぶしあり"),
-                            leading=ft.Icon(name=ft.icons.CIRCLE),
-                            on_click=lambda e: self.changeMode("circle_fill")
-                        ),
-                        ft.MenuItemButton(
-                            content=ft.Text("塗りつぶしなし"),
-                            leading=ft.Icon(name=ft.icons.CIRCLE_OUTLINED),
-                            on_click=lambda e: self.changeMode("circle_stroke")
-                        )
-                    ]
-                ),
-                ft.SubmenuButton(
-                    content=ft.Text("背景"),
-                    controls=[
-                        ft.MenuItemButton(
-                            content=ft.Text("画像の挿入"),
-                            leading=ft.Icon(name=ft.icons.IMAGE),
-                            on_click=lambda e: self.changeMode("circle_fill")
-                        ),
-                        ft.SubmenuButton(
-                            content=ft.Text("色の変更"),
-                            controls=[
-                                ft.MenuItemButton(
-                                    content=ft.Text("白"),
-                                    leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.WHITE),
-                                    on_click=lambda e: self.changeBgcolor(ft.colors.WHITE)
-                                ),
-                                ft.MenuItemButton(
-                                    content=ft.Text("黄"),
-                                    leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.YELLOW),
-                                    on_click=lambda e: self.changeBgcolor(ft.colors.YELLOW)
-                                ),
-                                ft.MenuItemButton(
-                                    content=ft.Text("黄緑"),
-                                    leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.LIGHT_GREEN),
-                                    on_click=lambda e: self.changeBgcolor(ft.colors.LIGHT_GREEN)
-                                ),
-                                ft.MenuItemButton(
-                                    content=ft.Text("緑"),
-                                    leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.GREEN),
-                                    on_click=lambda e: self.changeBgcolor(ft.colors.GREEN)
-                                ),
-                                ft.MenuItemButton(
-                                    content=ft.Text("水"),
-                                    leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.LIGHT_BLUE),
-                                    on_click=lambda e: self.changeBgcolor(ft.colors.LIGHT_BLUE)
-                                ),
-                                ft.MenuItemButton(
-                                    content=ft.Text("青"),
-                                    leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.BLUE),
-                                    on_click=lambda e: self.changeBgcolor(ft.colors.BLUE)
-                                ),
-                                ft.MenuItemButton(
-                                    content=ft.Text("紫"),
-                                    leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.PURPLE),
-                                    on_click=lambda e: self.changeBgcolor(ft.colors.PURPLE)
-                                ),
-                                ft.MenuItemButton(
-                                    content=ft.Text("桃"),
-                                    leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.PINK),
-                                    on_click=lambda e: self.changeBgcolor(ft.colors.PINK)
-                                ),
-                                ft.MenuItemButton(
-                                    content=ft.Text("赤"),
-                                    leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.RED),
-                                    on_click=lambda e: self.changeBgcolor(ft.colors.RED)
-                                ),
-                                ft.MenuItemButton(
-                                    content=ft.Text("橙"),
-                                    leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.ORANGE),
-                                    on_click=lambda e: self.changeBgcolor(ft.colors.ORANGE)
-                                ),
-                                ft.MenuItemButton(
-                                    content=ft.Text("薄橙"),
-                                    leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.AMBER),
-                                    on_click=lambda e: self.changeBgcolor(ft.colors.AMBER)
-                                ),
-                                ft.MenuItemButton(
-                                    content=ft.Text("茶"),
-                                    leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.BROWN),
-                                    on_click=lambda e: self.changeBgcolor(ft.colors.BROWN)
-                                ),
-                                ft.MenuItemButton(
-                                    content=ft.Text("黒"),
-                                    leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.BLACK),
-                                    on_click=lambda e: self.changeBgcolor(ft.colors.BLACK)
-                                )
-                            ]
-                        )
-                    ]
-                ),
-                ft.TextButton(text="拡大・縮小", on_click=lambda e: self.changeMode("scaling")),
-                ft.TextButton(text="全消し", on_click=lambda e: self.deleteObj()),
-                ft.TextButton(text="コマ消し", on_click=lambda e: self.deleteCanvas(self.currentIndex)),
-                ft.TextButton(text="戻る", on_click=lambda e: self.moveCanvas(self.currentIndex - 1)),
-                ft.TextButton(text="進む", on_click=lambda e: self.moveCanvas(self.currentIndex + 1)),
-                ft.TextButton(text="ビデオ生成", on_click=lambda e: self.makeVideo())
-            ]
+        pick_bgimage = ft.FilePicker(on_result=self.addBgImage)
+        pick_image = ft.FilePicker(on_result=self.addImage)
+        self.page.overlay.extend([pick_bgimage, pick_image])
+        self.inputPageNum = inputPageDialog(
+            lambda e: self.copyAndclearContent(),
+            lambda e: self.page.close(self.inputPageNum.inputPageDialog)
         )
-        self.appheader.appbar.leading = ft.IconButton(icon=ft.icons.HOME, on_click=self.savefile)
+        self.appheader_eng = AppHeader_eng(self.page)
+        self.appheader_jpn = AppHeader_jpn(self.page)
+        self.appheader_eng.appbar.actions[0].content.controls[2].controls[0].controls[0].on_click = lambda e: self.change_language_mode()
+        self.appheader_jpn.appbar.actions[0].content.controls[2].controls[0].controls[0].on_click = lambda e: self.change_language_mode()
+        self.appheader_eng.appbar.actions[0].content.controls.insert(
+            0,
+            ft.TextButton(text="Pen", on_click=lambda e: self.changeMode("free"))
+        )
+        self.appheader_eng.appbar.actions[0].content.controls.insert(
+            1,
+            ft.SubmenuButton(
+                content=ft.Text("Insert"),
+                controls=[
+                    ft.SubmenuButton(
+                        content=ft.Text("Shape"),
+                        controls=[
+                            ft.SubmenuButton(
+                                content=ft.Text("Rectangle"),
+                                controls=[
+                                    ft.MenuItemButton(
+                                        content=ft.Text("Fill"),
+                                        leading=ft.Icon(name=ft.icons.RECTANGLE),
+                                        on_click=lambda e: self.changeMode("rectangle_fill")
+                                    ),
+                                    ft.MenuItemButton(
+                                        content=ft.Text("Stroke"),
+                                        leading=ft.Icon(name=ft.icons.RECTANGLE_OUTLINED),
+                                        on_click=lambda e: self.changeMode("rectangle_stroke")
+                                    )
+                                ]
+                            ),
+                            ft.SubmenuButton(
+                                content=ft.Text("Circle"),
+                                controls=[
+                                    ft.MenuItemButton(
+                                        content=ft.Text("Fill"),
+                                        leading=ft.Icon(name=ft.icons.CIRCLE),
+                                        on_click=lambda e: self.changeMode("circle_fill")
+                                    ),
+                                    ft.MenuItemButton(
+                                        content=ft.Text("Stroke"),
+                                        leading=ft.Icon(name=ft.icons.CIRCLE_OUTLINED),
+                                        on_click=lambda e: self.changeMode("circle_stroke")
+                                    )
+                                ]
+                            ),
+                        ]
+                    ),
+                    ft.TextButton(text="Image", on_click=lambda e: pick_image.pick_files(dialog_title="Select Image", allowed_extensions=["jpg", "png"])),
+                ]
+            ),
+        )
+        self.appheader_eng.appbar.actions[0].content.controls.insert(
+            2,
+            ft.SubmenuButton(
+                content=ft.Text("Canvas"),
+                controls=[
+                    ft.MenuItemButton(
+                        content=ft.Text("New Canvas"),
+                        on_click=lambda e: self.makeNextCanvas()
+                    ),
+                    ft.MenuItemButton(
+                        content=ft.Text("Copy Canvas"),
+                        on_click=lambda e: self.page.open(self.inputPageNum.inputPageDialog)
+                    )
+                ]
+            )
+        )
+        self.appheader_eng.appbar.actions[0].content.controls.insert(
+            4,
+            ft.SubmenuButton(
+                content=ft.Text("Backgrounds"),
+                controls=[
+                    ft.MenuItemButton(
+                        content=ft.Text("Insert Image"),
+                        leading=ft.Icon(name=ft.icons.IMAGE),
+                        on_click=lambda e: pick_bgimage.pick_files(dialog_title="Select Image", allowed_extensions=["jpg", "png"])
+                    ),
+                    ft.SubmenuButton(
+                        content=ft.Text("Change Color"),
+                        controls=[
+                            ft.MenuItemButton(
+                                content=ft.Text("White"),
+                                leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.WHITE),
+                                on_click=lambda e: self.changeBgcolor(ft.colors.WHITE)
+                            ),
+                            ft.MenuItemButton(
+                                content=ft.Text("Yellow"),
+                                leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.YELLOW),
+                                on_click=lambda e: self.changeBgcolor(ft.colors.YELLOW)
+                            ),
+                            ft.MenuItemButton(
+                                content=ft.Text("Light Green"),
+                                leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.LIGHT_GREEN),
+                                on_click=lambda e: self.changeBgcolor(ft.colors.LIGHT_GREEN)
+                            ),
+                            ft.MenuItemButton(
+                                content=ft.Text("Green"),
+                                leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.GREEN),
+                                on_click=lambda e: self.changeBgcolor(ft.colors.GREEN)
+                            ),
+                            ft.MenuItemButton(
+                                content=ft.Text("Light Blue"),
+                                leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.LIGHT_BLUE),
+                                on_click=lambda e: self.changeBgcolor(ft.colors.LIGHT_BLUE)
+                            ),
+                            ft.MenuItemButton(
+                                content=ft.Text("Blue"),
+                                leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.BLUE),
+                                on_click=lambda e: self.changeBgcolor(ft.colors.BLUE)
+                            ),
+                            ft.MenuItemButton(
+                                content=ft.Text("Purple"),
+                                leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.PURPLE),
+                                on_click=lambda e: self.changeBgcolor(ft.colors.PURPLE)
+                            ),
+                            ft.MenuItemButton(
+                                content=ft.Text("Pink"),
+                                leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.PINK),
+                                on_click=lambda e: self.changeBgcolor(ft.colors.PINK)
+                            ),
+                            ft.MenuItemButton(
+                                content=ft.Text("Red"),
+                                leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.RED),
+                                on_click=lambda e: self.changeBgcolor(ft.colors.RED)
+                            ),
+                            ft.MenuItemButton(
+                                content=ft.Text("Orange"),
+                                leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.ORANGE),
+                                on_click=lambda e: self.changeBgcolor(ft.colors.ORANGE)
+                            ),
+                            ft.MenuItemButton(
+                                content=ft.Text("Amber"),
+                                leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.AMBER),
+                                on_click=lambda e: self.changeBgcolor(ft.colors.AMBER)
+                            ),
+                            ft.MenuItemButton(
+                                content=ft.Text("Brown"),
+                                leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.BROWN),
+                                on_click=lambda e: self.changeBgcolor(ft.colors.BROWN)
+                            ),
+                            ft.MenuItemButton(
+                                content=ft.Text("Black"),
+                                leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.BLACK),
+                                on_click=lambda e: self.changeBgcolor(ft.colors.BLACK)
+                            )
+                        ]
+                    )
+                ]
+            )
+        )
+        self.appheader_eng.appbar.actions[0].content.controls.insert(
+            5,
+            ft.SubmenuButton(
+                content=ft.Text("Manipulation"),
+                controls=[
+                    ft.MenuItemButton(
+                        content=ft.Text("Scaling"),
+                        on_click=lambda e: self.changeMode("scaling")
+                    ),
+                    ft.MenuItemButton(
+                        content=ft.Text("Move"),
+                        on_click=lambda e: None
+                    )
+                ]
+            )
+        )
+        self.appheader_eng.appbar.actions[0].content.controls.insert(
+            6,
+            TextButton(text="Next Canvas", on_click=lambda e: self.moveCanvas(self.currentIndex + 1))
+        )
+        self.appheader_eng.appbar.actions[0].content.controls.insert(
+            7,
+            TextButton(text="Previous Canvas", on_click=lambda e: self.moveCanvas(self.currentIndex + 1))
+        )
+        self.appheader_eng.appbar.actions[0].content.controls.insert(
+            8,
+            ft.SubmenuButton(
+                content=ft.Text("Delete"),
+                controls=[
+                    ft.MenuItemButton(
+                        content=ft.Text("Eraser"),
+                        on_click=lambda e: None
+                    ),
+                    ft.MenuItemButton(
+                        content=ft.Text("Delete All Object"),
+                        on_click=lambda e: self.deleteObj()
+                    ),
+                    ft.MenuItemButton(
+                        content=ft.Text("Delete This Canvas"),
+                        on_click=lambda e: self.deleteCanvas(self.currentIndex)
+                    )
+                ]
+            )
+        )
+        self.appheader_eng.appbar.actions[0].content.controls.insert(
+            9,
+            TextButton(text="Generate Video", on_click=lambda e: self.makeVideo())
+        )
+        self.appheader_jpn.appbar.actions[0].content.controls.insert(
+            0,
+            ft.TextButton(text="ペン", on_click=lambda e: self.changeMode("free"))
+        )
+        self.appheader_jpn.appbar.actions[0].content.controls.insert(
+            1,
+            ft.SubmenuButton(
+                content=ft.Text("挿入"),
+                controls=[
+                    ft.SubmenuButton(
+                        content=ft.Text("図形"),
+                        controls=[
+                            ft.SubmenuButton(
+                                content=ft.Text("四角形"),
+                                controls=[
+                                    ft.MenuItemButton(
+                                        content=ft.Text("塗りつぶし"),
+                                        leading=ft.Icon(name=ft.icons.RECTANGLE),
+                                        on_click=lambda e: self.changeMode("rectangle_fill")
+                                    ),
+                                    ft.MenuItemButton(
+                                        content=ft.Text("空"),
+                                        leading=ft.Icon(name=ft.icons.RECTANGLE_OUTLINED),
+                                        on_click=lambda e: self.changeMode("rectangle_stroke")
+                                    )
+                                ]
+                            ),
+                            ft.SubmenuButton(
+                                content=ft.Text("円"),
+                                controls=[
+                                    ft.MenuItemButton(
+                                        content=ft.Text("塗りつぶし"),
+                                        leading=ft.Icon(name=ft.icons.CIRCLE),
+                                        on_click=lambda e: self.changeMode("circle_fill")
+                                    ),
+                                    ft.MenuItemButton(
+                                        content=ft.Text("空"),
+                                        leading=ft.Icon(name=ft.icons.CIRCLE_OUTLINED),
+                                        on_click=lambda e: self.changeMode("circle_stroke")
+                                    )
+                                ]
+                            ),
+                        ]
+                    ),
+                    ft.TextButton(text="画像", on_click=lambda e: pick_image.pick_files(dialog_title="画像を選択", allowed_extensions=["jpg", "png"])),
+                ]
+            ),
+        )
+        self.appheader_jpn.appbar.actions[0].content.controls.insert(
+            2,
+            ft.SubmenuButton(
+                content=ft.Text("ページ"),
+                controls=[
+                    ft.MenuItemButton(
+                        content=ft.Text("新しいページ"),
+                        on_click=lambda e: self.makeNextCanvas()
+                    ),
+                    ft.MenuItemButton(
+                        content=ft.Text("ページのコピー"),
+                        on_click=lambda e: self.page.open(self.inputPageNum.inputPageDialog)
+                    )
+                ]
+            )
+        )
+        self.appheader_jpn.appbar.actions[0].content.controls.insert(
+            4,
+            ft.SubmenuButton(
+                content=ft.Text("背景"),
+                controls=[
+                    ft.MenuItemButton(
+                        content=ft.Text("画像"),
+                        leading=ft.Icon(name=ft.icons.IMAGE),
+                        on_click=lambda e: pick_bgimage.pick_files(dialog_title="画像の選択", allowed_extensions=["jpg", "png"])
+                    ),
+                    ft.SubmenuButton(
+                        content=ft.Text("色の変更"),
+                        controls=[
+                            ft.MenuItemButton(
+                                content=ft.Text("白"),
+                                leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.WHITE),
+                                on_click=lambda e: self.changeBgcolor(ft.colors.WHITE)
+                            ),
+                            ft.MenuItemButton(
+                                content=ft.Text("黄"),
+                                leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.YELLOW),
+                                on_click=lambda e: self.changeBgcolor(ft.colors.YELLOW)
+                            ),
+                            ft.MenuItemButton(
+                                content=ft.Text("黄緑"),
+                                leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.LIGHT_GREEN),
+                                on_click=lambda e: self.changeBgcolor(ft.colors.LIGHT_GREEN)
+                            ),
+                            ft.MenuItemButton(
+                                content=ft.Text("緑"),
+                                leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.GREEN),
+                                on_click=lambda e: self.changeBgcolor(ft.colors.GREEN)
+                            ),
+                            ft.MenuItemButton(
+                                content=ft.Text("水"),
+                                leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.LIGHT_BLUE),
+                                on_click=lambda e: self.changeBgcolor(ft.colors.LIGHT_BLUE)
+                            ),
+                            ft.MenuItemButton(
+                                content=ft.Text("青"),
+                                leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.BLUE),
+                                on_click=lambda e: self.changeBgcolor(ft.colors.BLUE)
+                            ),
+                            ft.MenuItemButton(
+                                content=ft.Text("紫"),
+                                leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.PURPLE),
+                                on_click=lambda e: self.changeBgcolor(ft.colors.PURPLE)
+                            ),
+                            ft.MenuItemButton(
+                                content=ft.Text("桃"),
+                                leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.PINK),
+                                on_click=lambda e: self.changeBgcolor(ft.colors.PINK)
+                            ),
+                            ft.MenuItemButton(
+                                content=ft.Text("赤"),
+                                leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.RED),
+                                on_click=lambda e: self.changeBgcolor(ft.colors.RED)
+                            ),
+                            ft.MenuItemButton(
+                                content=ft.Text("橙"),
+                                leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.ORANGE),
+                                on_click=lambda e: self.changeBgcolor(ft.colors.ORANGE)
+                            ),
+                            ft.MenuItemButton(
+                                content=ft.Text("薄橙"),
+                                leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.AMBER),
+                                on_click=lambda e: self.changeBgcolor(ft.colors.AMBER)
+                            ),
+                            ft.MenuItemButton(
+                                content=ft.Text("茶"),
+                                leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.BROWN),
+                                on_click=lambda e: self.changeBgcolor(ft.colors.BROWN)
+                            ),
+                            ft.MenuItemButton(
+                                content=ft.Text("黒"),
+                                leading=ft.Icon(name=ft.icons.BRUSH, color=ft.colors.BLACK),
+                                on_click=lambda e: self.changeBgcolor(ft.colors.BLACK)
+                            )
+                        ]
+                    )
+                ]
+            )
+        )
+        self.appheader_jpn.appbar.actions[0].content.controls.insert(
+            5,
+            ft.SubmenuButton(
+                content=ft.Text("操作"),
+                controls=[
+                    ft.MenuItemButton(
+                        content=ft.Text("拡大・縮小"),
+                        on_click=lambda e: self.changeMode("scaling")
+                    ),
+                    ft.MenuItemButton(
+                        content=ft.Text("移動"),
+                        on_click=lambda e: None
+                    )
+                ]
+            )
+        )
+        self.appheader_jpn.appbar.actions[0].content.controls.insert(
+            6,
+            TextButton(text="次のページ", on_click=lambda e: self.moveCanvas(self.currentIndex + 1))
+        )
+        self.appheader_jpn.appbar.actions[0].content.controls.insert(
+            7,
+            TextButton(text="前のページ", on_click=lambda e: self.moveCanvas(self.currentIndex - 1))
+        )
+        self.appheader_jpn.appbar.actions[0].content.controls.insert(
+            8,
+            ft.SubmenuButton(
+                content=ft.Text("削除"),
+                controls=[
+                    ft.MenuItemButton(
+                        content=ft.Text("消しゴム"),
+                        on_click=lambda e: None
+                    ),
+                    ft.MenuItemButton(
+                        content=ft.Text("全消し"),
+                        on_click=lambda e: self.deleteObj()
+                    ),
+                    ft.MenuItemButton(
+                        content=ft.Text("ページの削除"),
+                        on_click=lambda e: self.deleteCanvas(self.currentIndex)
+                    )
+                ]
+            )
+        )
+        self.appheader_jpn.appbar.actions[0].content.controls.insert(
+            9,
+            TextButton(text="ビデオの作成", on_click=lambda e: self.makeVideo())
+        )
+
+    def copyAndclearContent(self):
+        self.copyCanvas(int(self.inputPageNum.inputPageDialog.content.value))
+        self.inputPageNum.inputPageDialog.content.value = ""
+        self.page.close(self.inputPageNum.inputPageDialog)
 
     def savefile(self, e):
         serialized_stacks = []
@@ -410,7 +735,7 @@ class mainView:
                         
                         tmp_list_stack.append(tmp_list_shapes)
 
-                    elif layer.content == None:
+                    elif layer.content is None:
                         tmp_list_stack.append({
                             "type": "background",
                             "bgcolor": layer.bgcolor
@@ -510,6 +835,9 @@ class mainView:
                                         width=layer["width"],
                                         height=layer["height"],
                                     ),
+                                    mouse_cursor=ft.MouseCursor.MOVE,
+                                    drag_interval=10,
+                                    on_vertical_drag_update=self.on_pan_update,
                                     left=layer["left"],
                                     top=layer["top"]
                                 )
@@ -559,10 +887,31 @@ class mainView:
         )
         self.stackList[self.currentIndex].controls.insert(1, bgImage)
 
+    def on_pan_update(self, e: ft.DragUpdateEvent):
+        e.control.top = max(0, e.control.top + e.delta_y)
+        e.control.left = max(0, e.control.left + e.delta_x)
+        e.control.update()
+    
+    def addImage(self, e: ft.FilePickerResultEvent):
+        if not e.files or len(e.files) == 0:
+            return
+
+        src = e.files.pop().path
+        image = ft.GestureDetector(
+            content=ft.Image(src=src, width=100),
+            mouse_cursor=ft.MouseCursor.MOVE,
+            drag_interval=10,
+            on_vertical_drag_update=self.on_pan_update,
+            left=100,
+            top=100
+        )
+        self.stackList[self.currentIndex].controls.append(image)
+
     def makeNextCanvas(self):
         newCanvasInstance = canvasClass()
         nextCanvas = newCanvasInstance.makeCanvas()
         self.currentIndex += 1
+        print(self.currentIndex)
         width, height = canvasClass.getCanvasSize()
         whiteboard = ft.Container(
             padding=0,
@@ -580,16 +929,19 @@ class mainView:
         )
         self.stackList.insert(self.currentIndex, newStack)
 
+        if self.language_mode == 0:
+            appbar = self.appheader_jpn.appbar
+        else:
+            appbar = self.appheader_eng.appbar
+
         newView = ft.View("/mainView",
-            appbar=self.appheader.appbar,
+            appbar=appbar,
             controls=[
                 ft.Row(
                     controls=[
-                        self.sidebar,
                         ft.Column([
-                            self.menubar,
                             newStack
-                        ], expand=False)
+                        ], expand=False, horizontal_alignment=ft.CrossAxisAlignment.CENTER)
                     ],
                     expand=True
                 )
@@ -599,6 +951,60 @@ class mainView:
         self.page.views.clear()
         self.page.views.append(newView)
         self.page.update()
+
+    def copyCanvas(self, tocopypage):
+        newStack = ft.Stack()
+        for layer in self.stackList[self.currentIndex].controls:
+            if type(layer) is ft.Container:
+                if type(layer.content) is cv.Canvas:
+                    copyshapes = layer.content.shapes.copy()
+                    cpCanvasInstance = canvasClass()
+                    cpCanvasInstance.cp.shapes.extend(copyshapes)
+                    self.canvasInstanceList.append(cpCanvasInstance)
+                    cpCanvas = cpCanvasInstance.makeCanvas()
+                    newStack.controls.append(cpCanvas)
+
+                elif layer.content is None:
+                    width, height = canvasClass.getCanvasSize()
+                    bg = layer.bgcolor
+                    newbg = ft.Container(
+                        padding=0,
+                        margin=0,
+                        bgcolor=bg,
+                        width=width,
+                        height=height,
+                        border_radius=0
+                    )
+                    newStack.controls.append(newbg)
+
+            elif type(layer) is ft.Image:
+                width, height = canvasClass.getCanvasSize()
+                src = layer.src
+                copyimage = ft.Image(
+                    src=src,
+                    width=width,
+                    height=height
+                )
+                newStack.controls.append(copyimage)
+
+            elif type(layer) is ft.GestureDetector:
+                src = layer.content.src
+                width = layer.content.width
+                height = layer.content.height
+                left = layer.left
+                top = layer.top
+                copygesture = ft.GestureDetector(
+                    content=ft.Image(
+                        src=src,
+                        width=width,
+                        height=height
+                    ),
+                    left=left,
+                    top=top
+                )
+                newStack.controls.append(copygesture)
+
+        self.stackList.insert(tocopypage, newStack)
 
     def deleteObj(self):
         width, height = canvasClass.getCanvasSize()
@@ -630,25 +1036,41 @@ class mainView:
                     if self.currentIndex != 0:
                         self.currentIndex -= 1
 
-                    newView = ft.View("/mainView",
-                        appbar=self.appheader.appbar,
-                        controls=[
-                            ft.Row(
-                                controls=[
-                                    self.sidebar,
-                                    ft.Column([
-                                        self.menubar,
-                                        self.stackList[self.currentIndex]
-                                    ], expand=False)
-                                ],
-                                expand=True
-                            )
-                        ]
-                    )
+                    if self.language_mode == 0:
+                        newView = ft.View("/mainView",
+                            appbar=self.appheader_jpn.appbar,
+                            controls=[
+                                ft.Row(
+                                    controls=[
+                                        ft.Column([
+                                            self.stackList[self.currentIndex]
+                                        ], expand=False, horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+                                    ],
+                                    expand=True
+                                )
+                            ]
+                        )
+
+                    else:
+                        newView = ft.View("/mainView",
+                            appbar=self.appheader_eng.appbar,
+                            controls=[
+                                ft.Row(
+                                    controls=[
+                                        ft.Column([
+                                            self.stackList[self.currentIndex]
+                                        ], expand=False, horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+                                    ],
+                                    expand=True
+                                )
+                            ]
+                        )
+
 
                     self.page.views.clear()
                     self.page.views.append(newView)
                     self.page.update()
+
             else:
                 raise IndexError
 
@@ -659,21 +1081,35 @@ class mainView:
         try:
             if 0 <= pagenum <= len(self.stackList) - 1:
                 self.currentIndex = pagenum
-                newView = ft.View("/mainView", 
-                    appbar=self.appheader.appbar,
-                    controls=[
-                        ft.Row(
-                            controls=[
-                                self.sidebar,
-                                ft.Column([
-                                    self.menubar,
-                                    self.stackList[self.currentIndex]
-                                ], expand=False)
-                            ],
-                            expand=True
-                        )
-                    ]
-                )
+                if self.language_mode == 0:
+                    newView = ft.View("/mainView", 
+                        appbar=self.appheader_jpn.appbar,
+                        controls=[
+                            ft.Row(
+                                controls=[
+                                    ft.Column([
+                                        self.stackList[self.currentIndex]
+                                    ], expand=False, horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+                                ],
+                                expand=True
+                            )
+                        ]
+                    )
+
+                else:
+                    newView = ft.View("/mainView", 
+                        appbar=self.appheader_eng.appbar,
+                        controls=[
+                            ft.Row(
+                                controls=[
+                                    ft.Column([
+                                        self.stackList[self.currentIndex]
+                                    ], expand=False, horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+                                ],
+                                expand=True
+                            )
+                        ]
+                    )
 
                 self.page.views.clear()
                 self.page.views.append(newView)
@@ -697,14 +1133,48 @@ class mainView:
         cmd = "./rife-ncnn-vulkan -0 " + "-1 1.jpg -o 01.jpg"
         subprocess.call(cmd.split())
 
+    def change_language_mode(self):
+        if self.language_mode == 0:
+            self.language_mode = 1
+            self.page.title = "Project --" + self.projectname + "--"
+            appbar = self.appheader_eng.appbar
+        else:
+            self.language_mode = 0
+            self.page.title = "プロジェクト --" + self.projectname + "--"
+            appbar = self.appheader_jpn.appbar
+
+        # 再描画するViewの作成
+        newView = ft.View("/mainView", 
+            appbar=appbar,
+            controls=[
+                ft.Row(
+                    controls=[
+                        ft.Column([
+                            self.stackList[self.currentIndex]
+                        ], expand=False,horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+                    ],
+                    expand=True
+                )
+            ]
+        )
+
+        # ページビューの更新
+        self.page.views.clear()
+        self.page.clean()
+        self.page.views.append(newView)
+        self.page.update()
+
+
     def makeView(self):
         self.projectname = projectList.getprojectName()
         self.page.title = "プロジェクト --" + self.projectname + "--"
         self.page.padding = 10
-        self.appheader.appbar.title = Text(value = self.projectname, size = 24, text_align = "center")
+        self.appheader_eng.appbar.title = Text(value = self.projectname, size = 24, text_align = "center")
+        self.appheader_jpn.appbar.title = Text(value = self.projectname, size = 24, text_align = "center")
         binarydatas = "C:/Users/gunda/projectExperiments/Sunagawa/assets/pickles" # fletモジュール以外には明示的にパスを指定しないといけない
         self.outputpath = path.join(binarydatas, self.projectname + ".pkl")
         self.currentIndex = 0
+        self.language_mode = 0
 
         decideResume = self.loadfile()
 
@@ -730,15 +1200,13 @@ class mainView:
             self.stackList.append(primaryStack)
 
             return ft.View("/mainView",
-                appbar=self.appheader.appbar,
+                appbar=self.appheader_jpn.appbar,
                 controls=[
                     ft.Row(
                         controls=[
-                            self.sidebar,
                             ft.Column([
-                                self.menubar,
                                 primaryStack
-                            ], expand=False)
+                            ], expand=False, horizontal_alignment=ft.CrossAxisAlignment.CENTER)
                         ], expand=True
                     )
                 ]
@@ -746,15 +1214,13 @@ class mainView:
 
         else:
             return ft.View("/mainView",
-                appbar=self.appheader.appbar,
+                appbar=self.appheader_jpn.appbar,
                 controls=[
                     ft.Row(
                         controls=[
-                            self.sidebar,
                             ft.Column([
-                                self.menubar,
                                 self.stackList[self.currentIndex]
-                            ], expand=False)
+                            ], expand=False, horizontal_alignment=ft.CrossAxisAlignment.CENTER)
                         ],
                         expand=True
                     )

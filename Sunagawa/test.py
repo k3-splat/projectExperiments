@@ -1,61 +1,30 @@
-import flet as ft
-import flet.canvas as cv
+from moviepy.editor import VideoFileClip, AudioFileClip, CompositeAudioClip
 
-class State:
-    x: float
-    y: float
-
-state = State()
-
-def main(page: ft.Page):
-    page.title = "Flet Brush"
-
-    def pan_start(e: ft.DragStartEvent):
-        state.x = e.local_x
-        state.y = e.local_y
-
-    def pan_update(e: ft.DragUpdateEvent):
-        cp.shapes.append(
-            cv.Line(
-                state.x, state.y, e.local_x, e.local_y, paint=ft.Paint(stroke_width=3)
-            )
-        )
-        cp.update()
-        state.x = e.local_x
-        state.y = e.local_y
-
-    cp = cv.Canvas(
-        [
-            cv.Fill(
-                ft.Paint(
-                    gradient=ft.PaintLinearGradient(
-                        (0, 0), (600, 600), colors=[ft.colors.CYAN_50, ft.colors.GREY]
-                    )
-                )
-            ),
-            cv.Rect(
-                x=100,
-                y=100,
-                width=-50,
-                height=10
-            )
-        ],
-        content=ft.GestureDetector(
-            on_pan_start=pan_start,
-            on_pan_update=pan_update,
-            drag_interval=10,
-        ),
-        expand=False,
-    )
-
-    page.add(
-        ft.Container(
-            cp,
-            border_radius=5,
-            width=float("inf"),
-            expand=True,
-        )
-    )
+# 動画ファイルを読み込む
+video = VideoFileClip("C:/Users/gunda/projectExperiments/Sunagawa/test2/Flopping.mp4")
 
 
-ft.app(main)
+# 効果音を読み込む
+sound_effect = AudioFileClip("C:/Users/gunda/Downloads/ラッパのファンファーレ.mp3")
+
+# 動画の音声を抽出
+original_audio = video.audio
+
+# 効果音を特定の時間に配置
+sound_effect = sound_effect.set_start(5.6)  # 5秒の時点で効果音を再生
+
+# 全ての音声トラックを合成
+final_audio = CompositeAudioClip([original_audio, sound_effect])
+
+# 音声を動画に適用
+final_video = video.set_audio(final_audio)
+
+# 最終的な動画を保存
+final_video.write_videofile("C:/Users/gunda/projectExperiments/Sunagawa/video_with_edited_audio.mp4")
+
+# 使用したクリップを閉じる
+video.close()
+sound_effect.close()
+final_video.close()
+
+print("音声編集と音響効果の適用が完了しました。")

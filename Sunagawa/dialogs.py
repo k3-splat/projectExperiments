@@ -16,6 +16,22 @@ class inputFolderNameDialog:
         self.inputFolderNameDialog.actions[1].on_click = fun2
 
 
+class inputPageDialog:
+    def __init__(self, fun1, fun2):
+        self.inputPageDialog = ft.AlertDialog(
+            title=ft.Text("追加するページを入力してください"),
+            modal=True,
+            content=ft.TextField(),
+            actions=[
+                ft.TextButton("追加"),
+                ft.TextButton("キャンセル")
+            ]
+        )
+
+        self.inputPageDialog.actions[0].on_click = fun1
+        self.inputPageDialog.actions[1].on_click = fun2
+
+
 class chooseContiNewDialog:
     def __init__(self, fun1, fun2, fun3):
         chooseContiNewDialog = ft.CupertinoActionSheet(

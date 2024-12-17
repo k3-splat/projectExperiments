@@ -6,6 +6,7 @@ import projectRemoveView
 import chooseProjectView
 import selectWatchVideoView
 import manageVideoView
+import editVideoView
 
 async def main(page: ft.Page):
     startview = start.startView(page)
@@ -40,6 +41,10 @@ async def main(page: ft.Page):
         elif troute.match("/manageVideoView"):
             managevideolist = manageVideoView.manageVideo(page)
             page.views.append(managevideolist.makeView())
+
+        elif troute.match("/editVideoView"):
+            editvideoview = editVideoView.editVideoView(page)
+            page.views.append(editvideoview.makeView())
 
         page.update()
 
