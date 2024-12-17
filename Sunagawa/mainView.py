@@ -15,6 +15,7 @@ import flet.canvas as cv
 from canvasView import canvasClass
 from dialogs import askSave
 from dialogs import inputPageDialog
+import shutil
 import time
 import pygetwindow as gw
 import subprocess
@@ -860,7 +861,7 @@ class mainView:
             raise Exception(f"Window with title containing '{window_title}' not found.")
         
         window = gw.getWindowsWithTitle(windows[0])[0]
-        bbox = (window.left + 200, window.top + 170, 1600, 800)
+        bbox = (window.left, window.top + 170, 1600, 800)
 
         screenshot = ImageGrab.grab(bbox=bbox)
         screenshot.save(output_path)
