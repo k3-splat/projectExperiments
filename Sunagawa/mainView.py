@@ -20,6 +20,8 @@ import time
 import pygetwindow as gw
 import subprocess
 import pickle
+from pathDatabase import pathDatabase
+from makeVideo import makeVideo
 from PIL import ImageGrab
 from os import path
 
@@ -31,7 +33,6 @@ class AppHeader_eng():
         self.appbar = AppBar(
             leading = Icon(icons.TRIP_ORIGIN_ROUNDED),
             leading_width = 60,
-            title = Text(value = projectList.getprojectName(), size = 24, text_align = "center"),
             center_title = False,
             toolbar_height = 50,
             bgcolor = colors.SURFACE_VARIANT,
@@ -162,7 +163,6 @@ class AppHeader_jpn():
         self.appbar = AppBar(
             leading = Icon(icons.TRIP_ORIGIN_ROUNDED),
             leading_width = 60,
-            title = Text(value = "プロジェクト名", size = 24, text_align = "center"),
             center_title = False,
             toolbar_height = 50,
             bgcolor = colors.SURFACE_VARIANT,
@@ -289,6 +289,7 @@ class AppHeader_jpn():
 class mainView:
     def __init__(self, page: ft.Page):
         self.page = page
+        self.output_canvasshot = "C:/Users/gunda/projectExperiments/Sunagawa/assets/canvases"
         self.stackList = []
         self.fps = 1
         pick_bgimage = ft.FilePicker(on_result=self.addBgImage)
@@ -314,6 +315,11 @@ class mainView:
                     ft.SubmenuButton(
                         content=ft.Text("Shape"),
                         controls=[
+                            ft.MenuItemButton(
+                                content=ft.Text("Line"),
+                                leading=ft.Icon(name=ft.icons.LINE_AXIS),
+                                on_click=lambda e: self.changeMode("stroke_line")
+                            ),
                             ft.SubmenuButton(
                                 content=ft.Text("Rectangle"),
                                 controls=[
@@ -344,6 +350,21 @@ class mainView:
                                     )
                                 ]
                             ),
+                            ft.SubmenuButton(
+                                content=ft.Text("Oval"),
+                                controls=[
+                                    ft.MenuItemButton(
+                                        content=ft.Text("Fill"),
+                                        leading=ft.Icon(name=ft.icons.CIRCLE),
+                                        on_click=lambda e: self.changeMode("oval_fill")
+                                    ),
+                                    ft.MenuItemButton(
+                                        content=ft.Text("Stroke"),
+                                        leading=ft.Icon(name=ft.icons.CIRCLE_OUTLINED),
+                                        on_click=lambda e: self.changeMode("oval_stroke")
+                                    )
+                                ]
+                            )
                         ]
                     ),
                     ft.TextButton(text="Image", on_click=lambda e: pick_image.pick_files(dialog_title="Select Image", allowed_extensions=["jpg", "png"])),
@@ -457,10 +478,6 @@ class mainView:
                     ft.MenuItemButton(
                         content=ft.Text("Scaling"),
                         on_click=lambda e: self.changeMode("scaling")
-                    ),
-                    ft.MenuItemButton(
-                        content=ft.Text("Move"),
-                        on_click=lambda e: None
                     )
                 ]
             )
@@ -480,7 +497,7 @@ class mainView:
                 controls=[
                     ft.MenuItemButton(
                         content=ft.Text("Eraser"),
-                        on_click=lambda e: None
+                        on_click=lambda e: self.changeMode("eraser")
                     ),
                     ft.MenuItemButton(
                         content=ft.Text("Delete All Object"),
@@ -495,7 +512,31 @@ class mainView:
         )
         self.appheader_eng.appbar.actions[0].content.controls.insert(
             10,
+            ft.SubmenuButton(
+                content=ft.Text("Play"),
+                controls=[
+                    ft.Slider(
+                        min=1,
+                        max=30,
+                        divisions=30,
+                        label="{value}fps",
+                        on_change=lambda e: self.setFPS(e.control.value)
+                    ),
+                    ft.ElevatedButton(text="Start", on_click=lambda e: self.play())
+                ]
+            )
+        )
+        self.appheader_eng.appbar.actions[0].content.controls.insert(
+            11,
+            TextButton(text="Make Interpolate Canvas", on_click=lambda e: self.getIntermediateFrame())
+        )
+        self.appheader_eng.appbar.actions[0].content.controls.insert(
+            12,
             TextButton(text="Generate Video", on_click=lambda e: self.makeVideo())
+        )
+        self.appheader_eng.appbar.actions[0].content.controls.insert(
+            13,
+            ft.ElevatedButton("Go editVideo", on_click=lambda e: self.page.go("/editVideoView"))
         )
         self.appheader_jpn.appbar.actions[0].content.controls.insert(
             0,
@@ -509,6 +550,11 @@ class mainView:
                     ft.SubmenuButton(
                         content=ft.Text("図形"),
                         controls=[
+                            ft.MenuItemButton(
+                                content=ft.Text("直線"),
+                                leading=ft.Icon(name=ft.icons.LINE_AXIS),
+                                on_click=lambda e: self.changeMode("stroke_line")
+                            ),
                             ft.SubmenuButton(
                                 content=ft.Text("四角形"),
                                 controls=[
@@ -536,6 +582,21 @@ class mainView:
                                         content=ft.Text("空"),
                                         leading=ft.Icon(name=ft.icons.CIRCLE_OUTLINED),
                                         on_click=lambda e: self.changeMode("circle_stroke")
+                                    )
+                                ]
+                            ),
+                            ft.SubmenuButton(
+                                content=ft.Text("楕円"),
+                                controls=[
+                                    ft.MenuItemButton(
+                                        content=ft.Text("塗りつぶし"),
+                                        leading=ft.Icon(name=ft.icons.CIRCLE),
+                                        on_click=lambda e: self.changeMode("oval_fill")
+                                    ),
+                                    ft.MenuItemButton(
+                                        content=ft.Text("空"),
+                                        leading=ft.Icon(name=ft.icons.CIRCLE_OUTLINED),
+                                        on_click=lambda e: self.changeMode("oval_stroke")
                                     )
                                 ]
                             ),
@@ -652,10 +713,6 @@ class mainView:
                     ft.MenuItemButton(
                         content=ft.Text("拡大・縮小"),
                         on_click=lambda e: self.changeMode("scaling")
-                    ),
-                    ft.MenuItemButton(
-                        content=ft.Text("移動"),
-                        on_click=lambda e: None
                     )
                 ]
             )
@@ -675,7 +732,7 @@ class mainView:
                 controls=[
                     ft.MenuItemButton(
                         content=ft.Text("消しゴム"),
-                        on_click=lambda e: None
+                        on_click=lambda e: self.changeMode("eraser")
                     ),
                     ft.MenuItemButton(
                         content=ft.Text("全消し"),
@@ -706,7 +763,27 @@ class mainView:
         )
         self.appheader_jpn.appbar.actions[0].content.controls.insert(
             11,
-            TextButton(text="ビデオの作成", on_click=lambda e: self.makeVideo())
+            TextButton(text="中間コマの作成", on_click=lambda e: self.getIntermediateFrame())
+        )
+        self.appheader_jpn.appbar.actions[0].content.controls.insert(
+            12,
+            ft.SubmenuButton(
+                content=ft.Text("動画の生成"),
+                controls=[
+                    ft.Slider(
+                        min=1,
+                        max=30,
+                        divisions=30,
+                        label="{value}fps",
+                        on_change=lambda e: self.setFPS(e.control.value)
+                    ),
+                    ft.ElevatedButton(text="生成", on_click=lambda e: self.makeVideo())
+                ]
+            )
+        )
+        self.appheader_jpn.appbar.actions[0].content.controls.insert(
+            13,
+            ft.ElevatedButton("動画編集画面へ", on_click=lambda e: self.page.go("/editVideoView"))
         )
 
     def copyAndclearContent(self):
@@ -738,19 +815,80 @@ class mainView:
                                 )
                             
                             elif type(obj) is cv.Rect:
-                                pass
+                                if obj.paint.style == ft.PaintingStyle("fill"):
+                                    tmp_list_shapes.append(
+                                        {
+                                            "type": "Rect_fill",
+                                            "x": obj.x,
+                                            "y": obj.y,
+                                            "width": obj.width,
+                                            "height": obj.height,
+                                            "color": obj.paint.color,
+                                            "stroke_width": obj.paint.stroke_width
+                                        }
+                                    )
+                                elif obj.paint.style == ft.PaintingStyle("stroke"):
+                                    tmp_list_shapes.append(
+                                        {
+                                            "type": "Rect_stroke",
+                                            "x": obj.x,
+                                            "y": obj.y,
+                                            "width": obj.width,
+                                            "height": obj.height,
+                                            "color": obj.paint.color,
+                                            "stroke_width": obj.paint.stroke_width
+                                        }
+                                    )
 
                             elif type(obj) is cv.Circle:
-                                pass
+                                if obj.paint.style == ft.PaintingStyle("fill"):
+                                    tmp_list_shapes.append(
+                                        {
+                                            "type": "Circle_fill",
+                                            "x": obj.x,
+                                            "y": obj.y,
+                                            "radius": obj.radius,
+                                            "color": obj.paint.color,
+                                            "stroke_width": obj.paint.stroke_width
+                                        }
+                                    )
+                                elif obj.paint.style == ft.PaintingStyle("stroke"):
+                                    tmp_list_shapes.append(
+                                        {
+                                            "type": "Circle_stroke",
+                                            "x": obj.x,
+                                            "y": obj.y,
+                                            "radius": obj.radius,
+                                            "color": obj.paint.color,
+                                            "stroke_width": obj.paint.stroke_width
+                                        }
+                                    )
 
                             elif type(obj) is cv.Oval:
-                                pass
-
-                            elif type(obj) is cv.Path:
-                                pass
-
-                            elif type(obj) is cv.Arc:
-                                pass
+                                if obj.paint.style == ft.PaintingStyle("fill"):
+                                    tmp_list_shapes.append(
+                                        {
+                                            "type": "Oval_fill",
+                                            "x": obj.x,
+                                            "y": obj.y,
+                                            "width": obj.width,
+                                            "height": obj.height,
+                                            "color": obj.paint.color,
+                                            "stroke_width": obj.paint.stroke_width
+                                        }
+                                    )
+                                elif obj.paint.style == ft.PaintingStyle("stroke"):
+                                    tmp_list_shapes.append(
+                                        {
+                                            "type": "Oval_stroke",
+                                            "x": obj.x,
+                                            "y": obj.y,
+                                            "width": obj.width,
+                                            "height": obj.height,
+                                            "color": obj.paint.color,
+                                            "stroke_width": obj.paint.stroke_width
+                                        }
+                                    )
                         
                         tmp_list_stack.append(tmp_list_shapes)
 
@@ -804,20 +942,35 @@ class mainView:
                                     cv.Line(x1=obj["x1"], y1=obj["y1"], x2=obj["x2"], y2=obj["y2"], paint=ft.Paint(color=obj["color"], stroke_width=obj["stroke_width"]))
                                 )
                             
-                            elif obj["type"] == "Rect":
-                                pass
+                            elif obj["type"] == "Rect_fill":
+                                canvas_instance.cp.shapes.append(
+                                    cv.Rect(x=obj["x"], y=obj["y"], width=obj["width"], height=obj["height"], paint=ft.Paint(color=obj["color"], stroke_width=obj["stroke_width"], style=ft.PaintingStyle("fill")))
+                                )
 
-                            elif obj["type"] == "Circle":
-                                pass
+                            elif obj["type"] == "Rect_stroke":
+                                canvas_instance.cp.shapes.append(
+                                    cv.Rect(x=obj["x"], y=obj["y"], width=obj["width"], height=obj["height"], paint=ft.Paint(color=obj["color"], stroke_width=obj["stroke_width"], style=ft.PaintingStyle("stroke")))
+                                )
 
-                            elif obj["type"] == "Oval":
-                                pass
+                            elif obj["type"] == "Circle_fill":
+                                canvas_instance.cp.shapes.append(
+                                    cv.Circle(x=obj["x"], y=obj["y"], radius=obj["radius"], paint=ft.Paint(color=obj["color"], stroke_width=obj["stroke_width"], style=ft.PaintingStyle("fill")))
+                                )
 
-                            elif obj["type"] == "Path":
-                                pass
+                            elif obj["type"] == "Circle_stroke":
+                                canvas_instance.cp.shapes.append(
+                                    cv.Circle(x=obj["x"], y=obj["y"], radius=obj["radius"], paint=ft.Paint(color=obj["color"], stroke_width=obj["stroke_width"], style=ft.PaintingStyle("stroke")))
+                                )
 
-                            elif obj["type"] == "Arc":
-                                pass
+                            elif obj["type"] == "Oval_fill":
+                                canvas_instance.cp.shapes.append(
+                                    cv.Rect(x=obj["x"], y=obj["y"], width=obj["width"], height=obj["height"], paint=ft.Paint(color=obj["color"], stroke_width=obj["stroke_width"], style=ft.PaintingStyle("fill")))
+                                )
+
+                            elif obj["type"] == "Oval_stroke":
+                                canvas_instance.cp.shapes.append(
+                                    cv.Rect(x=obj["x"], y=obj["y"], width=obj["width"], height=obj["height"], paint=ft.Paint(color=obj["color"], stroke_width=obj["stroke_width"], style=ft.PaintingStyle("stroke")))
+                                )
                             
                         canvas = canvas_instance.makeCanvas()
                         tmp_list_stack.append(canvas)
@@ -872,15 +1025,13 @@ class mainView:
 
     def takeCanvasImage(self, i):
         window_title = self.page.title
-        self.output_canvasshot = "C:/Users/gunda/projectExperiments/Sunagawa/assets/canvases"
         output_path = path.join(self.output_canvasshot, f"{self.projectname}_{i}.png")
-        self.refreshcanvases()
         windows = [w for w in gw.getAllTitles() if window_title in w]
         if not windows:
             raise Exception(f"Window with title containing '{window_title}' not found.")
         
         window = gw.getWindowsWithTitle(windows[0])[0]
-        bbox = (window.left + 15, window.top + 88, 1030, 667)
+        bbox = (window.left + 15, window.top + 140, 1290, 887)
 
         screenshot = ImageGrab.grab(bbox=bbox)
         screenshot.save(output_path)
@@ -895,10 +1046,14 @@ class mainView:
             time.sleep(time_onecanvas)
 
     def makeVideo(self):
+        self.refreshcanvases()
         for i in range(len(self.stackList)):
             self.moveCanvas(i)
             time.sleep(0.5)
             self.takeCanvasImage(i)
+
+        makevideo = makeVideo()
+        makevideo.makeVideo(self.fps)
 
     def refreshcanvases(self):
         for _, _, canvases in os.walk(self.output_canvasshot):
@@ -915,6 +1070,16 @@ class mainView:
             return
 
         src = e.files.pop().path
+        width, height = canvasClass.getCanvasSize()
+        bgImage = ft.Image(
+            src=src,
+            width=width,
+            height=height
+        )
+        self.stackList[self.currentIndex].controls.insert(1, bgImage)
+
+    def addinterpolateImage(self, image):
+        src = image
         width, height = canvasClass.getCanvasSize()
         bgImage = ft.Image(
             src=src,
@@ -1169,12 +1334,30 @@ class mainView:
             canvasInstance.modeChange()
 
     def getIntermediateFrame(self):
+        if self.currentIndex == len(self.stackList) - 1:
+            firstIndex = self.currentIndex - 1
+            secondIndex = self.currentIndex
+        else:
+            firstIndex = self.currentIndex
+            secondIndex = self.currentIndex + 1
 
-        self.takeCanvasImage(self.currentIndex)
-        self.takeCanvasImage(self.currentIndex + 1)
+        self.takeCanvasImage(firstIndex)
+        self.moveCanvas(secondIndex)
+        time.sleep(0.5)
+        self.takeCanvasImage(secondIndex)
+        db = pathDatabase()
+        self.filepath = db.get_path_from_tag(self.projectname)
 
-        cmd = "./rife-ncnn-vulkan -0 " + "-1 1.jpg -o 01.jpg"
-        subprocess.call(cmd.split())
+        firstImage = os.path.join(self.output_canvasshot, f"{self.projectname}_{firstIndex}.png")
+        secondImage = os.path.join(self.output_canvasshot, f"{self.projectname}_{secondIndex}.png")
+        outputImage = os.path.join(self.filepath, f"{self.projectname}_{firstIndex}_interpolate.png")
+
+        os.system(f'cd rife-ncnn-vulkan-20221029-windows & start rife-ncnn-vulkan -0 {firstImage} -1 {secondImage} -o {outputImage}')
+        time.sleep(10)
+        self.moveCanvas(firstIndex)
+        self.makeNextCanvas()
+        time.sleep(0.5)
+        self.addinterpolateImage(outputImage)
 
     def change_language_mode(self):
         if self.language_mode == 0:
@@ -1213,8 +1396,8 @@ class mainView:
         self.projectname = projectList.getprojectName()
         self.page.title = "プロジェクト --" + self.projectname + "--"
         self.page.padding = 10
-        self.appheader_eng.appbar.title = Text(value = self.projectname, size = 24, text_align = "center")
-        self.appheader_jpn.appbar.title = Text(value = self.projectname, size = 24, text_align = "center")
+        self.appheader_eng.appbar.leading = ft.IconButton(icon=ft.icons.HOME, on_click=self.savefile)
+        self.appheader_jpn.appbar.leading = ft.IconButton(icon=ft.icons.HOME, on_click=self.savefile)
         binarydatas = "C:/Users/gunda/projectExperiments/Sunagawa/assets/pickles" # fletモジュール以外には明示的にパスを指定しないといけない
         self.outputpath = path.join(binarydatas, self.projectname + ".pkl")
         self.currentIndex = 0

@@ -27,12 +27,15 @@ class startView:
         choosewatchvideo = dl.chooseWatchVideo(
             lambda e: self.page.close(choosewatchvideo.bottom_sheet),
             lambda e: self.page.go("/selectWatchVideoView"),
-            lambda e: print("投稿ページへ遷移")
+            lambda e: self.page.open(self.browserdialog.minnanoDialog)
         )
         self.choosemanagedialog = dl.manageFolders(
             lambda e: self.page.close(self.choosemanagedialog.bottom_sheet),
             lambda e: self.page.go("/removeView"),
             lambda e: self.page.go("/manageVideoView")
+        )
+        self.browserdialog = dl.minnanoDialog(
+            lambda e: self.page.close(self.browserdialog.minnanoDialog)
         )
 
         self.page.title = "スタート"
@@ -49,7 +52,7 @@ class startView:
         asyncio.create_task(self.update_time())
 
         self.img_title = ft.Image(
-            src="/titlekamo.png",
+            src="/title_kari.png",
             width=760,
             height=100,
             fit=ft.ImageFit.CONTAIN,
@@ -152,21 +155,6 @@ class startView:
                     self.img_miru_clickable,
                     self.img_kanri_clickable,
                     self.img_tsukuru_clickable,
-                ],
-                alignment=ft.MainAxisAlignment.CENTER,
-            ),
-            ft.Row(
-                [
-                    ft.Container(
-                        content=ft.Text("取扱説明書"),
-                        alignment=ft.alignment.center,
-                        bgcolor=ft.colors.ORANGE_800,
-                        width=300,
-                        height=50,
-                        border_radius=5,
-                        ink=True,
-                        on_click=lambda e: self.page.go("/editVideoView"),
-                    ),
                 ],
                 alignment=ft.MainAxisAlignment.CENTER,
             ),

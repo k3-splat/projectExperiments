@@ -32,6 +32,36 @@ class inputPageDialog:
         self.inputPageDialog.actions[1].on_click = fun2
 
 
+class inputTimingDialog:
+    def __init__(self, fun1, fun2):
+        self.inputTimingDialog = ft.AlertDialog(
+            title=ft.Text("追加する時間を入力してください"),
+            modal=True,
+            content=ft.TextField(),
+            actions=[
+                ft.TextButton("追加"),
+                ft.TextButton("キャンセル")
+            ]
+        )
+
+        self.inputTimingDialog.actions[0].on_click = fun1
+        self.inputTimingDialog.actions[1].on_click = fun2
+
+
+class minnanoDialog:
+    def __init__(self, fun1):
+        self.minnanoDialog = ft.AlertDialog(
+            title=ft.Text("Attention"),
+            modal=True,
+            content=ft.Text("ブラウザを起動します"),
+            actions=[
+                ft.TextButton("了解しました")
+            ]
+        )
+
+        self.minnanoDialog.actions[0].on_click = fun1
+
+
 class inputFPSNameDialog:
     def __init__(self, fun1, fun2):
         self.inputFPSDialog = ft.AlertDialog(

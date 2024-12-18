@@ -96,11 +96,27 @@ class pathDatabase:
         with open(self.csvFilePath, mode='r', newline='', encoding='utf-8') as file:
             reader = csv.DictReader(file)
             for row in reader:
-                if row["tag"] == tag:
+                if row["Tag"] == tag:
                     videoPath = os.path.join(row["FilePath"], row['Title'])
                     if os.path.exists(videoPath):
                         return videoPath
     
+    def get_path_from_tag(self, tag):
+        with open(self.csvFilePath, mode='r', newline='', encoding='utf-8') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                if row["Tag"] == tag:
+                    filepath = row["FilePath"]
+                    if os.path.exists(filepath):
+                        return filepath
+
+    def get_title_from_tag(self, tag):
+        with open(self.csvFilePath, mode='r', newline='', encoding='utf-8') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                if row["Tag"] == tag:
+                    return row["Title"]
+
     def has_tag(self, tag):
         if not os.path.exists(self.csvFilePath):
             print(f"{self.csvFilePath} does not exist.")
