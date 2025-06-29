@@ -8,7 +8,7 @@ from flet import(
     Container,
     margin,
     colors,
-    icons
+    icons,
 )
 from chooseProjectView import projectList
 import flet.canvas as cv
